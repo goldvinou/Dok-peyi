@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dok'péyi — Aide pour tes papiers</title>
   <meta name="description" content="CV, lettres, dossiers administratifs… fais ta demande en quelques minutes. Service rapide, simple et accessible.">
-  <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="lang.css">
 </head>
 <body>
 
@@ -16,20 +17,20 @@
     <div class="container nav-inner">
       <a href="#" class="nav-logo">Dok'<span>péyi</span></a>
       <ul class="nav-links">
-        <li><a href="#comment">Comment ça marche</a></li>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#tarifs">Tarifs</a></li>
-        <li><a href="#demande" class="nav-cta">Faire ma demande</a></li>
+        <li><a href="#comment" data-i18n="nav_comment">Comment ça marche</a></li>
+        <li><a href="#services" data-i18n="nav_services">Services</a></li>
+        <li><a href="#tarifs" data-i18n="nav_tarifs">Tarifs</a></li>
+        <li><a href="#demande" class="nav-cta" data-i18n="nav_cta">Faire ma demande</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
     </div>
     <div class="mobile-menu" id="mobileMenu">
-      <a href="#comment" class="mobile-link">Comment ça marche</a>
-      <a href="#services" class="mobile-link">Services</a>
-      <a href="#tarifs" class="mobile-link">Tarifs</a>
-      <a href="#demande" class="mobile-link mobile-cta">Faire ma demande</a>
+      <a href="#comment" class="mobile-link" data-i18n="nav_comment">Comment ça marche</a>
+      <a href="#services" class="mobile-link" data-i18n="nav_services">Services</a>
+      <a href="#tarifs" class="mobile-link" data-i18n="nav_tarifs">Tarifs</a>
+      <a href="#demande" class="mobile-link mobile-cta" data-i18n="nav_cta">Faire ma demande</a>
     </div>
   </nav>
 
@@ -37,19 +38,23 @@
   <section class="hero" id="hero">
     <div class="container hero-inner">
       <div class="hero-text">
-        <span class="hero-badge">✅ Simple · Rapide · Fiable</span>
-        <h1>Besoin d'aide<br>pour tes papiers ?<br><span class="gradient-text">On s'occupe de tout.</span></h1>
-        <p class="hero-sub">CV, lettres, dossiers administratifs… fais ta demande en quelques minutes.</p>
+        <span class="hero-badge" data-i18n="hero_badge">✅ Simple · Rapide · Fiable</span>
+        <h1>
+          <span data-i18n="hero_t1">Besoin d'aide</span><br>
+          <span data-i18n="hero_t2">pour tes papiers ?</span><br>
+          <span class="gradient-text" data-i18n="hero_t3">On s'occupe de tout.</span>
+        </h1>
+        <p class="hero-sub" data-i18n="hero_sub">CV, lettres, dossiers administratifs… fais ta demande en quelques minutes.</p>
         <div class="hero-btns">
-          <a href="#demande" class="btn btn-primary btn-pulse">Faire ma demande</a>
-          <a href="#comment" class="btn btn-ghost">Comment ça marche ?</a>
+          <a href="#demande" class="btn btn-primary btn-pulse" data-i18n="hero_btn1">Faire ma demande</a>
+          <a href="#comment" class="btn btn-ghost" data-i18n="hero_btn2">Comment ça marche ?</a>
         </div>
         <div class="hero-stats">
-          <div class="hero-stat"><strong>500+</strong><span>Demandes traitées</span></div>
+          <div class="hero-stat"><strong>500+</strong><span data-i18n="stat1">Demandes traitées</span></div>
           <div class="divider-v"></div>
-          <div class="hero-stat"><strong>24h</strong><span>Délai moyen</span></div>
+          <div class="hero-stat"><strong>24h</strong><span data-i18n="stat2">Délai moyen</span></div>
           <div class="divider-v"></div>
-          <div class="hero-stat"><strong>98%</strong><span>Satisfaits</span></div>
+          <div class="hero-stat"><strong>98%</strong><span data-i18n="stat3">Satisfaits</span></div>
         </div>
       </div>
       <div class="hero-visual">
@@ -82,30 +87,30 @@
   <!-- ===== COMMENT ÇA MARCHE ===== -->
   <section class="section section-light" id="comment">
     <div class="container">
-      <div class="section-head">
-        <h2>Comment ça marche ?</h2>
-        <p>Trois étapes simples, zéro stress</p>
+      <div class="section-head reveal">
+        <h2 data-i18n="how_title">Comment ça marche ?</h2>
+        <p data-i18n="how_sub">Trois étapes simples, zéro stress</p>
       </div>
       <div class="steps">
-        <div class="step">
+        <div class="step reveal">
           <div class="step-num">1</div>
           <div class="step-icon">💬</div>
-          <h3>Tu expliques ton besoin</h3>
-          <p>Remplis le formulaire en quelques minutes avec les informations dont tu as besoin</p>
+          <h3 data-i18n="s1_title">Tu expliques ton besoin</h3>
+          <p data-i18n="s1_desc">Remplis le formulaire en quelques minutes avec les informations dont tu as besoin</p>
         </div>
         <div class="step-arrow">→</div>
-        <div class="step">
+        <div class="step reveal">
           <div class="step-num">2</div>
           <div class="step-icon">⚡</div>
-          <h3>On traite ta demande rapidement</h3>
-          <p>Ton document est préparé avec soin et professionnalisme selon tes informations</p>
+          <h3 data-i18n="s2_title">On traite ta demande rapidement</h3>
+          <p data-i18n="s2_desc">Ton document est préparé avec soin et professionnalisme selon tes informations</p>
         </div>
         <div class="step-arrow">→</div>
-        <div class="step">
+        <div class="step reveal">
           <div class="step-num">3</div>
           <div class="step-icon">📥</div>
-          <h3>Tu reçois ton document</h3>
-          <p>Télécharge ou reçois par email ton document finalisé, prêt à être utilisé</p>
+          <h3 data-i18n="s3_title">Tu reçois ton document</h3>
+          <p data-i18n="s3_desc">Télécharge ou reçois par email ton document finalisé, prêt à être utilisé</p>
         </div>
       </div>
     </div>
@@ -114,39 +119,39 @@
   <!-- ===== SERVICES ===== -->
   <section class="section" id="services">
     <div class="container">
-      <div class="section-head">
-        <h2>Nos services</h2>
-        <p>Tout ce dont tu as besoin pour tes démarches</p>
+      <div class="section-head reveal">
+        <h2 data-i18n="svc_title">Nos services</h2>
+        <p data-i18n="svc_sub">Tout ce dont tu as besoin pour tes démarches</p>
       </div>
       <div class="grid-4">
-        <div class="card service-card">
+        <div class="card service-card reveal">
           <div class="card-icon">📄</div>
-          <h3>Création de CV</h3>
-          <p>Un CV professionnel, clair et efficace pour décrocher un emploi</p>
-          <div class="card-price">à partir de <strong>8€</strong></div>
-          <a href="#demande" class="btn btn-outline" data-service="cv">Commencer</a>
+          <h3 data-i18n="svc1_name">Création de CV</h3>
+          <p data-i18n="svc1_desc">Un CV professionnel, clair et efficace pour décrocher un emploi</p>
+          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>8€</strong></div>
+          <a href="#demande" class="btn btn-outline" data-service="cv" data-i18n="btn_start">Commencer</a>
         </div>
-        <div class="card service-card featured">
+        <div class="card service-card featured reveal">
           <div class="card-badge">Populaire</div>
           <div class="card-icon">✉️</div>
-          <h3>Lettre de motivation</h3>
-          <p>Une lettre personnalisée et convaincante pour ta candidature</p>
-          <div class="card-price">à partir de <strong>5€</strong></div>
-          <a href="#demande" class="btn btn-primary" data-service="lettre">Commencer</a>
+          <h3 data-i18n="svc2_name">Lettre de motivation</h3>
+          <p data-i18n="svc2_desc">Une lettre personnalisée et convaincante pour ta candidature</p>
+          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>5€</strong></div>
+          <a href="#demande" class="btn btn-primary" data-service="lettre" data-i18n="btn_start">Commencer</a>
         </div>
-        <div class="card service-card">
+        <div class="card service-card reveal">
           <div class="card-icon">📁</div>
-          <h3>Aide aux dossiers</h3>
-          <p>Accompagnement pour monter ton dossier CAF, logement, emploi…</p>
-          <div class="card-price">à partir de <strong>10€</strong></div>
-          <a href="#demande" class="btn btn-outline" data-service="dossier">Commencer</a>
+          <h3 data-i18n="svc3_name">Aide aux dossiers</h3>
+          <p data-i18n="svc3_desc">Accompagnement pour monter ton dossier CAF, logement, emploi…</p>
+          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>10€</strong></div>
+          <a href="#demande" class="btn btn-outline" data-service="dossier" data-i18n="btn_start">Commencer</a>
         </div>
-        <div class="card service-card">
+        <div class="card service-card reveal">
           <div class="card-icon">📮</div>
-          <h3>Courriers officiels</h3>
-          <p>Rédaction pour mairies, préfectures, administrations et autres</p>
-          <div class="card-price">à partir de <strong>7€</strong></div>
-          <a href="#demande" class="btn btn-outline" data-service="courrier">Commencer</a>
+          <h3 data-i18n="svc4_name">Courriers officiels</h3>
+          <p data-i18n="svc4_desc">Rédaction pour mairies, préfectures, administrations et autres</p>
+          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>7€</strong></div>
+          <a href="#demande" class="btn btn-outline" data-service="courrier" data-i18n="btn_start">Commencer</a>
         </div>
       </div>
     </div>
@@ -156,25 +161,25 @@
   <section class="advantages-section">
     <div class="container">
       <div class="grid-4 advantages">
-        <div class="advantage">
+        <div class="advantage reveal">
           <div class="adv-icon">⚡</div>
-          <h3>Rapide</h3>
-          <p>Résultat en moins de 24h</p>
+          <h3 data-i18n="adv1_t">Rapide</h3>
+          <p data-i18n="adv1_d">Résultat en moins de 24h</p>
         </div>
-        <div class="advantage">
+        <div class="advantage reveal">
           <div class="adv-icon">✅</div>
-          <h3>Simple</h3>
-          <p>Pas de jargon, pas de complexité</p>
+          <h3 data-i18n="adv2_t">Simple</h3>
+          <p data-i18n="adv2_d">Pas de jargon, pas de complexité</p>
         </div>
-        <div class="advantage">
+        <div class="advantage reveal">
           <div class="adv-icon">😌</div>
-          <h3>Sans prise de tête</h3>
-          <p>On s'occupe de tout pour toi</p>
+          <h3 data-i18n="adv3_t">Sans prise de tête</h3>
+          <p data-i18n="adv3_d">On s'occupe de tout pour toi</p>
         </div>
-        <div class="advantage">
+        <div class="advantage reveal">
           <div class="adv-icon">🌍</div>
-          <h3>Accessible à tous</h3>
-          <p>Adapté à chaque situation</p>
+          <h3 data-i18n="adv4_t">Accessible à tous</h3>
+          <p data-i18n="adv4_d">Adapté à chaque situation</p>
         </div>
       </div>
     </div>
@@ -183,55 +188,55 @@
   <!-- ===== TARIFS ===== -->
   <section class="section section-light" id="tarifs">
     <div class="container">
-      <div class="section-head">
-        <h2>Tarifs clairs et transparents</h2>
-        <p>Tu sais exactement ce que tu paies avant de commencer</p>
+      <div class="section-head reveal">
+        <h2 data-i18n="pricing_title">Tarifs clairs et transparents</h2>
+        <p data-i18n="pricing_sub">Tu sais exactement ce que tu paies avant de commencer</p>
       </div>
       <div class="grid-4">
-        <div class="card pricing-card">
+        <div class="card pricing-card reveal">
           <div class="pricing-icon">✉️</div>
-          <h3>Lettre de motivation</h3>
+          <h3 data-i18n="svc2_name">Lettre de motivation</h3>
           <div class="price">5€</div>
           <ul class="pricing-features">
             <li>✓ Personnalisée selon ton profil</li>
             <li>✓ Format PDF livré</li>
             <li>✓ Livraison sous 24h</li>
           </ul>
-          <a href="#demande" class="btn btn-outline" data-service="lettre">Choisir</a>
+          <a href="#demande" class="btn btn-outline" data-service="lettre" data-i18n="btn_choose">Choisir</a>
         </div>
-        <div class="card pricing-card">
+        <div class="card pricing-card reveal">
           <div class="pricing-icon">📮</div>
-          <h3>Courrier officiel</h3>
+          <h3 data-i18n="svc4_name">Courrier officiel</h3>
           <div class="price">7€</div>
           <ul class="pricing-features">
             <li>✓ Ton officiel adapté</li>
             <li>✓ Prêt à envoyer</li>
             <li>✓ Livraison sous 24h</li>
           </ul>
-          <a href="#demande" class="btn btn-outline" data-service="courrier">Choisir</a>
+          <a href="#demande" class="btn btn-outline" data-service="courrier" data-i18n="btn_choose">Choisir</a>
         </div>
-        <div class="card pricing-card featured">
+        <div class="card pricing-card featured reveal">
           <div class="card-badge">Recommandé</div>
           <div class="pricing-icon">📄</div>
-          <h3>CV Professionnel</h3>
+          <h3 data-i18n="svc1_name">CV Professionnel</h3>
           <div class="price">8€</div>
           <ul class="pricing-features">
             <li>✓ Design moderne</li>
             <li>✓ Format PDF livré</li>
             <li>✓ Révision incluse</li>
           </ul>
-          <a href="#demande" class="btn btn-primary" data-service="cv">Choisir</a>
+          <a href="#demande" class="btn btn-primary" data-service="cv" data-i18n="btn_choose">Choisir</a>
         </div>
-        <div class="card pricing-card">
+        <div class="card pricing-card reveal">
           <div class="pricing-icon">📁</div>
-          <h3>Dossier administratif</h3>
+          <h3 data-i18n="svc3_name">Dossier administratif</h3>
           <div class="price">10–15€</div>
           <ul class="pricing-features">
             <li>✓ Selon complexité</li>
             <li>✓ Accompagnement complet</li>
             <li>✓ Délai selon dossier</li>
           </ul>
-          <a href="#demande" class="btn btn-outline" data-service="dossier">Choisir</a>
+          <a href="#demande" class="btn btn-outline" data-service="dossier" data-i18n="btn_choose">Choisir</a>
         </div>
       </div>
     </div>
@@ -240,9 +245,9 @@
   <!-- ===== FORMULAIRE ===== -->
   <section class="section" id="demande">
     <div class="container">
-      <div class="section-head">
-        <h2>Fais ta demande</h2>
-        <p>Remplis ce formulaire, on s'occupe du reste</p>
+      <div class="section-head reveal">
+        <h2 data-i18n="form_title">Fais ta demande</h2>
+        <p data-i18n="form_sub">Remplis ce formulaire, on s'occupe du reste</p>
       </div>
       <div class="form-wrapper">
 
@@ -392,21 +397,21 @@
   <!-- ===== TÉMOIGNAGES ===== -->
   <section class="section section-light">
     <div class="container">
-      <div class="section-head">
-        <h2>Ils nous font confiance</h2>
+      <div class="section-head reveal">
+        <h2 data-i18n="testi_title">Ils nous font confiance</h2>
       </div>
       <div class="grid-3">
-        <div class="card testimonial">
+        <div class="card testimonial reveal">
           <div class="stars">⭐⭐⭐⭐⭐</div>
           <p>"Mon CV était prêt en quelques heures. Simple, rapide, professionnel. J'ai décroché un entretien la semaine suivante !"</p>
           <div class="testimonial-author">— Marlène T., Cayenne</div>
         </div>
-        <div class="card testimonial">
+        <div class="card testimonial reveal">
           <div class="stars">⭐⭐⭐⭐⭐</div>
           <p>"Je ne savais pas comment rédiger ma lettre de motivation. Dok'péyi l'a fait pour moi et c'était parfait !"</p>
           <div class="testimonial-author">— Kevin R., Saint-Laurent</div>
         </div>
-        <div class="card testimonial">
+        <div class="card testimonial reveal">
           <div class="stars">⭐⭐⭐⭐⭐</div>
           <p>"Service top ! Mon dossier de logement était complet et bien présenté. Je recommande à tout le monde."</p>
           <div class="testimonial-author">— Fatima O., Kourou</div>
@@ -421,29 +426,30 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <div class="nav-logo footer-logo">Dok'<span>péyi</span></div>
-          <p>Ton aide administrative simple et accessible, où que tu sois.</p>
+          <p data-i18n="footer_tagline">Ton aide administrative simple et accessible, où que tu sois.</p>
         </div>
         <div class="footer-nav">
-          <h4>Navigation</h4>
-          <a href="#comment">Comment ça marche</a>
-          <a href="#services">Services</a>
-          <a href="#tarifs">Tarifs</a>
-          <a href="#demande">Faire ma demande</a>
+          <h4 data-i18n="footer_nav">Navigation</h4>
+          <a href="#comment" data-i18n="nav_comment">Comment ça marche</a>
+          <a href="#services" data-i18n="nav_services">Services</a>
+          <a href="#tarifs" data-i18n="nav_tarifs">Tarifs</a>
+          <a href="#demande" data-i18n="nav_cta">Faire ma demande</a>
         </div>
         <div class="footer-contact">
-          <h4>Contact</h4>
+          <h4 data-i18n="footer_contact">Contact</h4>
           <p>📧 contact@dokpeyi.com</p>
           <p>📱 WhatsApp disponible</p>
           <p>🕐 Lun–Sam · 8h–20h</p>
         </div>
       </div>
       <div class="footer-legal">
-        <p>Dok'péyi est un service d'aide à la rédaction et à la préparation de documents. Les informations doivent être vérifiées avant utilisation.</p>
+        <p data-i18n="footer_legal">Dok'péyi est un service d'aide à la rédaction et à la préparation de documents. Les informations doivent être vérifiées avant utilisation.</p>
         <p>© 2025 Dok'péyi — Tous droits réservés</p>
       </div>
     </div>
   </footer>
 
   <script src="script.js"></script>
+  <script src="lang.js"></script>
 </body>
 </html>
