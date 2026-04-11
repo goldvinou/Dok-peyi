@@ -8,13 +8,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="admin.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- CSS critique inline — garantit l'affichage même si admin.css charge lentement -->
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; font-family: Inter, system-ui, sans-serif; }
+    #login-screen {
+      position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    #admin-app { display: none; width: 100%; height: 100vh; }
+    #admin-app.visible {
+      display: flex !important;
+    }
+  </style>
 </head>
 <body>
 
 <!-- ======================================================
      ÉCRAN DE CONNEXION
      ====================================================== -->
-<div id="login-screen">
+<div id="login-screen" role="dialog" aria-label="Connexion">
   <div class="login-card">
     <div class="login-logo">Dok'<span>péyi</span></div>
     <p class="login-sub">Espace Administration</p>
@@ -49,7 +63,7 @@
 <!-- ======================================================
      APPLICATION ADMIN
      ====================================================== -->
-<div id="admin-app">
+<div id="admin-app" aria-hidden="true">
 
   <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar" id="sidebar">

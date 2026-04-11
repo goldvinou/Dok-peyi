@@ -122,10 +122,26 @@ function rand2() { return String(Math.floor(Math.random() * 90 + 10)); }
 /* ============================================================
    AUTHENTIFICATION
    ============================================================ */
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  const app = document.getElementById('admin-app');
+  app.style.display = 'flex';
+  app.classList.add('visible');
+  app.removeAttribute('aria-hidden');
+}
+
+function hideApp() {
+  document.getElementById('login-screen').style.display = 'flex';
+  const app = document.getElementById('admin-app');
+  app.style.display = 'none';
+  app.classList.remove('visible');
+  app.setAttribute('aria-hidden', 'true');
+}
+
 function handleLogin(e) {
   e.preventDefault();
-  const user = document.getElementById('lg-user').value.trim();
-  const pass = document.getElementById('lg-pass').value;
+  const user  = document.getElementById('lg-user').value.trim();
+  const pass  = document.getElementById('lg-pass').value;
   const errEl = document.getElementById('lg-error');
   const btn   = document.getElementById('btn-login');
 
@@ -136,8 +152,7 @@ function handleLogin(e) {
   setTimeout(() => {
     if (user === CREDENTIALS.user && pass === CREDENTIALS.pass) {
       sessionStorage.setItem('dok_auth', '1');
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('admin-app').style.display = 'flex';
+      showApp();
       init();
     } else {
       errEl.style.display = 'block';
@@ -152,8 +167,7 @@ function handleLogin(e) {
 function logout() {
   if (!confirm('Confirmer la déconnexion ?')) return;
   sessionStorage.removeItem('dok_auth');
-  document.getElementById('admin-app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  hideApp();
   document.getElementById('lg-user').value = '';
   document.getElementById('lg-pass').value = '';
 }
@@ -177,20 +191,18 @@ function init() {
 
   // Rendre le dashboard
   renderDashboard();
-
-  // Si déjà authentifié au rechargement
-  if (sessionStorage.getItem('dok_auth')) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-app').style.display = 'flex';
-  }
 }
 
-// Vérifier l'auth au chargement
+// Vérifier l'auth dès le chargement de la page
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('dok_auth')) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-app').style.display = 'flex';
+    showApp();
     init();
+  }
+  // Focus sur le champ identifiant si écran login visible
+  const lgUser = document.getElementById('lg-user');
+  if (lgUser && document.getElementById('login-screen').style.display !== 'none') {
+    lgUser.focus();
   }
 });
 
