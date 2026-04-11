@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dok'péyi — Aide pour tes papiers</title>
+  <meta name="description" content="CV, lettres, dossiers administratifs… fais ta demande en quelques minutes. Service rapide, simple et accessible.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="#" class="nav-logo">Dok'<span>péyi</span></a>
+      <ul class="nav-links">
+        <li><a href="#comment">Comment ça marche</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#tarifs">Tarifs</a></li>
+        <li><a href="#demande" class="nav-cta">Faire ma demande</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#comment" class="mobile-link">Comment ça marche</a>
+      <a href="#services" class="mobile-link">Services</a>
+      <a href="#tarifs" class="mobile-link">Tarifs</a>
+      <a href="#demande" class="mobile-link mobile-cta">Faire ma demande</a>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="hero">
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <span class="hero-badge">✅ Simple · Rapide · Fiable</span>
+        <h1>Besoin d'aide<br>pour tes papiers ?<br><span class="gradient-text">On s'occupe de tout.</span></h1>
+        <p class="hero-sub">CV, lettres, dossiers administratifs… fais ta demande en quelques minutes.</p>
+        <div class="hero-btns">
+          <a href="#demande" class="btn btn-primary btn-pulse">Faire ma demande</a>
+          <a href="#comment" class="btn btn-ghost">Comment ça marche ?</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><strong>500+</strong><span>Demandes traitées</span></div>
+          <div class="divider-v"></div>
+          <div class="hero-stat"><strong>24h</strong><span>Délai moyen</span></div>
+          <div class="divider-v"></div>
+          <div class="hero-stat"><strong>98%</strong><span>Satisfaits</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-blob"></div>
+        <div class="doc-float doc-a">
+          <span class="doc-float-icon">📄</span>
+          <div>
+            <p class="doc-float-name">CV Professionnel</p>
+            <span class="badge-ready">✓ Prêt</span>
+          </div>
+        </div>
+        <div class="doc-float doc-b">
+          <span class="doc-float-icon">✉️</span>
+          <div>
+            <p class="doc-float-name">Lettre de motivation</p>
+            <span class="badge-ready">✓ Prêt</span>
+          </div>
+        </div>
+        <div class="doc-float doc-c">
+          <span class="doc-float-icon">📁</span>
+          <div>
+            <p class="doc-float-name">Dossier CAF</p>
+            <span class="badge-processing">⏳ En cours</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== COMMENT ÇA MARCHE ===== -->
+  <section class="section section-light" id="comment">
+    <div class="container">
+      <div class="section-head">
+        <h2>Comment ça marche ?</h2>
+        <p>Trois étapes simples, zéro stress</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-icon">💬</div>
+          <h3>Tu expliques ton besoin</h3>
+          <p>Remplis le formulaire en quelques minutes avec les informations dont tu as besoin</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-icon">⚡</div>
+          <h3>On traite ta demande rapidement</h3>
+          <p>Ton document est préparé avec soin et professionnalisme selon tes informations</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-icon">📥</div>
+          <h3>Tu reçois ton document</h3>
+          <p>Télécharge ou reçois par email ton document finalisé, prêt à être utilisé</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SERVICES ===== -->
+  <section class="section" id="services">
+    <div class="container">
+      <div class="section-head">
+        <h2>Nos services</h2>
+        <p>Tout ce dont tu as besoin pour tes démarches</p>
+      </div>
+      <div class="grid-4">
+        <div class="card service-card">
+          <div class="card-icon">📄</div>
+          <h3>Création de CV</h3>
+          <p>Un CV professionnel, clair et efficace pour décrocher un emploi</p>
+          <div class="card-price">à partir de <strong>8€</strong></div>
+          <a href="#demande" class="btn btn-outline" data-service="cv">Commencer</a>
+        </div>
+        <div class="card service-card featured">
+          <div class="card-badge">Populaire</div>
+          <div class="card-icon">✉️</div>
+          <h3>Lettre de motivation</h3>
+          <p>Une lettre personnalisée et convaincante pour ta candidature</p>
+          <div class="card-price">à partir de <strong>5€</strong></div>
+          <a href="#demande" class="btn btn-primary" data-service="lettre">Commencer</a>
+        </div>
+        <div class="card service-card">
+          <div class="card-icon">📁</div>
+          <h3>Aide aux dossiers</h3>
+          <p>Accompagnement pour monter ton dossier CAF, logement, emploi…</p>
+          <div class="card-price">à partir de <strong>10€</strong></div>
+          <a href="#demande" class="btn btn-outline" data-service="dossier">Commencer</a>
+        </div>
+        <div class="card service-card">
+          <div class="card-icon">📮</div>
+          <h3>Courriers officiels</h3>
+          <p>Rédaction pour mairies, préfectures, administrations et autres</p>
+          <div class="card-price">à partir de <strong>7€</strong></div>
+          <a href="#demande" class="btn btn-outline" data-service="courrier">Commencer</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AVANTAGES ===== -->
+  <section class="advantages-section">
+    <div class="container">
+      <div class="grid-4 advantages">
+        <div class="advantage">
+          <div class="adv-icon">⚡</div>
+          <h3>Rapide</h3>
+          <p>Résultat en moins de 24h</p>
+        </div>
+        <div class="advantage">
+          <div class="adv-icon">✅</div>
+          <h3>Simple</h3>
+          <p>Pas de jargon, pas de complexité</p>
+        </div>
+        <div class="advantage">
+          <div class="adv-icon">😌</div>
+          <h3>Sans prise de tête</h3>
+          <p>On s'occupe de tout pour toi</p>
+        </div>
+        <div class="advantage">
+          <div class="adv-icon">🌍</div>
+          <h3>Accessible à tous</h3>
+          <p>Adapté à chaque situation</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TARIFS ===== -->
+  <section class="section section-light" id="tarifs">
+    <div class="container">
+      <div class="section-head">
+        <h2>Tarifs clairs et transparents</h2>
+        <p>Tu sais exactement ce que tu paies avant de commencer</p>
+      </div>
+      <div class="grid-4">
+        <div class="card pricing-card">
+          <div class="pricing-icon">✉️</div>
+          <h3>Lettre de motivation</h3>
+          <div class="price">5€</div>
+          <ul class="pricing-features">
+            <li>✓ Personnalisée selon ton profil</li>
+            <li>✓ Format PDF livré</li>
+            <li>✓ Livraison sous 24h</li>
+          </ul>
+          <a href="#demande" class="btn btn-outline" data-service="lettre">Choisir</a>
+        </div>
+        <div class="card pricing-card">
+          <div class="pricing-icon">📮</div>
+          <h3>Courrier officiel</h3>
+          <div class="price">7€</div>
+          <ul class="pricing-features">
+            <li>✓ Ton officiel adapté</li>
+            <li>✓ Prêt à envoyer</li>
+            <li>✓ Livraison sous 24h</li>
+          </ul>
+          <a href="#demande" class="btn btn-outline" data-service="courrier">Choisir</a>
+        </div>
+        <div class="card pricing-card featured">
+          <div class="card-badge">Recommandé</div>
+          <div class="pricing-icon">📄</div>
+          <h3>CV Professionnel</h3>
+          <div class="price">8€</div>
+          <ul class="pricing-features">
+            <li>✓ Design moderne</li>
+            <li>✓ Format PDF livré</li>
+            <li>✓ Révision incluse</li>
+          </ul>
+          <a href="#demande" class="btn btn-primary" data-service="cv">Choisir</a>
+        </div>
+        <div class="card pricing-card">
+          <div class="pricing-icon">📁</div>
+          <h3>Dossier administratif</h3>
+          <div class="price">10–15€</div>
+          <ul class="pricing-features">
+            <li>✓ Selon complexité</li>
+            <li>✓ Accompagnement complet</li>
+            <li>✓ Délai selon dossier</li>
+          </ul>
+          <a href="#demande" class="btn btn-outline" data-service="dossier">Choisir</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FORMULAIRE ===== -->
+  <section class="section" id="demande">
+    <div class="container">
+      <div class="section-head">
+        <h2>Fais ta demande</h2>
+        <p>Remplis ce formulaire, on s'occupe du reste</p>
+      </div>
+      <div class="form-wrapper">
+
+        <!-- Barre de progression -->
+        <div class="progress-bar">
+          <div class="prog-step active" data-step="1"><span>1</span><p>Infos</p></div>
+          <div class="prog-line"></div>
+          <div class="prog-step" data-step="2"><span>2</span><p>Service</p></div>
+          <div class="prog-line"></div>
+          <div class="prog-step" data-step="3"><span>3</span><p>Détails</p></div>
+          <div class="prog-line"></div>
+          <div class="prog-step" data-step="4"><span>4</span><p>Paiement</p></div>
+        </div>
+
+        <form id="mainForm" novalidate>
+
+          <!-- ÉTAPE 1 — Informations personnelles -->
+          <div class="form-step active" id="step-1">
+            <h3>Tes informations</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="f-prenom">Prénom *</label>
+                <input type="text" id="f-prenom" placeholder="Ton prénom" autocomplete="given-name">
+              </div>
+              <div class="form-group">
+                <label for="f-nom">Nom *</label>
+                <input type="text" id="f-nom" placeholder="Ton nom" autocomplete="family-name">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="f-email">Email *</label>
+              <input type="email" id="f-email" placeholder="ton@email.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="f-whatsapp">WhatsApp <span class="optional">(optionnel)</span></label>
+              <input type="tel" id="f-whatsapp" placeholder="+594 06 00 00 00" autocomplete="tel">
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" onclick="goNext(1)">Continuer →</button>
+            </div>
+          </div>
+
+          <!-- ÉTAPE 2 — Choix du service -->
+          <div class="form-step" id="step-2">
+            <h3>Quel document as-tu besoin ?</h3>
+            <div class="service-grid" id="serviceGrid">
+              <div class="service-choice" data-val="cv" onclick="pickService(this)">
+                <span class="sc-icon">📄</span>
+                <span class="sc-name">CV</span>
+                <span class="sc-price">8€</span>
+              </div>
+              <div class="service-choice" data-val="lettre" onclick="pickService(this)">
+                <span class="sc-icon">✉️</span>
+                <span class="sc-name">Lettre de motivation</span>
+                <span class="sc-price">5€</span>
+              </div>
+              <div class="service-choice" data-val="dossier" onclick="pickService(this)">
+                <span class="sc-icon">📁</span>
+                <span class="sc-name">Dossier administratif</span>
+                <span class="sc-price">10–15€</span>
+              </div>
+              <div class="service-choice" data-val="courrier" onclick="pickService(this)">
+                <span class="sc-icon">📮</span>
+                <span class="sc-name">Courrier officiel</span>
+                <span class="sc-price">7€</span>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" onclick="goPrev(2)">← Retour</button>
+              <button type="button" class="btn btn-primary" id="btn-step2-next" onclick="goNext(2)" disabled>Continuer →</button>
+            </div>
+          </div>
+
+          <!-- ÉTAPE 3 — Détails dynamiques -->
+          <div class="form-step" id="step-3">
+            <h3 id="step3-title">Dis-nous en plus</h3>
+            <div id="dynamic-fields"></div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" onclick="goPrev(3)">← Retour</button>
+              <button type="button" class="btn btn-primary" onclick="goNext(3)">Continuer →</button>
+            </div>
+          </div>
+
+          <!-- ÉTAPE 4 — Récapitulatif et paiement -->
+          <div class="form-step" id="step-4">
+            <h3>Récapitulatif et paiement</h3>
+            <div class="recap" id="recap"></div>
+
+            <div class="pay-block">
+              <h4>💳 Paiement sécurisé</h4>
+              <div class="pay-tabs">
+                <button type="button" class="pay-tab active" onclick="switchTab(this,'card')">Carte bancaire</button>
+                <button type="button" class="pay-tab" onclick="switchTab(this,'paypal')">PayPal</button>
+              </div>
+
+              <div id="pay-card" class="pay-form">
+                <div class="form-group">
+                  <label>Numéro de carte</label>
+                  <input type="text" id="card-num" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Expiration</label>
+                    <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5" oninput="fmtExp(this)" autocomplete="cc-exp">
+                  </div>
+                  <div class="form-group">
+                    <label>CVV</label>
+                    <input type="text" id="card-cvv" placeholder="123" maxlength="3" oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="cc-csc">
+                  </div>
+                </div>
+              </div>
+
+              <div id="pay-paypal" class="pay-form hidden">
+                <div class="paypal-info">
+                  <p>📧 Tu seras redirigé vers PayPal pour finaliser ton paiement en toute sécurité</p>
+                </div>
+              </div>
+
+              <div class="pay-secure">🔒 Paiement 100% sécurisé</div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" onclick="goPrev(4)">← Retour</button>
+              <button type="button" class="btn btn-primary btn-pay" id="btn-pay" onclick="processPayment()">
+                <span id="pay-label">Payer et recevoir mon document</span>
+                <span id="pay-spinner" class="spinner hidden"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ÉTAPE 5 — Confirmation -->
+          <div class="form-step" id="step-5">
+            <div class="success">
+              <div class="success-icon">✅</div>
+              <h3>Demande envoyée avec succès !</h3>
+              <p>Merci <strong id="s-name"></strong> ! Ton document sera prêt sous 24h.</p>
+              <p>Tu recevras une notification à <strong id="s-email"></strong></p>
+              <button type="button" class="btn btn-primary" onclick="resetForm()">Faire une nouvelle demande</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TÉMOIGNAGES ===== -->
+  <section class="section section-light">
+    <div class="container">
+      <div class="section-head">
+        <h2>Ils nous font confiance</h2>
+      </div>
+      <div class="grid-3">
+        <div class="card testimonial">
+          <div class="stars">⭐⭐⭐⭐⭐</div>
+          <p>"Mon CV était prêt en quelques heures. Simple, rapide, professionnel. J'ai décroché un entretien la semaine suivante !"</p>
+          <div class="testimonial-author">— Marlène T., Cayenne</div>
+        </div>
+        <div class="card testimonial">
+          <div class="stars">⭐⭐⭐⭐⭐</div>
+          <p>"Je ne savais pas comment rédiger ma lettre de motivation. Dok'péyi l'a fait pour moi et c'était parfait !"</p>
+          <div class="testimonial-author">— Kevin R., Saint-Laurent</div>
+        </div>
+        <div class="card testimonial">
+          <div class="stars">⭐⭐⭐⭐⭐</div>
+          <p>"Service top ! Mon dossier de logement était complet et bien présenté. Je recommande à tout le monde."</p>
+          <div class="testimonial-author">— Fatima O., Kourou</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-logo footer-logo">Dok'<span>péyi</span></div>
+          <p>Ton aide administrative simple et accessible, où que tu sois.</p>
+        </div>
+        <div class="footer-nav">
+          <h4>Navigation</h4>
+          <a href="#comment">Comment ça marche</a>
+          <a href="#services">Services</a>
+          <a href="#tarifs">Tarifs</a>
+          <a href="#demande">Faire ma demande</a>
+        </div>
+        <div class="footer-contact">
+          <h4>Contact</h4>
+          <p>📧 contact@dokpeyi.com</p>
+          <p>📱 WhatsApp disponible</p>
+          <p>🕐 Lun–Sam · 8h–20h</p>
+        </div>
+      </div>
+      <div class="footer-legal">
+        <p>Dok'péyi est un service d'aide à la rédaction et à la préparation de documents. Les informations doivent être vérifiées avant utilisation.</p>
+        <p>© 2025 Dok'péyi — Tous droits réservés</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
