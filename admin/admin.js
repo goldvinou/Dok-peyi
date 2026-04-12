@@ -541,7 +541,8 @@ function openModal(id) {
       <span class="modal-val">${escHtml(v)}</span>
     </div>`).join('');
 
-  const hasExistingCV = d.details && d.details['cv-actuel'] && d.details['cv-actuel'].trim().length > 30;
+  const hasCVFile     = d.details && d.details['cv-fichier'] && d.details['cv-fichier'].data;
+  const hasExistingCV = hasCVFile;
 
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">
@@ -568,6 +569,17 @@ function openModal(id) {
     <div class="modal-section">
       <div class="modal-section-title">Informations fournies</div>
       ${detailsHtml}
+    </div>` : ''}
+
+    ${hasCVFile ? `
+    <div class="modal-section">
+      <div class="modal-section-title">CV original du client</div>
+      <div class="cv-file-row">
+        <span class="cv-file-icon">📄</span>
+        <span class="cv-file-name">${escHtml(d.details['cv-fichier'].name)}</span>
+        <span class="cv-file-size">${Math.round(d.details['cv-fichier'].size / 1024)} Ko</span>
+        <button class="btn-modal-save" onclick="downloadOriginalCV(${d.id})">⬇ Télécharger</button>
+      </div>
     </div>` : ''}
 
     ${d.service === 'cv' ? `
@@ -728,6 +740,18 @@ function downloadCV() {
   w.document.write(APP.generatedCV);
   w.document.close();
   setTimeout(() => { try { w.print(); } catch(e) {} }, 700);
+}
+
+function downloadOriginalCV(id) {
+  const d = demandes.find(dm => dm.id === id);
+  if (!d || !d.details || !d.details['cv-fichier']) return;
+  const f = d.details['cv-fichier'];
+  const a = document.createElement('a');
+  a.href     = f.data;
+  a.download = f.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 /* ============================================================

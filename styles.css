@@ -730,6 +730,52 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   z-index: 1;
 }
 
+/* Zone upload CV */
+.file-drop-zone {
+  border: 2px dashed var(--gray-300);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  overflow: hidden;
+  background: var(--gray-50);
+}
+.file-drop-zone:hover { border-color: var(--blue); background: #eff6ff; }
+.file-drop-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 28px 20px;
+  text-align: center;
+}
+.file-drop-icon  { font-size: 2rem; }
+.file-drop-text  { font-weight: 600; font-size: .9rem; color: var(--dark); }
+.file-drop-hint  { font-size: .78rem; color: var(--gray-400); }
+.file-chosen {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #eff6ff;
+  border-top: 1px solid #bfdbfe;
+}
+.file-chosen-icon { font-size: 1.4rem; flex-shrink: 0; }
+.file-chosen-name { font-size: .87rem; font-weight: 600; color: var(--dark); flex: 1; word-break: break-all; }
+.file-chosen-remove {
+  background: none;
+  border: 1px solid var(--gray-300);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  font-size: .8rem;
+  cursor: pointer;
+  color: var(--gray-500);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.file-chosen-remove:hover { border-color: #ef4444; color: #ef4444; }
+
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .form-actions {
   display: flex;

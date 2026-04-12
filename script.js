@@ -4,14 +4,15 @@
 
 // ===== ÉTAT GLOBAL =====
 const state = {
-  step:      1,
-  prenom:    '',
-  nom:       '',
-  email:     '',
-  whatsapp:  '',
-  service:   null,
-  details:   {},
-  payMethod: 'card'
+  step:       1,
+  prenom:     '',
+  nom:        '',
+  email:      '',
+  whatsapp:   '',
+  service:    null,
+  details:    {},
+  payMethod:  'card',
+  cvFileData: null   // { name, type, size, data: 'data:...base64...' }
 };
 
 const PRICES = {
@@ -172,7 +173,7 @@ const FIELD_CONFIGS = {
       { id: 'cv-formation',  label: 'Tes formations / diplômes',        type: 'textarea', placeholder: 'Ex: BEP Commerce, CAP, Bac Pro…' },
       { id: 'cv-competences',label: 'Tes compétences',                   type: 'textarea', placeholder: 'Ex: Permis B, maîtrise Word, langues parlées…' },
       { id: 'cv-infos',      label: 'Informations supplémentaires',      type: 'textarea', placeholder: 'Centres d\'intérêt, informations à ajouter…' },
-      { id: 'cv-actuel',     label: 'Ton CV actuel (optionnel)', type: 'textarea', placeholder: 'Tu as déjà un CV ? Colle son texte ici — on s\'en servira comme base pour le moderniser et l\'améliorer ✨\n\nSinon laisse vide, on en crée un nouveau à partir de tes infos.' }
+      { id: 'cv-fichier', label: 'Ton CV actuel (optionnel)', type: 'file', accept: '.pdf,.doc,.docx,.jpg,.jpeg,.png', hint: 'PDF, Word ou image — max 3 Mo. Sinon laisse vide, on en crée un nouveau.' }
     ]
   },
   lettre: {
@@ -213,9 +214,30 @@ function buildDynamicFields() {
   const container = document.getElementById('dynamic-fields');
   container.innerHTML = '';
 
-  config.fields.forEach(f => {
+  for (const f of config.fields) {
     const group = document.createElement('div');
     group.className = 'form-group';
+
+    // Champ upload fichier — traitement spécial
+    if (f.type === 'file') {
+      group.innerHTML = `
+        <label>${f.label}</label>
+        <div class="file-drop-zone" id="${f.id}-zone" onclick="document.getElementById('${f.id}').click()">
+          <input type="file" id="${f.id}" accept="${f.accept}" style="display:none" onchange="handleCVFile(this,'${f.id}')">
+          <div class="file-drop-inner">
+            <div class="file-drop-icon">📎</div>
+            <div class="file-drop-text">Clique pour télécharger ton CV</div>
+            <div class="file-drop-hint">${f.hint || ''}</div>
+          </div>
+          <div class="file-chosen" id="${f.id}-chosen" style="display:none">
+            <span class="file-chosen-icon">📄</span>
+            <span id="${f.id}-chosen-name" class="file-chosen-name"></span>
+            <button type="button" class="file-chosen-remove" onclick="event.stopPropagation();removeCVFile('${f.id}')">✕</button>
+          </div>
+        </div>`;
+      container.appendChild(group);
+      continue;
+    }
 
     const label = document.createElement('label');
     label.htmlFor = f.id;
@@ -247,7 +269,7 @@ function buildDynamicFields() {
     if (f.required) el.required = true;
     group.appendChild(el);
     container.appendChild(group);
-  });
+  }
 }
 
 function saveDetails() {
@@ -255,9 +277,45 @@ function saveDetails() {
   if (!config) return;
   state.details = {};
   config.fields.forEach(f => {
+    if (f.type === 'file') return; // géré séparément via state.cvFileData
     const el = document.getElementById(f.id);
     if (el) state.details[f.id] = el.value;
   });
+  // Inclure le fichier CV si uploadé
+  if (state.cvFileData) state.details['cv-fichier'] = state.cvFileData;
+}
+
+/* Gestion upload CV */
+function handleCVFile(input, fieldId) {
+  const file = input.files[0];
+  if (!file) return;
+  const MAX = 3 * 1024 * 1024; // 3 Mo
+  if (file.size > MAX) {
+    alert('Fichier trop grand (max 3 Mo). Essaie de compresser ton PDF.');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.cvFileData = { name: file.name, type: file.type, size: file.size, data: e.target.result };
+    const chosen     = document.getElementById(fieldId + '-chosen');
+    const chosenName = document.getElementById(fieldId + '-chosen-name');
+    const zone       = document.getElementById(fieldId + '-zone');
+    if (chosenName) chosenName.textContent = file.name;
+    if (chosen)  chosen.style.display  = 'flex';
+    if (zone)    zone.querySelector('.file-drop-inner').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeCVFile(fieldId) {
+  state.cvFileData = null;
+  const input      = document.getElementById(fieldId);
+  const chosen     = document.getElementById(fieldId + '-chosen');
+  const zone       = document.getElementById(fieldId + '-zone');
+  if (input)   input.value = '';
+  if (chosen)  chosen.style.display = 'none';
+  if (zone)    zone.querySelector('.file-drop-inner').style.display = 'flex';
 }
 
 /* ============================================================
@@ -382,9 +440,10 @@ function resetForm() {
   state.nom       = '';
   state.email     = '';
   state.whatsapp  = '';
-  state.service   = null;
-  state.details   = {};
-  state.payMethod = 'card';
+  state.service    = null;
+  state.details    = {};
+  state.payMethod  = 'card';
+  state.cvFileData = null;
 
   // Réinitialiser le formulaire HTML
   document.getElementById('mainForm').reset();
