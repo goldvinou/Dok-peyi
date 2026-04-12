@@ -25,8 +25,12 @@ export default async function handler(req) {
   }
 
   try {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 25000);
+
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
+      signal: ctrl.signal,
       headers: {
         'x-api-key':         apiKey,
         'anthropic-version': '2023-06-01',
@@ -34,10 +38,11 @@ export default async function handler(req) {
       },
       body: JSON.stringify({
         model:      'claude-haiku-4-5-20251001',
-        max_tokens: 4096,
+        max_tokens: 2048,
         messages:   [{ role: 'user', content: prompt }]
       })
     });
+    clearTimeout(tid);
 
     if (!res.ok) {
       const t = await res.text();

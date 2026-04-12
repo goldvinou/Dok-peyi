@@ -844,11 +844,21 @@ async function generateCV(id) {
     const template = aiPrompts[promptKey] || buildDefaultPrompts()[promptKey] || '';
     const prompt   = buildPromptFromTemplate(template, d);
 
-    const res = await fetch('/api/generate-cv', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ prompt })
-    });
+    const _ctrl = new AbortController();
+    const _tid  = setTimeout(() => _ctrl.abort(), 40000);
+    let res;
+    try {
+      res = await fetch('/api/generate-cv', {
+        method: 'POST',
+        signal: _ctrl.signal,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+    } catch(fe) {
+      clearTimeout(_tid);
+      throw new Error(fe.name === 'AbortError' ? 'Délai dépassé (40s) — réessaie ou simplifie le prompt' : fe.message);
+    }
+    clearTimeout(_tid);
     let json;
     try { json = await res.json(); } catch(pe) { throw new Error(`HTTP ${res.status} — réponse non-JSON`); }
     if (!res.ok || json.error) throw new Error(`[${res.status}] ${json.error || 'Erreur API'}`);
