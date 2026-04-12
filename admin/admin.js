@@ -6,7 +6,7 @@
 // ── Comptes utilisateurs — modifier les mots de passe ici ──────────────
 const USERS = [
   { user: 'allan',  pass: 'Allan@2025',  nom: 'Allan',  role: 'admin',   color: '#2563eb' },
-  { user: 'lionel', pass: 'Lionel@2025', nom: 'Lionel', role: 'admin',   color: '#10b981' },
+  { user: 'yonel',  pass: 'Yonel@2025',  nom: 'Yonel',  role: 'admin',   color: '#10b981' },
   { user: 'marvin', pass: 'Marvin@2025', nom: 'Marvin', role: 'manager', color: '#f59e0b' }
 ];
 // ── Rôles : admin = tout, manager = dashboard + demandes + stats ────────
