@@ -12,7 +12,8 @@ const state = {
   service:    null,
   details:    {},
   payMethod:  'card',
-  cvFileData: null   // { name, type, size, data: 'data:...base64...' }
+  cvFileData: null,  // { name, type, size, data: 'data:...base64...' }
+  cvChoix:    null   // 'scratch' | 'improve'
 };
 
 const PRICES = {
@@ -125,7 +126,27 @@ function validateStep(step) {
     return false;
   }
   if (step === 3) {
-    // Vérifier le premier champ obligatoire
+    if (state.service === 'cv') {
+      if (!state.cvChoix) {
+        const cards = document.querySelector('.cv-path-cards');
+        if (cards) { cards.classList.add('shake'); setTimeout(() => cards.classList.remove('shake'), 500); }
+        return false;
+      }
+      if (state.cvChoix === 'scratch') {
+        const poste = document.getElementById('cv-poste');
+        if (poste && !poste.value.trim()) { markError(poste); return false; }
+      }
+      if (state.cvChoix === 'improve') {
+        if (!state.cvFileData) {
+          const zone = document.getElementById('cv-fichier-zone');
+          if (zone) { zone.classList.add('shake'); setTimeout(() => zone.classList.remove('shake'), 500); }
+          return false;
+        }
+        const note = document.getElementById('cv-note');
+        if (note && !note.value.trim()) { markError(note); return false; }
+      }
+      return true;
+    }
     const firstRequired = document.querySelector('#dynamic-fields input[required], #dynamic-fields textarea[required]');
     if (firstRequired && !firstRequired.value.trim()) {
       markError(firstRequired);
@@ -165,17 +186,7 @@ function applyServiceSelection() {
    CHAMPS DYNAMIQUES (ÉTAPE 3)
    ============================================================ */
 const FIELD_CONFIGS = {
-  cv: {
-    title: 'Informations pour ton CV',
-    fields: [
-      { id: 'cv-poste',   label: 'Poste recherché *', type: 'text', placeholder: 'Ex: Agent d\'entretien, Caissier(e), Chauffeur…', required: true },
-      { id: 'cv-experience', label: 'Tes expériences professionnelles', type: 'textarea', placeholder: 'Décris tes emplois, stages, bénévolat…' },
-      { id: 'cv-formation',  label: 'Tes formations / diplômes',        type: 'textarea', placeholder: 'Ex: BEP Commerce, CAP, Bac Pro…' },
-      { id: 'cv-competences',label: 'Tes compétences',                   type: 'textarea', placeholder: 'Ex: Permis B, maîtrise Word, langues parlées…' },
-      { id: 'cv-infos',      label: 'Informations supplémentaires',      type: 'textarea', placeholder: 'Centres d\'intérêt, informations à ajouter…' },
-      { id: 'cv-fichier', label: 'Ton CV actuel (optionnel)', type: 'file', accept: '.pdf,.doc,.docx,.jpg,.jpeg,.png', hint: 'PDF, Word ou image — max 3 Mo. Sinon laisse vide, on en crée un nouveau.' }
-    ]
-  },
+  cv: { title: 'Ton CV' },
   lettre: {
     title: 'Informations pour ta lettre de motivation',
     fields: [
@@ -213,6 +224,8 @@ function buildDynamicFields() {
   document.getElementById('step3-title').textContent = config.title;
   const container = document.getElementById('dynamic-fields');
   container.innerHTML = '';
+
+  if (state.service === 'cv') { buildCVFields(container); return; }
 
   for (const f of config.fields) {
     const group = document.createElement('div');
@@ -272,17 +285,103 @@ function buildDynamicFields() {
   }
 }
 
+function buildCVFields(container) {
+  container.innerHTML = `
+    <p class="cv-path-label">Que veux-tu faire ?</p>
+    <div class="cv-path-cards">
+      <div class="cv-path-card" id="cv-card-scratch" onclick="setCVChoice('scratch')">
+        <div class="cv-path-icon">✏️</div>
+        <div class="cv-path-title">Créer mon CV de A à Z</div>
+        <div class="cv-path-desc">Tu remplis tes infos, on crée un CV professionnel complet</div>
+      </div>
+      <div class="cv-path-card" id="cv-card-improve" onclick="setCVChoice('improve')">
+        <div class="cv-path-icon">✨</div>
+        <div class="cv-path-title">Améliorer mon CV existant</div>
+        <div class="cv-path-desc">Tu joins ton CV + tu expliques ce que tu veux changer</div>
+      </div>
+    </div>
+
+    <div id="cv-fields-scratch" style="display:none">
+      <div class="form-group">
+        <label for="cv-poste">Poste recherché *</label>
+        <input type="text" id="cv-poste" placeholder="Ex: Agent d'entretien, Caissier(e), Chauffeur…">
+      </div>
+      <div class="form-group">
+        <label for="cv-experience">Tes expériences professionnelles</label>
+        <textarea id="cv-experience" placeholder="Décris tes emplois, stages, bénévolat…" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="cv-formation">Tes formations / diplômes</label>
+        <textarea id="cv-formation" placeholder="Ex: BEP Commerce, CAP, Bac Pro…" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="cv-competences">Tes compétences</label>
+        <textarea id="cv-competences" placeholder="Ex: Permis B, maîtrise Word, langues parlées…" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="cv-infos">Informations supplémentaires</label>
+        <textarea id="cv-infos" placeholder="Centres d'intérêt, informations à ajouter…" rows="2"></textarea>
+      </div>
+    </div>
+
+    <div id="cv-fields-improve" style="display:none">
+      <div class="form-group">
+        <label>Ton CV actuel *</label>
+        <div class="file-drop-zone" id="cv-fichier-zone" onclick="document.getElementById('cv-fichier').click()">
+          <input type="file" id="cv-fichier" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none" onchange="handleCVFile(this,'cv-fichier')">
+          <div class="file-drop-inner">
+            <div class="file-drop-icon">📎</div>
+            <div class="file-drop-text">Clique pour joindre ton CV</div>
+            <div class="file-drop-hint">PDF, Word ou image — max 3 Mo</div>
+          </div>
+          <div class="file-chosen" id="cv-fichier-chosen" style="display:none">
+            <span class="file-chosen-icon">📄</span>
+            <span id="cv-fichier-chosen-name" class="file-chosen-name"></span>
+            <button type="button" class="file-chosen-remove" onclick="event.stopPropagation();removeCVFile('cv-fichier')">✕</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="cv-note">Ce que tu veux changer *</label>
+        <textarea id="cv-note" placeholder="Ex: Moderniser le design, reformuler mes expériences, le rendre plus professionnel, ajouter une section compétences…" rows="4"></textarea>
+      </div>
+    </div>
+  `;
+  if (state.cvChoix) setCVChoice(state.cvChoix);
+}
+
+function setCVChoice(choice) {
+  state.cvChoix = choice;
+  ['scratch','improve'].forEach(c => {
+    const card = document.getElementById('cv-card-' + c);
+    const fields = document.getElementById('cv-fields-' + c);
+    if (card)   card.classList.toggle('selected', choice === c);
+    if (fields) fields.style.display = choice === c ? 'block' : 'none';
+  });
+}
+
 function saveDetails() {
+  if (state.service === 'cv') {
+    state.details = { 'cv-choix': state.cvChoix || 'scratch' };
+    if (state.cvChoix === 'improve') {
+      state.details['cv-note'] = (document.getElementById('cv-note') || {}).value || '';
+      if (state.cvFileData) state.details['cv-fichier'] = state.cvFileData;
+    } else {
+      ['cv-poste','cv-experience','cv-formation','cv-competences','cv-infos'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) state.details[id] = el.value;
+      });
+    }
+    return;
+  }
   const config = FIELD_CONFIGS[state.service];
   if (!config) return;
   state.details = {};
   config.fields.forEach(f => {
-    if (f.type === 'file') return; // géré séparément via state.cvFileData
+    if (f.type === 'file') return;
     const el = document.getElementById(f.id);
     if (el) state.details[f.id] = el.value;
   });
-  // Inclure le fichier CV si uploadé
-  if (state.cvFileData) state.details['cv-fichier'] = state.cvFileData;
 }
 
 /* Gestion upload CV */

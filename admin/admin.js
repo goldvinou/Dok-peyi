@@ -532,18 +532,28 @@ function openModal(id) {
   if (!d) return;
   APP.modalId = id;
 
-  const SKIP_KEYS = new Set(['cv-actuel', 'cv-fichier']);
+  const SKIP_KEYS = new Set(['cv-actuel', 'cv-fichier', 'cv-choix', 'cv-note']);
+  const KEY_LABELS = {
+    'cv-poste': 'Poste recherché', 'cv-experience': 'Expériences',
+    'cv-formation': 'Formation', 'cv-competences': 'Compétences', 'cv-infos': 'Infos supplémentaires',
+    'l-poste': 'Poste visé', 'l-entreprise': 'Entreprise', 'l-experience': 'Expérience', 'l-motivation': 'Motivation',
+    'd-type': 'Type de dossier', 'd-description': 'Besoin', 'd-documents': 'Documents disponibles',
+    'c-destinataire': 'Destinataire', 'c-objet': 'Objet', 'c-description': 'Description'
+  };
   const detailsHtml = Object.entries(d.details || {})
     .filter(([k]) => !SKIP_KEYS.has(k))
     .map(([k, v]) => `
     <div class="modal-row">
-      <span class="modal-key">${k}</span>
+      <span class="modal-key">${KEY_LABELS[k] || k}</span>
       <span class="modal-val">${escHtml(String(v))}</span>
     </div>`).join('');
 
-  const _cvf          = d.details && d.details['cv-fichier'];
+  const _det          = d.details || {};
+  const cvChoix       = _det['cv-choix'] || 'scratch';
+  const cvNote        = _det['cv-note']  || '';
+  const _cvf          = _det['cv-fichier'];
   const hasCVFile     = _cvf && (_cvf.data || _cvf.key);
-  const hasExistingCV = hasCVFile;
+  const isImprove     = cvChoix === 'improve';
 
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">
@@ -555,17 +565,28 @@ function openModal(id) {
     <div class="modal-section cv-ai-section">
       <div class="modal-section-title">Générer le CV avec IA ✨</div>
 
-      ${hasCVFile ? `
-      <div class="cv-base-badge">
-        ✅ CV du client disponible — l'IA va le moderniser
-        <button class="btn-dl-orig" onclick="downloadOriginalCV(${d.id})">⬇ Voir l'original</button>
-      </div>` : `
-      <div class="cv-base-badge cv-base-empty">
-        📝 Pas de CV fourni — l'IA crée depuis les infos du formulaire
-      </div>`}
+      <div class="cv-base-badge ${isImprove ? '' : 'cv-base-empty'}" style="margin-bottom:10px">
+        ${isImprove
+          ? `✨ Le client veut <strong>améliorer son CV existant</strong>`
+          : `✏️ Le client veut <strong>un CV créé de A à Z</strong>`}
+      </div>
+
+      ${isImprove && cvNote ? `
+      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.83rem;color:#0369a1">
+        <strong>Souhaits du client :</strong><br>${escHtml(cvNote)}
+      </div>` : ''}
+
+      ${isImprove && hasCVFile ? `
+      <div style="margin-bottom:12px">
+        <button class="btn-dl-orig" onclick="downloadOriginalCV(${d.id})">⬇ Télécharger le CV original</button>
+      </div>` : ''}
+      ${isImprove && !hasCVFile ? `
+      <div class="cv-base-badge cv-base-empty" style="margin-bottom:12px;font-size:.8rem">
+        ⚠️ Fichier CV non reçu (trop volumineux pour le stockage local)
+      </div>` : ''}
 
       <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">
-        ✨ ${hasCVFile ? 'Moderniser le CV' : 'Générer le CV'}
+        ✨ ${isImprove ? 'Moderniser le CV' : 'Générer le CV'}
       </button>
 
       <div id="cv-result" style="display:none;margin-top:18px">
