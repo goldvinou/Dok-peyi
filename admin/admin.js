@@ -532,11 +532,16 @@ function openModal(id) {
   if (!d) return;
   APP.modalId = id;
 
-  const detailsHtml = Object.entries(d.details || {}).map(([k, v]) => `
+  // Filtrer cv-actuel des détails affichés (trop long, traité séparément)
+  const detailsHtml = Object.entries(d.details || {})
+    .filter(([k]) => k !== 'cv-actuel')
+    .map(([k, v]) => `
     <div class="modal-row">
       <span class="modal-key">${k}</span>
       <span class="modal-val">${escHtml(v)}</span>
     </div>`).join('');
+
+  const hasExistingCV = d.details && d.details['cv-actuel'] && d.details['cv-actuel'].trim().length > 30;
 
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">
@@ -566,15 +571,35 @@ function openModal(id) {
     </div>` : ''}
 
     ${d.service === 'cv' ? `
-    <div class="modal-section">
+    <div class="modal-section cv-ai-section">
       <div class="modal-section-title">Générer le CV avec IA ✨</div>
-      <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">✨ Générer le CV automatiquement</button>
-      <div id="cv-result" style="display:none;margin-top:14px">
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn-modal-save" onclick="downloadCV()">⬇ Télécharger PDF</button>
-          <a id="cv-mailto" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center" target="_blank">📧 Email</a>
-          ${d.whatsapp ? `<a id="cv-wa" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center" target="_blank">💬 WhatsApp</a>` : ''}
+
+      ${hasExistingCV ? `
+      <div class="cv-base-badge">
+        ✅ Le client a fourni son CV actuel comme base — l'IA va le moderniser
+      </div>` : `
+      <div class="cv-base-badge cv-base-empty">
+        📝 Pas de CV existant — l'IA va en créer un à partir des infos fournies
+      </div>`}
+
+      <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">
+        ✨ ${hasExistingCV ? 'Moderniser le CV existant' : 'Générer le CV'}
+      </button>
+
+      <div id="cv-result" style="display:none;margin-top:18px">
+        <div class="cv-actions-row">
+          <button class="btn-modal-save" onclick="previewCV()">👁 Aperçu</button>
+          <button class="btn-modal-save" onclick="downloadCV()">⬇ PDF</button>
+          <a id="cv-mailto" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">📧 Email</a>
+          ${d.whatsapp ? `<a id="cv-wa" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">💬 WhatsApp</a>` : ''}
         </div>
+
+        <details class="cv-editor-details">
+          <summary>✏️ Modifier le CV généré</summary>
+          <p style="font-size:.78rem;color:var(--gray-500);margin-bottom:8px">Modifie le code HTML ci-dessous, puis clique sur "Aperçu" pour voir le résultat.</p>
+          <textarea id="cv-html-editor" rows="12" oninput="APP.generatedCV=this.value"></textarea>
+          <button class="btn-ai-gen" onclick="previewCV()" style="margin-top:8px;font-size:.82rem;padding:9px 16px">🔄 Aperçu avec mes modifications</button>
+        </details>
       </div>
     </div>` : ''}
 
@@ -661,6 +686,10 @@ async function generateCV(id) {
 
     APP.generatedCV = json.cv;
 
+    // Remplir l'éditeur HTML
+    const editor = document.getElementById('cv-html-editor');
+    if (editor) editor.value = json.cv;
+
     // Préparer lien email
     const mailto = document.getElementById('cv-mailto');
     if (mailto) {
@@ -684,10 +713,18 @@ async function generateCV(id) {
   }
 }
 
+function previewCV() {
+  if (!APP.generatedCV) return;
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Autorisez les popups du navigateur', 'error'); return; }
+  w.document.write(APP.generatedCV);
+  w.document.close();
+}
+
 function downloadCV() {
   if (!APP.generatedCV) return;
   const w = window.open('', '_blank');
-  if (!w) { showToast('Autorisez les popups pour télécharger', 'error'); return; }
+  if (!w) { showToast('Autorisez les popups du navigateur', 'error'); return; }
   w.document.write(APP.generatedCV);
   w.document.close();
   setTimeout(() => { try { w.print(); } catch(e) {} }, 700);

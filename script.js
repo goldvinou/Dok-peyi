@@ -167,11 +167,12 @@ const FIELD_CONFIGS = {
   cv: {
     title: 'Informations pour ton CV',
     fields: [
-      { id: 'cv-poste', label: 'Poste recherché *', type: 'text', placeholder: 'Ex: Agent d\'entretien, Caissier(e), Chauffeur…', required: true },
+      { id: 'cv-poste',   label: 'Poste recherché *', type: 'text', placeholder: 'Ex: Agent d\'entretien, Caissier(e), Chauffeur…', required: true },
       { id: 'cv-experience', label: 'Tes expériences professionnelles', type: 'textarea', placeholder: 'Décris tes emplois, stages, bénévolat…' },
-      { id: 'cv-formation', label: 'Tes formations / diplômes', type: 'textarea', placeholder: 'Ex: BEP Commerce, CAP, Bac Pro…' },
-      { id: 'cv-competences', label: 'Tes compétences', type: 'textarea', placeholder: 'Ex: Permis B, maîtrise Word, langues parlées…' },
-      { id: 'cv-infos', label: 'Informations supplémentaires', type: 'textarea', placeholder: 'Centres d\'intérêt, informations à ajouter…' }
+      { id: 'cv-formation',  label: 'Tes formations / diplômes',        type: 'textarea', placeholder: 'Ex: BEP Commerce, CAP, Bac Pro…' },
+      { id: 'cv-competences',label: 'Tes compétences',                   type: 'textarea', placeholder: 'Ex: Permis B, maîtrise Word, langues parlées…' },
+      { id: 'cv-infos',      label: 'Informations supplémentaires',      type: 'textarea', placeholder: 'Centres d\'intérêt, informations à ajouter…' },
+      { id: 'cv-actuel',     label: 'Ton CV actuel (optionnel)', type: 'textarea', placeholder: 'Tu as déjà un CV ? Colle son texte ici — on s\'en servira comme base pour le moderniser et l\'améliorer ✨\n\nSinon laisse vide, on en crée un nouveau à partir de tes infos.' }
     ]
   },
   lettre: {

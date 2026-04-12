@@ -17,24 +17,31 @@ export default async function handler(req, res) {
   if (!demande) { res.status(400).json({ error: 'Données manquantes' }); return; }
 
   const d = demande.details || {};
+  const hasExistingCV = d['cv-actuel'] && d['cv-actuel'].trim().length > 30;
 
-  const prompt = `Tu es un expert en rédaction de CV professionnels. Génère un CV complet et moderne en HTML autonome (CSS inline uniquement, aucun JavaScript, format A4 prêt à imprimer) pour la personne suivante :
+  const prompt = `Tu es un expert en design et rédaction de CV professionnels. ${hasExistingCV ? 'Modernise et améliore le CV existant du client en conservant toutes ses informations, mais en le reformatant avec un design moderne et professionnel.' : 'Crée un CV complet, moderne et professionnel.'} Le résultat doit être un fichier HTML autonome (CSS inline uniquement, aucun JavaScript, format A4 prêt à imprimer via Ctrl+P).
 
+=== DONNÉES DU CLIENT ===
 Prénom et Nom : ${demande.prenom || ''} ${demande.nom || ''}
+Email : ${demande.email || ''}
+Téléphone / WhatsApp : ${demande.whatsapp || ''}
 Poste recherché : ${d['cv-poste'] || 'Non précisé'}
-Expérience professionnelle : ${d['cv-experience'] || 'Non précisée'}
+Expériences professionnelles : ${d['cv-experience'] || 'Non précisées'}
 Formation / Diplômes : ${d['cv-formation'] || 'Non précisée'}
 Compétences : ${d['cv-competences'] || 'Non précisées'}
 Informations complémentaires : ${d['cv-infos'] || ''}
+${hasExistingCV ? `\n=== CV ACTUEL À MODERNISER ===\n${d['cv-actuel']}\n` : ''}
+=== CONSIGNES DE DESIGN ===
+- En-tête impactant : nom en grand, poste, email, téléphone sur fond bleu marine (#1e3a5f)
+- Corps blanc avec sections : Expériences → Formation → Compétences → Infos
+- Chaque expérience : titre du poste en gras, entreprise, dates, description
+- Typographie : system-ui ou Arial, tailles hiérarchiques claires
+- Accents couleur : #2563eb pour les titres de section
+- Séparateurs subtils entre sections
+- @media print : marges 15mm, pas de coupure de section entre pages
+- ${hasExistingCV ? 'Conserver TOUTES les informations du CV original, reformater et enrichir avec les nouvelles données fournies' : 'Layout propre sur 1-2 pages selon la quantité de contenu'}
 
-Consignes de design :
-- Palette : bleu marine (#1e3a5f) pour l'en-tête, blanc pour le corps, accents bleu (#2563eb)
-- Typographie claire, sections bien délimitées avec des séparateurs
-- Mise en page professionnelle sur une colonne ou deux colonnes selon le contenu
-- Inclure une section en-tête avec nom, poste, email (${demande.email || ''}), téléphone (${demande.whatsapp || ''})
-- @media print inclus pour un rendu PDF optimal
-
-Réponds UNIQUEMENT avec le code HTML complet commençant par <!DOCTYPE html> et finissant par </html>. Aucun texte avant ou après.`;
+Réponds UNIQUEMENT avec le code HTML complet (<!DOCTYPE html> … </html>). Zéro texte avant ou après.`;
 
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
