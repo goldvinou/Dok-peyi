@@ -143,15 +143,8 @@ function hideApp() {
 }
 
 function handleLogin(e) {
-  e.preventDefault();
-  const btn = document.getElementById('btn-login');
-  btn.textContent = 'Connexion…';
-  btn.disabled = true;
-  setTimeout(() => {
-    sessionStorage.setItem('dok_auth', '1');
-    showApp();
-    init();
-  }, 600);
+  if (e) e.preventDefault();
+  adminLogin();
 }
 
 function logout() {
@@ -183,18 +176,7 @@ function init() {
   renderDashboard();
 }
 
-// Vérifier l'auth dès le chargement de la page
-window.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('dok_auth')) {
-    showApp();
-    init();
-  }
-  // Focus sur le champ identifiant si écran login visible
-  const lgUser = document.getElementById('lg-user');
-  if (lgUser && document.getElementById('login-screen').style.display !== 'none') {
-    lgUser.focus();
-  }
-});
+// Auth gérée par le script inline dans index.html
 
 /* ============================================================
    NAVIGATION

@@ -9,6 +9,28 @@
   <link rel="stylesheet" href="admin.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+  <!-- Login inline — fonctionne même si admin.js ne charge pas -->
+  <script>
+    function adminLogin() {
+      var btn = document.getElementById('btn-login');
+      if (btn) { btn.textContent = 'Chargement…'; btn.disabled = true; }
+      setTimeout(function() {
+        try { sessionStorage.setItem('dok_auth', '1'); } catch(e) {}
+        var ls  = document.getElementById('login-screen');
+        var app = document.getElementById('admin-app');
+        if (ls)  ls.style.display  = 'none';
+        if (app) { app.style.display = 'flex'; app.classList.add('visible'); app.removeAttribute('aria-hidden'); }
+        try { init(); } catch(e) { console.warn('init error:', e); }
+      }, 500);
+    }
+    // Auto-login si session déjà ouverte
+    window.addEventListener('DOMContentLoaded', function() {
+      try {
+        if (sessionStorage.getItem('dok_auth') === '1') adminLogin();
+      } catch(e) {}
+    });
+  </script>
+
   <!-- ============================================================
        CSS CRITIQUE — Garantit l'écran de connexion peu importe
        si admin.css charge ou non (problème Vercel CSS timing)
@@ -211,17 +233,9 @@
     <div class="login-logo">Dok'<span>péyi</span></div>
     <p class="login-sub">Espace Administration</p>
 
-    <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="off">
-      <div class="form-group">
-        <label for="lg-user">Identifiant</label>
-        <input type="text" id="lg-user" value="admin" autocomplete="off" readonly>
-      </div>
-      <div class="form-group">
-        <label for="lg-pass">Mot de passe</label>
-        <input type="password" id="lg-pass" value="dokpeyi2025" autocomplete="off" readonly>
-      </div>
-      <button type="submit" class="btn-login" id="btn-login">Se connecter →</button>
-    </form>
+    <button type="button" class="btn-login" id="btn-login" onclick="adminLogin()">
+      Accéder au panel admin →
+    </button>
   </div>
 </div>
 
