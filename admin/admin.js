@@ -1003,18 +1003,37 @@ function openModal(id) {
       </button>
 
       <div id="cv-result" style="display:none;margin-top:18px">
-        <div class="cv-actions-row">
-          <button class="btn-modal-save" onclick="previewCV()">👁 Aperçu</button>
-          <button class="btn-modal-save" onclick="downloadCV()">⬇ PDF</button>
-          <a id="cv-mailto" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">📧 Email</a>
-          ${d.whatsapp ? `<a id="cv-wa" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">💬 WhatsApp</a>` : ''}
+
+        <!-- Succès -->
+        <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.84rem;color:#166534;font-weight:600;display:flex;align-items:center;gap:8px">
+          ✅ Document généré — vérifiez puis envoyez au client
         </div>
-        <details class="cv-editor-details">
-          <summary>✏️ Modifier le document généré</summary>
-          <p style="font-size:.78rem;color:var(--gray-500);margin-bottom:8px">Modifie le HTML puis clique Aperçu.</p>
-          <textarea id="cv-html-editor" rows="12" oninput="APP.generatedCV=this.value"></textarea>
-          <button class="btn-ai-gen" onclick="previewCV()" style="margin-top:8px;font-size:.82rem;padding:9px 16px">🔄 Aperçu avec mes modifications</button>
-        </details>
+
+        <!-- Étape 1 : Aperçu + téléchargement -->
+        <div style="margin-bottom:4px">
+          <div style="font-size:.7rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Étape 1 — Vérifier le document</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <button class="btn-modal-save" onclick="previewCV()">👁 Aperçu plein écran</button>
+            <button class="btn-modal-save" onclick="downloadCV(${d.id})" style="background:linear-gradient(135deg,#475569,#334155)">⬇ Télécharger PDF</button>
+          </div>
+          <details class="cv-editor-details">
+            <summary>✏️ Modifier le document généré</summary>
+            <p style="font-size:.78rem;color:var(--gray-500);margin-bottom:8px">Modifie le HTML puis clique Aperçu pour vérifier.</p>
+            <textarea id="cv-html-editor" rows="12" oninput="APP.generatedCV=this.value"></textarea>
+            <button class="btn-ai-gen" onclick="previewCV()" style="margin-top:8px;font-size:.82rem;padding:9px 16px">🔄 Aperçu avec mes modifications</button>
+          </details>
+        </div>
+
+        <!-- Étape 2 : Envoi -->
+        <div style="background:var(--blue-xlight);border:1.5px solid #bfdbfe;border-radius:12px;padding:16px;margin-top:14px">
+          <div style="font-size:.7rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Étape 2 — Envoyer au client</div>
+          <p style="font-size:.79rem;color:var(--gray-600);margin-bottom:12px;line-height:1.5">Télécharge le PDF ci-dessus, puis clique le bouton d'envoi ci-dessous.<br>La commande sera automatiquement marquée <strong>Terminée</strong>.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${d.whatsapp ? `<button class="btn-ai-gen" onclick="sendDocWhatsApp(${d.id})" style="background:linear-gradient(135deg,#15803d,#16a34a)">💬 WhatsApp — ${escHtml(d.whatsapp)}</button>` : ''}
+            <button class="btn-ai-gen" onclick="sendDocEmail(${d.id})" style="background:linear-gradient(135deg,#d97706,#f59e0b)">📧 Email — ${escHtml(d.email)}</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1151,21 +1170,8 @@ async function generateCV(id) {
     const editor = document.getElementById('cv-html-editor');
     if (editor) editor.value = rawCV;
 
-    // Préparer lien email
-    const mailto = document.getElementById('cv-mailto');
-    if (mailto) {
-      mailto.href = `mailto:${encodeURIComponent(d.email)}?subject=${encodeURIComponent("Votre CV Dok'péyi")}&body=${encodeURIComponent(`Bonjour ${d.prenom},\n\nVotre CV est prêt. Vous trouverez le fichier PDF en pièce jointe.\n\nCordialement,\nDok'péyi`)}`;
-    }
-
-    // Préparer lien WhatsApp
-    const waEl = document.getElementById('cv-wa');
-    if (waEl && d.whatsapp) {
-      const num = d.whatsapp.replace(/[\s\-().]/g, '').replace(/^\+/, '');
-      waEl.href = `https://wa.me/${num}?text=${encodeURIComponent(`Bonjour ${d.prenom}, votre CV est prêt ! Je vous l'envoie en pièce jointe.`)}`;
-    }
-
     document.getElementById('cv-result').style.display = 'block';
-    btn.textContent = '✅ CV généré — téléchargez ci-dessous';
+    btn.textContent = '✅ Généré — vérifiez et envoyez ci-dessous';
     showToast('CV généré avec succès !', 'success');
   } catch (e) {
     btn.textContent = '❌ Erreur — réessayer';
@@ -1182,13 +1188,65 @@ function previewCV() {
   w.document.close();
 }
 
-function downloadCV() {
+function downloadCV(id) {
   if (!APP.generatedCV) return;
+  const d = id ? demandes.find(dm => dm.id === id) : null;
+  const svcLabel = { cv: 'CV', lettre: 'Lettre_motivation', dossier: 'Dossier', courrier: 'Courrier' };
+  const nom = d ? `${d.prenom}_${d.nom}`.replace(/\s+/g, '_') : 'Document';
+  const svc = d ? (svcLabel[d.service] || 'Document') : 'Document';
+  // Injecter le titre pour que "Enregistrer en PDF" propose un bon nom de fichier
+  let html = APP.generatedCV;
+  if (/<title>/i.test(html)) {
+    html = html.replace(/<title>[^<]*<\/title>/i, `<title>${svc}_${nom}</title>`);
+  } else {
+    html = html.replace(/<head>/i, `<head><title>${svc}_${nom}</title>`);
+  }
   const w = window.open('', '_blank');
   if (!w) { showToast('Autorisez les popups du navigateur', 'error'); return; }
-  w.document.write(APP.generatedCV);
+  w.document.write(html);
   w.document.close();
   setTimeout(() => { try { w.print(); } catch(e) {} }, 700);
+}
+
+/* ── Envoi au client via WhatsApp ── */
+function sendDocWhatsApp(id) {
+  const d = demandes.find(dm => dm.id === id);
+  if (!d || !d.whatsapp) return;
+  const svcLabel = { cv: 'CV', lettre: 'lettre de motivation', dossier: 'document administratif', courrier: 'courrier officiel' };
+  const doc = svcLabel[d.service] || 'document';
+  const num = d.whatsapp.replace(/[\s\-().]/g, '').replace(/^\+/, '');
+  const msg = `Bonjour ${d.prenom} 👋\n\nVotre ${doc} est prêt ! Je vous l'envoie en pièce jointe (PDF).\n\nN'hésitez pas si vous avez des questions 😊\n\n— L'équipe Dok'péyi`;
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
+  markSent(id);
+}
+
+/* ── Envoi au client par email ── */
+function sendDocEmail(id) {
+  const d = demandes.find(dm => dm.id === id);
+  if (!d) return;
+  const svcLabel = { cv: 'CV', lettre: 'lettre de motivation', dossier: 'document administratif', courrier: 'courrier officiel' };
+  const doc     = svcLabel[d.service] || 'document';
+  const subject = `Votre ${doc} — Dok'péyi`;
+  const body    = `Bonjour ${d.prenom},\n\nVotre ${doc} est prêt. Vous trouverez le fichier PDF en pièce jointe.\n\nN'hésitez pas à nous contacter si vous avez des questions.\n\nCordialement,\nL'équipe Dok'péyi`;
+  window.location.href = `mailto:${d.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  markSent(id);
+}
+
+/* ── Marquer la commande comme terminée après envoi ── */
+function markSent(id) {
+  const d = demandes.find(dm => dm.id === id);
+  if (!d || d.statut === 'terminé') return;
+  d.statut = 'terminé';
+  if (db) fbUpdate(id, { statut: 'terminé' });
+  else    saveData();
+  auditLog('document_envoyé', `#${id} — document envoyé au client`);
+  refreshBadge();
+  // Mettre à jour la modale ouverte
+  const badge = document.querySelector('#modal-content .modal-title .badge');
+  if (badge) { badge.textContent = 'Terminé'; badge.className = 'badge badge-termine'; }
+  const sel = document.getElementById('modal-statut-sel');
+  if (sel) sel.value = 'terminé';
+  showToast('✅ Document envoyé — commande marquée Terminée !', 'success');
 }
 
 function downloadOriginalCV(id) {
