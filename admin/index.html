@@ -9,25 +9,53 @@
   <link rel="stylesheet" href="admin.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-  <!-- Login inline — fonctionne même si admin.js ne charge pas -->
+  <!-- Auth inline — fonctionne même si admin.js ne charge pas -->
   <script>
-    function adminLogin() {
-      var btn = document.getElementById('btn-login');
-      if (btn) { btn.textContent = 'Chargement…'; btn.disabled = true; }
+    var _CREDS = { u: 'admin', p: 'dokpeyi2025' };
+
+    function togglePw() {
+      var f = document.getElementById('lg-pass');
+      if (f) f.type = f.type === 'password' ? 'text' : 'password';
+    }
+
+    function adminLogin(e) {
+      if (e) e.preventDefault();
+      var user  = (document.getElementById('lg-user') || {}).value || '';
+      var pass  = (document.getElementById('lg-pass') || {}).value || '';
+      var errEl = document.getElementById('lg-error');
+      var btn   = document.getElementById('btn-login');
+
+      if (errEl) errEl.style.display = 'none';
+      if (btn)   { btn.textContent = 'Connexion…'; btn.disabled = true; }
+
       setTimeout(function() {
-        try { sessionStorage.setItem('dok_auth', '1'); } catch(e) {}
-        var ls  = document.getElementById('login-screen');
-        var app = document.getElementById('admin-app');
-        if (ls)  ls.style.display  = 'none';
-        if (app) { app.style.display = 'flex'; app.classList.add('visible'); app.removeAttribute('aria-hidden'); }
-        try { init(); } catch(e) { console.warn('init error:', e); }
+        if (user.trim() === _CREDS.u && pass === _CREDS.p) {
+          try { sessionStorage.setItem('dok_auth', '1'); } catch(ex) {}
+          var ls  = document.getElementById('login-screen');
+          var app = document.getElementById('admin-app');
+          if (ls)  ls.style.display = 'none';
+          if (app) { app.style.display = 'flex'; app.classList.add('visible'); app.removeAttribute('aria-hidden'); }
+          try { init(); } catch(ex) { console.warn('init:', ex); }
+        } else {
+          if (errEl) errEl.style.display = 'block';
+          if (btn)   { btn.textContent = 'Se connecter →'; btn.disabled = false; }
+          var lp = document.getElementById('lg-pass');
+          if (lp) { lp.value = ''; lp.focus(); }
+        }
       }, 500);
     }
-    // Auto-login si session déjà ouverte
+
+    // Auto-login si session active
     window.addEventListener('DOMContentLoaded', function() {
       try {
-        if (sessionStorage.getItem('dok_auth') === '1') adminLogin();
-      } catch(e) {}
+        if (sessionStorage.getItem('dok_auth') === '1') {
+          var ls  = document.getElementById('login-screen');
+          var app = document.getElementById('admin-app');
+          if (ls)  ls.style.display = 'none';
+          if (app) { app.style.display = 'flex'; app.classList.add('visible'); app.removeAttribute('aria-hidden'); }
+          try { init(); } catch(ex) {}
+        }
+      } catch(ex) {}
     });
   </script>
 
@@ -233,9 +261,26 @@
     <div class="login-logo">Dok'<span>péyi</span></div>
     <p class="login-sub">Espace Administration</p>
 
-    <button type="button" class="btn-login" id="btn-login" onclick="adminLogin()">
-      Accéder au panel admin →
-    </button>
+    <form id="loginForm" onsubmit="adminLogin(event)" autocomplete="off" novalidate>
+      <div class="form-group">
+        <label for="lg-user">Identifiant</label>
+        <input type="text" id="lg-user" placeholder="Identifiant" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label for="lg-pass">Mot de passe</label>
+        <div class="pw-wrap">
+          <input type="password" id="lg-pass" placeholder="••••••••" autocomplete="new-password">
+          <button type="button" class="pw-eye" onclick="togglePw()" aria-label="Afficher">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p id="lg-error" class="lg-error">Identifiant ou mot de passe incorrect.</p>
+      <button type="submit" class="btn-login" id="btn-login">Se connecter →</button>
+    </form>
   </div>
 </div>
 
