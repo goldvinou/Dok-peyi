@@ -18,17 +18,21 @@ const state = {
 };
 
 const PRICES = {
-  cv:      8,
-  lettre:  5,
-  dossier: 12,
-  courrier: 7
+  candidature:   12,
+  administratif: 15,
+  juridique:     19,
+  numerique:     10,
+  academique:    18,
+  traduction:    14
 };
 
 const SERVICE_NAMES = {
-  cv:      'CV Professionnel',
-  lettre:  'Lettre de motivation',
-  dossier: 'Dossier administratif',
-  courrier: 'Courrier officiel'
+  candidature:   'Documents de candidature',
+  administratif: 'Courriers & démarches administratives',
+  juridique:     'Aide juridique simple',
+  numerique:     'Assistance numérique',
+  academique:    'Rédaction académique',
+  traduction:    'Traductions & corrections'
 };
 
 /* ============================================================
@@ -229,33 +233,86 @@ function applyServiceSelection() {
    CHAMPS DYNAMIQUES (ÉTAPE 3)
    ============================================================ */
 const FIELD_CONFIGS = {
-  cv: { title: 'Ton CV' },
-  lettre: {
-    title: 'Informations pour ta lettre de motivation',
-    fields: [
-      { id: 'l-poste', label: 'Poste visé *', type: 'text', placeholder: 'Ex: Vendeur(se) chez Leclerc Cayenne', required: true },
-      { id: 'l-entreprise', label: 'Nom de l\'entreprise / organisme', type: 'text', placeholder: 'Ex: Leclerc Cayenne, Mairie de Kourou…' },
-      { id: 'l-experience', label: 'Ton expérience en rapport avec ce poste', type: 'textarea', placeholder: 'Ce que tu as déjà fait en lien avec ce travail' },
-      { id: 'l-motivation', label: 'Pourquoi ce poste t\'intéresse ?', type: 'textarea', placeholder: 'Ce qui te motive dans cette offre ou ce domaine' }
-    ]
-  },
-  dossier: {
-    title: 'Ton dossier administratif',
+  candidature: {
+    title: 'Documents de candidature',
     fields: [
       {
-        id: 'd-type', label: 'Type de dossier *', type: 'select', required: true,
-        options: ['CAF / Aide sociale', 'Dossier logement (HLM)', 'Pôle Emploi / France Travail', 'Préfecture / Titre de séjour', 'Dossier scolaire / bourse', 'Autre']
+        id: 'cand-doc-type',
+        label: 'Type de document *',
+        type: 'select',
+        required: true,
+        options: ['CV professionnel', 'Lettre de motivation', 'Email professionnel', 'Pack CV + Lettre']
       },
-      { id: 'd-description', label: 'Décris ton besoin *', type: 'textarea', placeholder: 'Qu\'est-ce que tu essaies d\'obtenir ou de faire ?', required: true },
-      { id: 'd-documents', label: 'Documents que tu as déjà', type: 'textarea', placeholder: 'Ex: Pièce d\'identité, justificatif de domicile, bulletins de salaire…' }
+      { id: 'cand-poste', label: 'Poste visé *', type: 'text', placeholder: 'Ex : Agent administratif à Cayenne', required: true },
+      { id: 'cand-experience', label: 'Expérience / profil', type: 'textarea', placeholder: 'Ton parcours en quelques lignes' },
+      { id: 'cand-delai', label: 'Délai souhaité', type: 'select', options: ['Standard (24h)', 'Express (dans la journée)', 'Flexible'] }
     ]
   },
-  courrier: {
-    title: 'Ton courrier officiel',
+  administratif: {
+    title: 'Courriers & démarches administratives',
     fields: [
-      { id: 'c-destinataire', label: 'Destinataire *', type: 'text', placeholder: 'Ex: Mairie de Cayenne, Préfecture de Guyane…', required: true },
-      { id: 'c-objet', label: 'Objet du courrier *', type: 'text', placeholder: 'Ex: Demande de réclamation, signalement de problème…', required: true },
-      { id: 'c-description', label: 'Décris ce que tu veux dire *', type: 'textarea', placeholder: 'Explique ta situation et ce que tu demandes', required: true }
+      {
+        id: 'adm-type', label: 'Nature de la demande *', type: 'select', required: true,
+        options: ['CAF / Aide sociale', 'Sécurité sociale / CPAM', 'Impôts / taxes', 'Attestation / formulaire', 'Courrier officiel', 'Autre']
+      },
+      { id: 'adm-description', label: 'Décris ton besoin *', type: 'textarea', placeholder: 'Contexte + ce que tu veux obtenir', required: true },
+      { id: 'adm-docs', label: 'Documents déjà disponibles', type: 'textarea', placeholder: 'Pièce d’identité, justificatifs, échanges précédents…' }
+    ]
+  },
+  juridique: {
+    title: 'Aide juridique simple',
+    fields: [
+      {
+        id: 'jur-type',
+        label: 'Type de document *',
+        type: 'select',
+        required: true,
+        options: ['Contestation', 'Recours', 'Mise en demeure', 'Régularisation', 'Autre']
+      },
+      { id: 'jur-objet', label: 'Objet précis *', type: 'text', placeholder: 'Ex : Contestation d’une amende', required: true },
+      { id: 'jur-description', label: 'Ta situation *', type: 'textarea', placeholder: 'Décris les faits, dates, demandes', required: true }
+    ]
+  },
+  numerique: {
+    title: 'Assistance numérique',
+    fields: [
+      {
+        id: 'num-type',
+        label: 'Besoin principal *',
+        type: 'select',
+        required: true,
+        options: ['Création de compte', 'Démarche en ligne', 'Impression / scan', 'Aide formulaire', 'Autre']
+      },
+      { id: 'num-platform', label: 'Site / plateforme concerné(e)', type: 'text', placeholder: 'Ex : CAF, Ameli, ANTS…' },
+      { id: 'num-description', label: 'Détaille ton besoin *', type: 'textarea', placeholder: 'Ce que tu n’arrives pas à faire', required: true }
+    ]
+  },
+  academique: {
+    title: 'Rédaction académique',
+    fields: [
+      {
+        id: 'acad-type',
+        label: 'Type de rédaction *',
+        type: 'select',
+        required: true,
+        options: ['Mémoire', 'Rapport', 'Lettre de stage', 'Correction', 'Reformulation']
+      },
+      { id: 'acad-theme', label: 'Thème / sujet *', type: 'text', placeholder: 'Sujet principal', required: true },
+      { id: 'acad-consignes', label: 'Consignes et attentes', type: 'textarea', placeholder: 'Plan, format, niveau, date limite…' }
+    ]
+  },
+  traduction: {
+    title: 'Traductions & corrections',
+    fields: [
+      {
+        id: 'trad-type',
+        label: 'Service demandé *',
+        type: 'select',
+        required: true,
+        options: ['Traduction', 'Correction', 'Traduction + correction']
+      },
+      { id: 'trad-lang', label: 'Langues concernées *', type: 'text', placeholder: 'Ex : Français → Portugais', required: true },
+      { id: 'trad-description', label: 'Type de document *', type: 'textarea', placeholder: 'Document administratif, académique, professionnel…', required: true }
     ]
   }
 };

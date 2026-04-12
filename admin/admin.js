@@ -4,9 +4,9 @@
 
 // ===== CONSTANTES =====
 const CREDENTIALS = { user: 'admin', pass: 'dokpeyi2025' };
-const PRICES_DEFAULT = { cv: 8, lettre: 5, dossier: 12, courrier: 7 };
-const SERVICE_NAMES  = { cv: 'CV Professionnel', lettre: 'Lettre de motivation', dossier: 'Dossier administratif', courrier: 'Courrier officiel' };
-const SERVICE_ICONS  = { cv: '📄', lettre: '✉️', dossier: '📁', courrier: '📮' };
+const PRICES_DEFAULT = { candidature: 12, administratif: 15, juridique: 19, numerique: 10, academique: 18, traduction: 14 };
+const SERVICE_NAMES  = { candidature: 'Documents de candidature', administratif: 'Courriers & démarches administratives', juridique: 'Aide juridique simple', numerique: 'Assistance numérique', academique: 'Rédaction académique', traduction: 'Traductions & corrections' };
+const SERVICE_ICONS  = { candidature: '📝', administratif: '📁', juridique: '⚖️', numerique: '🖥️', academique: '🎓', traduction: '🌍' };
 
 const STATUT_LABELS = {
   en_attente: 'En attente',
@@ -146,7 +146,84 @@ Situation / Demande : {{description}}
 - Coordonnées destinataire, Objet en gras
 - Corps : contexte → demande précise → justification
 - Formule de politesse officielle, signature
-- Format A4, marges 25mm, ton officiel adapté à l'administration${FOOTER}`
+- Format A4, marges 25mm, ton officiel adapté à l'administration${FOOTER}`,
+
+    candidature: `Tu es un expert en candidature professionnelle.
+Crée un document de candidature premium en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Type demandé : {{serviceType}}
+Poste visé : {{poste}}
+Délai : {{delai}}
+Détails client : {{detailsClient}}
+
+- Ton haut de gamme, clair, percutant
+- Mise en page sobre et premium
+- Format A4 prêt à imprimer${FOOTER}`,
+
+    administratif: `Tu es un assistant expert des démarches administratives.
+Rédige un document administratif complet en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Nature de la demande : {{serviceType}}
+Description : {{detailsClient}}
+
+- Structurer: contexte, pièces, étapes, modèle de courrier
+- Langage simple, précis, orienté action${FOOTER}`,
+
+    juridique: `Tu es un rédacteur juridique (niveau information, pas conseil d'avocat).
+Rédige un document juridique simple en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Nom complet : {{nom}}
+Type : {{serviceType}}
+Objet : {{objet}}
+Situation : {{detailsClient}}
+
+- Ton ferme et professionnel
+- Structure: faits, fondement, demande, formule finale${FOOTER}`,
+
+    numerique: `Tu es un expert en accompagnement numérique.
+Crée une fiche d'accompagnement claire et pratique en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Nom complet : {{nom}}
+Besoin : {{serviceType}}
+Plateforme : {{plateforme}}
+Détails : {{detailsClient}}
+
+- Étapes numérotées ultra concrètes
+- Vérifications de sécurité et bonnes pratiques${FOOTER}`,
+
+    academique: `Tu es un rédacteur académique.
+Rédige un contenu académique structuré en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Nom complet : {{nom}}
+Type : {{serviceType}}
+Thème : {{theme}}
+Consignes : {{detailsClient}}
+
+- Style académique, logique, lisible
+- Plan clair + transitions + conclusion${FOOTER}`,
+
+    traduction: `Tu es un traducteur-réviseur professionnel.
+Produis une version traduite/corrigée en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Nom complet : {{nom}}
+Service : {{serviceType}}
+Langues : {{languesCible}}
+Type de document : {{detailsClient}}
+
+- Fidélité au sens, fluidité, ton professionnel
+- Présentation nette et prête à livrer${FOOTER}`
   };
 }
 
@@ -174,7 +251,13 @@ function buildPromptFromTemplate(template, demande) {
     description:   d['d-description']    || d['c-description'] || 'Non précisée',
     documents:     d['d-documents']       || 'Non précisés',
     destinataire:  d['c-destinataire']    || 'Non précisé',
-    objet:         d['c-objet']           || 'Non précisé'
+    objet:         d['c-objet']           || 'Non précisé',
+    serviceType:   d['cand-doc-type']     || d['adm-type'] || d['jur-type'] || d['num-type'] || d['acad-type'] || d['trad-type'] || 'Non précisé',
+    detailsClient: d['cand-experience']   || d['adm-description'] || d['jur-description'] || d['num-description'] || d['acad-consignes'] || d['trad-description'] || 'Non précisé',
+    languesCible:  d['trad-lang']         || 'Non précisé',
+    delai:         d['cand-delai']        || 'Standard',
+    theme:         d['acad-theme']        || 'Non précisé',
+    plateforme:    d['num-platform']      || 'Non précisé'
   };
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : '');
 }
@@ -189,7 +272,7 @@ function generateMockData() {
   const PRENOMS = ['Marlène', 'Kevin', 'Fatima', 'Jean-Baptiste', 'Lucie', 'Marc',
                    'Sophie', 'David', 'Isabelle', 'Patrick', 'Nadia', 'Franck',
                    'Sabrina', 'Rodrigue', 'Céline', 'Thierry', 'Vanessa'];
-  const SVCS    = ['cv', 'lettre', 'dossier', 'courrier'];
+  const SVCS    = ['candidature', 'administratif', 'juridique', 'numerique', 'academique', 'traduction'];
   // Statuts pondérés — plus de "terminé" pour avoir des stats réalistes
   const STATUTS = ['en_attente', 'en_attente', 'en_cours', 'terminé', 'terminé', 'terminé'];
   const VILLES  = ['Cayenne', 'Saint-Laurent', 'Kourou', 'Rémire-Montjoly', 'Macouria'];
@@ -230,24 +313,34 @@ function generateMockData() {
 
 function buildFakeDetails(svc, prenom) {
   const map = {
-    cv: {
-      'Poste recherché':   'Employé(e) polyvalent(e)',
-      'Expériences':       `${prenom} a travaillé 2 ans dans le commerce.`,
-      'Formation':         'BAC Pro Commerce'
+    candidature: {
+      'Type de document':  'CV professionnel',
+      'Poste visé':        'Employé(e) polyvalent(e)',
+      'Expérience':        `${prenom} a travaillé 2 ans dans le commerce.`
     },
-    lettre: {
-      'Poste visé':        'Vendeur(se) en grande surface',
-      'Entreprise':        'Leclerc Cayenne',
-      'Motivation':        'Sérieux(se), motivé(e), disponible immédiatement.'
+    administratif: {
+      'Nature de la demande': 'CAF / Aide sociale',
+      'Besoin':               'Demande d’allocation logement.'
     },
-    dossier: {
-      'Type de dossier':   'CAF / Aide sociale',
-      'Besoin':            'Demande d\'allocation logement.'
+    juridique: {
+      'Type de document':  'Contestation',
+      'Objet':             'Contestation d’amende',
+      'Situation':         'Demande de recours gracieux.'
     },
-    courrier: {
-      'Destinataire':      'Mairie de Cayenne',
-      'Objet':             'Demande d\'information sur les aides locales',
-      'Description':       'Besoin d\'informations sur les dispositifs d\'aide à l\'emploi.'
+    numerique: {
+      'Besoin principal':  'Démarche en ligne',
+      'Plateforme':        'France Travail',
+      'Détail':            'Création et vérification du compte'
+    },
+    academique: {
+      'Type':              'Rapport',
+      'Thème':             'Insertion professionnelle',
+      'Consignes':         '10 pages, style académique'
+    },
+    traduction: {
+      'Service':           'Traduction + correction',
+      'Langues':           'Français → Portugais',
+      'Document':          'Courrier administratif'
     }
   };
   return map[svc] || {};
@@ -255,10 +348,12 @@ function buildFakeDetails(svc, prenom) {
 
 function buildDefaultServices() {
   return {
-    cv:      { name: 'CV Professionnel',      icon: '📄', price: 8,  active: true,  desc: 'Un CV professionnel, clair et efficace pour décrocher un emploi.' },
-    lettre:  { name: 'Lettre de motivation',  icon: '✉️', price: 5,  active: true,  desc: 'Une lettre personnalisée et convaincante pour ta candidature.' },
-    dossier: { name: 'Dossier administratif', icon: '📁', price: 12, active: true,  desc: 'Accompagnement complet pour monter ton dossier CAF, logement, emploi…' },
-    courrier:{ name: 'Courrier officiel',      icon: '📮', price: 7,  active: true,  desc: 'Rédaction de courriers pour mairies, préfectures et administrations.' }
+    candidature:   { name: 'Documents de candidature', icon: '📝', price: 12, active: true, desc: 'CV premium, lettres de motivation et e-mails professionnels.' },
+    administratif: { name: 'Courriers & démarches administratives', icon: '📁', price: 15, active: true, desc: 'CAF, impôts, sécurité sociale, attestations et courriers officiels.' },
+    juridique:     { name: 'Aide juridique simple', icon: '⚖️', price: 19, active: true, desc: 'Contestation, recours, mise en demeure et régularisation.' },
+    numerique:     { name: 'Assistance numérique', icon: '🖥️', price: 10, active: true, desc: 'Création de comptes, démarches en ligne, impressions et scans.' },
+    academique:    { name: 'Rédaction académique', icon: '🎓', price: 18, active: true, desc: 'Mémoires, rapports, lettres de stage, correction et reformulation.' },
+    traduction:    { name: 'Traductions & corrections', icon: '🌍', price: 14, active: true, desc: 'Tous types de documents, tous niveaux.' }
   };
 }
 
@@ -508,7 +603,7 @@ function renderRevenueChart() {
    CHART : DONUT PAR SERVICE
    ============================================================ */
 function renderDonutChart() {
-  const counts = { cv: 0, lettre: 0, dossier: 0, courrier: 0 };
+  const counts = { candidature: 0, administratif: 0, juridique: 0, numerique: 0, academique: 0, traduction: 0 };
   demandes.forEach(d => { if (counts[d.service] !== undefined) counts[d.service]++; });
 
   destroyChart('donut');
@@ -677,11 +772,12 @@ function openModal(id) {
 
   const SKIP_KEYS = new Set(['cv-actuel', 'cv-fichier', 'cv-choix', 'cv-note']);
   const KEY_LABELS = {
-    'cv-poste': 'Poste recherché', 'cv-experience': 'Expériences',
-    'cv-formation': 'Formation', 'cv-competences': 'Compétences', 'cv-infos': 'Infos supplémentaires',
-    'l-poste': 'Poste visé', 'l-entreprise': 'Entreprise', 'l-experience': 'Expérience', 'l-motivation': 'Motivation',
-    'd-type': 'Type de dossier', 'd-description': 'Besoin', 'd-documents': 'Documents disponibles',
-    'c-destinataire': 'Destinataire', 'c-objet': 'Objet', 'c-description': 'Description'
+    'cand-doc-type': 'Type de document', 'cand-poste': 'Poste visé', 'cand-experience': 'Expérience', 'cand-delai': 'Délai',
+    'adm-type': 'Nature de la demande', 'adm-description': 'Besoin', 'adm-docs': 'Documents disponibles',
+    'jur-type': 'Type juridique', 'jur-objet': 'Objet', 'jur-description': 'Situation',
+    'num-type': 'Besoin numérique', 'num-platform': 'Plateforme', 'num-description': 'Détail',
+    'acad-type': 'Type académique', 'acad-theme': 'Thème', 'acad-consignes': 'Consignes',
+    'trad-type': 'Service demandé', 'trad-lang': 'Langues', 'trad-description': 'Document'
   };
   const detailsHtml = Object.entries(d.details || {})
     .filter(([k]) => !SKIP_KEYS.has(k))
@@ -706,10 +802,12 @@ function openModal(id) {
 
     <div class="modal-section cv-ai-section">
       <div class="modal-section-title">${{
-        cv:       'Générer le CV',
-        lettre:   'Rédiger la lettre de motivation',
-        dossier:  'Générer le document d\'aide',
-        courrier: 'Rédiger le courrier'
+        candidature:   'Rédiger le document de candidature',
+        administratif: 'Générer le document administratif',
+        juridique:     'Rédiger le document juridique',
+        numerique:     'Rédiger l\'accompagnement numérique',
+        academique:    'Rédiger le document académique',
+        traduction:    'Traduire / corriger le document'
       }[d.service] || 'Générer le document'} avec IA ✨</div>
 
       ${d.service === 'cv' ? `
@@ -730,10 +828,12 @@ function openModal(id) {
 
       <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">
         ✨ ${{
-          cv:       isImprove ? 'Moderniser le CV' : 'Générer le CV',
-          lettre:   'Rédiger la lettre',
-          dossier:  'Générer le document',
-          courrier: 'Rédiger le courrier'
+          candidature:   'Rédiger le document',
+          administratif: 'Générer le document',
+          juridique:     'Rédiger le document',
+          numerique:     'Préparer le support',
+          academique:    'Rédiger le contenu',
+          traduction:    'Traduire / corriger'
         }[d.service] || 'Générer'}
       </button>
 
@@ -1013,7 +1113,25 @@ function renderAIConfig() {
       vars: ['nom','email','tel','type','description','documents'] },
     { key: 'courrier', icon: '📮', title: 'Courrier officiel',
       desc: 'Rédige un courrier formel pour l\'administration',
-      vars: ['nom','email','tel','destinataire','objet','description'] }
+      vars: ['nom','email','tel','destinataire','objet','description'] },
+    { key: 'candidature', icon: '📝', title: 'Documents de candidature',
+      desc: 'CV, lettres et e-mails de candidature',
+      vars: ['nom','email','tel','serviceType','poste','delai','detailsClient'] },
+    { key: 'administratif', icon: '📁', title: 'Démarches administratives',
+      desc: 'Aide structurée pour les dossiers administratifs',
+      vars: ['nom','email','tel','serviceType','detailsClient'] },
+    { key: 'juridique', icon: '⚖️', title: 'Aide juridique simple',
+      desc: 'Courriers et formulations juridiques simples',
+      vars: ['nom','serviceType','objet','detailsClient'] },
+    { key: 'numerique', icon: '🖥️', title: 'Assistance numérique',
+      desc: 'Guides pour démarches en ligne',
+      vars: ['nom','serviceType','plateforme','detailsClient'] },
+    { key: 'academique', icon: '🎓', title: 'Rédaction académique',
+      desc: 'Rédaction et reformulation académique',
+      vars: ['nom','serviceType','theme','detailsClient'] },
+    { key: 'traduction', icon: '🌍', title: 'Traductions & corrections',
+      desc: 'Traduction et correction professionnelle',
+      vars: ['nom','serviceType','languesCible','detailsClient'] }
   ];
 
   grid.innerHTML = CONFIGS.map(c => `
@@ -1043,7 +1161,7 @@ function renderAIConfig() {
 }
 
 function saveAIPrompts() {
-  ['cv_scratch','cv_improve','lettre','dossier','courrier'].forEach(k => {
+  ['cv_scratch','cv_improve','lettre','dossier','courrier','candidature','administratif','juridique','numerique','academique','traduction'].forEach(k => {
     const el = document.getElementById('ia-' + k);
     if (el) aiPrompts[k] = el.value;
   });
@@ -1149,7 +1267,7 @@ function renderMonthlyChart() {
 }
 
 function renderByServiceChart() {
-  const svcs    = ['cv', 'lettre', 'dossier', 'courrier'];
+  const svcs    = ['candidature', 'administratif', 'juridique', 'numerique', 'academique', 'traduction'];
   const colors  = ['#2563eb', '#10b981', '#f59e0b', '#6366f1'];
   const revenues = svcs.map(k =>
     demandes.filter(d => d.service === k && d.statut === 'terminé')
