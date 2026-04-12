@@ -30,8 +30,12 @@ const APP = {
 };
 
 // ===== DONNÉES =====
-let demandes = JSON.parse(localStorage.getItem('dok_demandes')) || generateMockData();
-let services = JSON.parse(localStorage.getItem('dok_services')) || buildDefaultServices();
+function safeParse(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+  catch(e) { localStorage.removeItem(key); return null; }
+}
+let demandes = safeParse('dok_demandes') || generateMockData();
+let services = safeParse('dok_services') || buildDefaultServices();
 
 /* ============================================================
    GÉNÉRATION DES DONNÉES MOCK
