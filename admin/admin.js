@@ -35,8 +35,137 @@ function safeParse(key) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
   catch(e) { localStorage.removeItem(key); return null; }
 }
-let demandes = safeParse('dok_demandes') || [];
-let services = safeParse('dok_services') || buildDefaultServices();
+let demandes  = safeParse('dok_demandes') || [];
+let services  = safeParse('dok_services') || buildDefaultServices();
+let aiPrompts = safeParse('dok_ai_prompts') || buildDefaultPrompts();
+
+/* ============================================================
+   PROMPTS IA PAR DÉFAUT
+   ============================================================ */
+function buildDefaultPrompts() {
+  const FOOTER = '\nRéponds UNIQUEMENT avec le code HTML complet (<!DOCTYPE html> … </html>). Zéro texte avant ou après.';
+  return {
+    cv_scratch: `Tu es un expert en design et rédaction de CV professionnels.
+Crée un CV complet, moderne et professionnel en HTML autonome (CSS inline, sans JS, format A4).
+
+=== DONNÉES DU CLIENT ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Poste recherché : {{poste}}
+Expériences : {{experience}}
+Formation : {{formation}}
+Compétences : {{competences}}
+Informations : {{infos}}
+
+=== DESIGN ===
+- En-tête fond bleu marine #1e3a5f : nom en grand, poste, email, téléphone
+- Corps blanc : Expériences → Formation → Compétences → Infos
+- Typographie system-ui/Arial, accents #2563eb pour les titres de section
+- Séparateurs subtils, layout 1-2 pages
+- @media print : marges 15mm${FOOTER}`,
+
+    cv_improve: `Tu es un expert en design et rédaction de CV professionnels.
+Un client souhaite améliorer et moderniser son CV existant.
+
+=== INFORMATIONS DU CLIENT ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+
+=== SOUHAITS DE MODIFICATION ===
+{{note}}
+
+Génère un CV HTML moderne et professionnel en appliquant toutes les modifications demandées.
+
+=== DESIGN ===
+- En-tête fond bleu marine #1e3a5f : nom en grand, email, téléphone
+- Corps blanc : Expériences → Formation → Compétences
+- Typographie system-ui/Arial, accents #2563eb pour les titres de section
+- @media print : marges 15mm${FOOTER}`,
+
+    lettre: `Tu es un expert en rédaction de lettres de motivation professionnelles.
+Rédige une lettre de motivation complète, personnalisée et convaincante en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS DU CANDIDAT ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Poste visé : {{poste}}
+Entreprise : {{entreprise}}
+Expérience : {{experience}}
+Motivation : {{motivation}}
+
+=== STRUCTURE ===
+- Coordonnées candidat (haut gauche), date + destinataire (haut droite)
+- Objet en gras
+- Corps : Introduction percutante → Pourquoi ce poste → Ce que j'apporte → Conclusion
+- Formule de politesse professionnelle, signature
+- Format A4, marges 25mm, typographie system-ui/Arial${FOOTER}`,
+
+    dossier: `Tu es un expert en démarches administratives (France / Guyane).
+Génère un document d'aide complet et pratique en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Type de dossier : {{type}}
+Besoin : {{description}}
+Documents disponibles : {{documents}}
+
+=== CONTENU ===
+1. Titre + résumé de la situation du client
+2. Liste des documents à fournir avec cases à cocher ☐
+3. Étapes numérotées à suivre (claires et concrètes)
+4. Conseils pratiques et délais habituels
+5. Coordonnées des organismes utiles (CAF, CPAM, Pôle Emploi, Préfecture…)
+
+- En-tête fond bleu marine #1e3a5f, typographie system-ui/Arial, accents #2563eb
+- @media print : marges 15mm${FOOTER}`,
+
+    courrier: `Tu es un expert en rédaction de courriers officiels pour l'administration française.
+Rédige un courrier formel, clair et professionnel en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Expéditeur : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Destinataire : {{destinataire}}
+Objet : {{objet}}
+Situation / Demande : {{description}}
+
+=== STRUCTURE ===
+- Coordonnées expéditeur (haut gauche), ville et date (haut droite)
+- Coordonnées destinataire, Objet en gras
+- Corps : contexte → demande précise → justification
+- Formule de politesse officielle, signature
+- Format A4, marges 25mm, ton officiel adapté à l'administration${FOOTER}`
+  };
+}
+
+function buildPromptFromTemplate(template, demande) {
+  const d = demande.details || {};
+  const vars = {
+    nom:          `${demande.prenom || ''} ${demande.nom || ''}`.trim(),
+    email:        demande.email    || '',
+    tel:          demande.whatsapp || '',
+    poste:        d['cv-poste']       || d['l-poste']       || 'Non précisé',
+    experience:   d['cv-experience']  || d['l-experience']  || 'Non précisée',
+    formation:    d['cv-formation']   || 'Non précisée',
+    competences:  d['cv-competences'] || 'Non précisées',
+    infos:        d['cv-infos']       || '',
+    note:         d['cv-note']        || 'Moderniser le design, rendre plus professionnel',
+    entreprise:   d['l-entreprise']   || 'Non précisée',
+    motivation:   d['l-motivation']   || 'Non précisée',
+    type:         d['d-type']         || 'Non précisé',
+    description:  d['d-description']  || d['c-description'] || 'Non précisée',
+    documents:    d['d-documents']    || 'Non précisés',
+    destinataire: d['c-destinataire'] || 'Non précisé',
+    objet:        d['c-objet']        || 'Non précisé'
+  };
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : '');
+}
 
 /* ============================================================
    GÉNÉRATION DES DONNÉES MOCK
@@ -196,6 +325,7 @@ const SECTION_TITLES = {
   dashboard: 'Tableau de bord',
   demandes:  'Demandes',
   services:  'Services & Tarifs',
+  ia:        'Configuration IA',
   stats:     'Statistiques'
 };
 
@@ -224,6 +354,7 @@ function showSection(name, navEl) {
   if (name === 'dashboard') renderDashboard();
   if (name === 'demandes')  renderDemandes();
   if (name === 'services')  renderServices();
+  if (name === 'ia')        renderAIConfig();
   if (name === 'stats')     renderStats();
 
   // Fermer la sidebar sur mobile
@@ -705,10 +836,18 @@ async function generateCV(id) {
   APP.generatedCV = null;
 
   try {
+    // Choisir le bon template selon le service et le choix CV
+    const cvChoix   = (d.details || {})['cv-choix'] || 'scratch';
+    const promptKey = d.service === 'cv'
+      ? (cvChoix === 'improve' ? 'cv_improve' : 'cv_scratch')
+      : d.service;
+    const template = aiPrompts[promptKey] || buildDefaultPrompts()[promptKey] || '';
+    const prompt   = buildPromptFromTemplate(template, d);
+
     const res = await fetch('/api/generate-cv', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ demande: d })
+      body: JSON.stringify({ prompt })
     });
     let json;
     try { json = await res.json(); } catch(pe) { throw new Error(`HTTP ${res.status} — réponse non-JSON`); }
@@ -825,6 +964,75 @@ function saveServices() {
   });
   localStorage.setItem('dok_services', JSON.stringify(services));
   showToast('Services enregistrés avec succès', 'success');
+}
+
+/* ============================================================
+   SECTION CONFIGURATION IA
+   ============================================================ */
+function renderAIConfig() {
+  const grid = document.getElementById('ia-grid');
+  if (!grid) return;
+
+  const CONFIGS = [
+    { key: 'cv_scratch', icon: '✏️', title: 'CV — Créer de A à Z',
+      desc: 'Quand le client choisit de créer un CV depuis zéro',
+      vars: ['nom','email','tel','poste','experience','formation','competences','infos'] },
+    { key: 'cv_improve', icon: '✨', title: 'CV — Améliorer l\'existant',
+      desc: 'Quand le client envoie son CV + ses souhaits de modification',
+      vars: ['nom','email','tel','note'] },
+    { key: 'lettre', icon: '✉️', title: 'Lettre de motivation',
+      desc: 'Rédige une lettre personnalisée pour un poste',
+      vars: ['nom','email','tel','poste','entreprise','experience','motivation'] },
+    { key: 'dossier', icon: '📁', title: 'Dossier administratif',
+      desc: 'Génère une checklist et les étapes à suivre',
+      vars: ['nom','email','tel','type','description','documents'] },
+    { key: 'courrier', icon: '📮', title: 'Courrier officiel',
+      desc: 'Rédige un courrier formel pour l\'administration',
+      vars: ['nom','email','tel','destinataire','objet','description'] }
+  ];
+
+  grid.innerHTML = CONFIGS.map(c => `
+    <div class="svc-edit-card">
+      <div class="svc-edit-header" style="align-items:flex-start;gap:12px">
+        <span class="svc-edit-icon">${c.icon}</span>
+        <div>
+          <div class="svc-edit-name">${c.title}</div>
+          <div style="font-size:.77rem;color:var(--gray-500);font-weight:400;margin-top:2px">${c.desc}</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label>Variables disponibles</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+          ${c.vars.map(v => `<span class="ia-var-chip" title="Copier">{{${v}}}</span>`).join('')}
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label>Instructions pour l'IA (prompt)</label>
+        <textarea id="ia-${c.key}" class="ia-textarea" rows="14" spellcheck="false">${escHtml(aiPrompts[c.key] || '')}</textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn-ia-reset" onclick="resetPrompt('${c.key}')">↺ Réinitialiser</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function saveAIPrompts() {
+  ['cv_scratch','cv_improve','lettre','dossier','courrier'].forEach(k => {
+    const el = document.getElementById('ia-' + k);
+    if (el) aiPrompts[k] = el.value;
+  });
+  localStorage.setItem('dok_ai_prompts', JSON.stringify(aiPrompts));
+  showToast('Configuration IA enregistrée', 'success');
+}
+
+function resetPrompt(key) {
+  if (!confirm('Réinitialiser ce prompt au texte par défaut ?')) return;
+  const def = buildDefaultPrompts();
+  aiPrompts[key] = def[key];
+  const el = document.getElementById('ia-' + key);
+  if (el) el.value = def[key];
+  showToast('Prompt réinitialisé', 'success');
 }
 
 /* ============================================================

@@ -219,6 +219,14 @@
     .save-row{display:flex;justify-content:flex-end;margin-top:8px}
     .btn-save{padding:13px 28px;background:linear-gradient(135deg,var(--green),var(--green-dark));color:var(--white);border:none;border-radius:var(--radius);font-weight:700;font-size:.9rem;transition:transform .35s var(--spring),box-shadow .25s;box-shadow:0 4px 14px rgba(16,185,129,.35)}
     .btn-save:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 10px 28px rgba(16,185,129,.45)}
+    /* ===== CONFIGURATION IA ===== */
+    .ia-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:22px}
+    @media(max-width:900px){.ia-grid{grid-template-columns:1fr}}
+    .ia-var-chip{display:inline-block;padding:3px 9px;background:var(--blue-xlight);color:var(--blue);border:1px solid #bfdbfe;border-radius:99px;font-size:.73rem;font-weight:600;font-family:monospace;cursor:default;user-select:all}
+    .ia-textarea{font-family:'Courier New',monospace;font-size:.77rem;line-height:1.6;min-height:260px;resize:vertical;background:var(--gray-50);width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius);outline:none;transition:border-color var(--t),box-shadow var(--t)}
+    .ia-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.10);background:var(--white)}
+    .btn-ia-reset{padding:7px 16px;background:transparent;color:var(--gray-500);border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:.8rem;font-weight:600;cursor:pointer;transition:all var(--t)}
+    .btn-ia-reset:hover{border-color:var(--gray-400);color:var(--gray-800)}
     /* ===== MODAL ===== */
     .modal-overlay{display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(10,15,30,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:20px}
     .modal-overlay.open{display:flex;animation:overlayIn .25s ease}
@@ -535,6 +543,10 @@
         <span class="ni">⚙️</span>
         <span class="nt">Services &amp; Tarifs</span>
       </a>
+      <a href="#" class="nav-item" onclick="return showSection('ia', this)">
+        <span class="ni">🤖</span>
+        <span class="nt">Configuration IA</span>
+      </a>
       <a href="#" class="nav-item" onclick="return showSection('stats', this)">
         <span class="ni">📊</span>
         <span class="nt">Statistiques</span>
@@ -634,6 +646,15 @@
         <div class="svc-grid" id="svc-grid"></div>
         <div class="save-row">
           <button class="btn-save" onclick="saveServices()">💾 Enregistrer les modifications</button>
+        </div>
+      </section>
+
+      <!-- ========== SECTION : CONFIGURATION IA ========== -->
+      <section class="adm-section" id="s-ia">
+        <p class="section-intro">Personnalise les instructions envoyées à l'IA pour chaque type de document. Utilise les variables <code style="background:var(--blue-xlight);color:var(--blue);padding:1px 6px;border-radius:4px;font-size:.85em">{{nom}}</code>, <code style="background:var(--blue-xlight);color:var(--blue);padding:1px 6px;border-radius:4px;font-size:.85em">{{email}}</code>… pour insérer automatiquement les données du client.</p>
+        <div class="ia-grid" id="ia-grid"></div>
+        <div class="save-row">
+          <button class="btn-save" onclick="saveAIPrompts()">💾 Enregistrer la configuration IA</button>
         </div>
       </section>
 
