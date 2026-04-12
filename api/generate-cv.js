@@ -1,34 +1,27 @@
-export const config = { runtime: 'edge' };
+// Runtime Node.js — pas Edge (Edge a un timeout trop court pour générer du HTML complet)
 
-export default async function handler(req) {
-  const h = {
-    'Access-Control-Allow-Origin':  '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type':                 'application/json',
-  };
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin',  '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: h });
-  if (req.method !== 'POST')   return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: h });
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+  if (req.method !== 'POST')   { res.status(405).json({ error: 'Method not allowed' }); return; }
 
   const apiKey = process.env.CLAUD_API_KEY;
-  if (!apiKey) return new Response(JSON.stringify({ error: 'CLAUD_API_KEY non configuree' }), { status: 500, headers: h });
+  if (!apiKey) { res.status(500).json({ error: 'CLAUD_API_KEY non configurée' }); return; }
 
-  let body;
-  try { body = await req.json(); } catch(e) {
-    return new Response(JSON.stringify({ error: 'Body invalide' }), { status: 400, headers: h });
-  }
-
-  const { prompt } = body || {};
+  const { prompt } = req.body || {};
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
-    return new Response(JSON.stringify({ error: 'Prompt manquant ou invalide' }), { status: 400, headers: h });
+    res.status(400).json({ error: 'Prompt manquant ou invalide' });
+    return;
   }
 
   try {
     const ctrl = new AbortController();
-    const tid  = setTimeout(() => ctrl.abort(), 25000);
+    const tid  = setTimeout(() => ctrl.abort(), 55000); // 55s — sous la limite Vercel de 60s
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const upstream = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       signal: ctrl.signal,
       headers: {
@@ -38,22 +31,26 @@ export default async function handler(req) {
       },
       body: JSON.stringify({
         model:      'claude-haiku-4-5-20251001',
-        max_tokens: 2048,
+        max_tokens: 4096,
         messages:   [{ role: 'user', content: prompt }]
       })
     });
     clearTimeout(tid);
 
-    if (!res.ok) {
-      const t = await res.text();
-      return new Response(JSON.stringify({ error: `Anthropic ${res.status} : ${t.substring(0, 400)}` }), { status: 500, headers: h });
+    if (!upstream.ok) {
+      const t = await upstream.text();
+      res.status(500).json({ error: `Anthropic ${upstream.status} : ${t.substring(0, 400)}` });
+      return;
     }
 
-    const data = await res.json();
-    const html = (data.content && data.content[0] && data.content[0].text) || '';
-    return new Response(JSON.stringify({ cv: html }), { status: 200, headers: h });
+    const data = await upstream.json();
+    const html = (data.content?.[0]?.text) || '';
+    res.status(200).json({ cv: html });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Erreur : ' + err.message }), { status: 500, headers: h });
+    const msg = err.name === 'AbortError'
+      ? 'Délai dépassé (55s) — le document est peut-être trop complexe, réessaie.'
+      : 'Erreur : ' + err.message;
+    res.status(500).json({ error: msg });
   }
 }
