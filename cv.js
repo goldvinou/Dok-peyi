@@ -219,42 +219,14 @@ async function cwGenerate() {
   const prompt = cwPrompt();
 
   try {
-    // Lecture du flux SSE Anthropic
-    const res = await fetch('/api/generate-cv', {
-      method:  'POST',
-      headers: { 'content-type': 'application/json' },
-      body:    JSON.stringify({ prompt })
+    const res  = await fetch('/api/generate-cv', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt })
     });
-
-    const ct = res.headers.get('content-type') || '';
-    if (!res.ok || !ct.includes('text/event-stream')) {
-      const json = await res.json().catch(() => ({}));
-      throw new Error(json.error || `Erreur ${res.status}`);
-    }
-
-    const reader  = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '', raw = '';
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const chunk = line.slice(6).trim();
-        if (chunk === '[DONE]') break;
-        try {
-          const evt = JSON.parse(chunk);
-          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') raw += evt.delta.text;
-          else if (evt.type === 'error') throw new Error(evt.error?.message || 'Erreur Anthropic');
-        } catch(e) { if (e.message && !e.message.includes('JSON')) throw e; }
-      }
-    }
     clearInterval(timer);
-
-    CW.html = raw.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    CW.html = (data.cv || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
     if (!CW.html || !CW.html.startsWith('<')) throw new Error('La réponse était invalide, réessaie.');
 
     cwRenderPreview();

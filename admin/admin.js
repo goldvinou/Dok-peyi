@@ -1121,50 +1121,6 @@ function closeModalOutside(e) {
 }
 
 /* ============================================================
-   STREAMING ANTHROPIC — lit le flux SSE et retourne le texte complet
-   ============================================================ */
-async function fetchStreamCV(prompt) {
-  const res = await fetch('/api/generate-cv', {
-    method:  'POST',
-    headers: { 'content-type': 'application/json' },
-    body:    JSON.stringify({ prompt })
-  });
-
-  // Erreur non-streaming (JSON d'erreur)
-  const ct = res.headers.get('content-type') || '';
-  if (!res.ok || !ct.includes('text/event-stream')) {
-    const json = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-    throw new Error(json.error || `Erreur ${res.status}`);
-  }
-
-  const reader  = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '', fullText = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() ?? '';
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const raw = line.slice(6).trim();
-      if (raw === '[DONE]') return fullText;
-      try {
-        const evt = JSON.parse(raw);
-        if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
-          fullText += evt.delta.text;
-        } else if (evt.type === 'error') {
-          throw new Error(evt.error?.message || 'Erreur Anthropic');
-        }
-      } catch(e) { if (e.message && !e.message.includes('JSON')) throw e; }
-    }
-  }
-  return fullText;
-}
-
-/* ============================================================
    GÉNÉRATION CV PAR IA
    ============================================================ */
 async function generateCV(id) {
@@ -1186,8 +1142,13 @@ async function generateCV(id) {
     const template = aiPrompts[promptKey] || buildDefaultPrompts()[promptKey] || '';
     const prompt   = buildPromptFromTemplate(template, d);
 
-    let rawCV = await fetchStreamCV(prompt);
-    rawCV = rawCV.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const _res  = await fetch('/api/generate-cv', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const _json = await _res.json();
+    if (!_res.ok || _json.error) throw new Error(_json.error || `Erreur ${_res.status}`);
+    let rawCV = (_json.cv || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
     APP.generatedCV = rawCV;
 
     // Remplir l'éditeur HTML
