@@ -875,11 +875,14 @@ async function generateCV(id) {
     try { json = await res.json(); } catch(pe) { throw new Error(`HTTP ${res.status} — réponse non-JSON`); }
     if (!res.ok || json.error) throw new Error(`[${res.status}] ${json.error || 'Erreur API'}`);
 
-    APP.generatedCV = json.cv;
+    let rawCV = json.cv || '';
+    // Strip markdown code fences if the AI wrapped the HTML
+    rawCV = rawCV.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    APP.generatedCV = rawCV;
 
     // Remplir l'éditeur HTML
     const editor = document.getElementById('cv-html-editor');
-    if (editor) editor.value = json.cv;
+    if (editor) editor.value = rawCV;
 
     // Préparer lien email
     const mailto = document.getElementById('cv-mailto');

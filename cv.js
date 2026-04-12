@@ -240,7 +240,9 @@ async function cwGenerate() {
     if (data.error) throw new Error(data.error);
 
     CW.html = data.cv || '';
-    if (!CW.html.trim()) throw new Error('La réponse était vide, réessaie.');
+    // Strip markdown code fences if the AI wrapped the HTML
+    CW.html = CW.html.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    if (!CW.html || !CW.html.startsWith('<')) throw new Error('La réponse était invalide, réessaie.');
 
     cwRenderPreview();
     cwGoStep(4);
@@ -275,15 +277,17 @@ INFORMATIONS DU CANDIDAT :
 Nom complet : ${nom}
 Poste souhaité : ${poste}
 Contact : ${cont || 'Non précisé'}
-Expériences professionnelles : ${exp || 'Débutant — aucune expérience précisée'}
+Expériences professionnelles : ${exp || 'Débutant — à valoriser au mieux'}
 Formation / Diplômes : ${form || 'Non précisée'}
 Compétences : ${comp || 'Non précisées'}
 
-DESIGN REQUIS :
-- En-tête fond bleu marine #1e3a5f : nom en grand, poste, coordonnées
-- Corps blanc, sections bien structurées : Profil · Expériences · Formation · Compétences
-- Police system-ui/Arial, titres de section en bleu #2563eb, séparateurs subtils
-- Mise en page aérée et professionnelle, 1-2 pages A4
+RÈGLES DE DESIGN STRICTES :
+- body : fond blanc (#ffffff), texte sombre (#1f2937), AUCUN dégradé sur le body
+- En-tête : fond bleu marine #1e3a5f, texte blanc — NOM en grand, poste, coordonnées
+- Corps : fond blanc avec sections : Profil · Expériences · Formation · Compétences
+- Titres de section : couleur #2563eb, séparateurs fins, icônes simples optionnelles
+- Police system-ui/Arial, taille corps 13-14px, interligne 1.6
+- Mise en page 1-2 pages A4, contenu VISIBLE et lisible
 - @media print : marges 15mm${FOOTER}`;
 
   } else {
@@ -300,13 +304,14 @@ ${note}
 
 STYLE DEMANDÉ : ${style}
 
-Génère un CV HTML complet et professionnel en appliquant toutes les améliorations demandées.
-
-DESIGN :
-${style === 'Moderne'   ? '- Design contemporain, couleurs vives, mise en page dynamique avec icônes' :
-  style === 'Classique' ? '- Design sobre et élégant, noir/blanc, mise en page conventionnelle et lisible' :
-                          '- Design minimaliste, épuré, beaucoup d\'espace blanc, typographie claire'}
-- Police system-ui/Arial — Format A4 — @media print : marges 15mm${FOOTER}`;
+RÈGLES STRICTES :
+- body : fond blanc (#ffffff), texte sombre (#1f2937), AUCUN dégradé sur le body entier
+- Contenu COMPLET et LISIBLE : sections bien remplies, texte visible sur fond clair
+${style === 'Moderne'   ? '- En-tête coloré #1e3a5f, icônes de section, accents #2563eb' :
+  style === 'Classique' ? '- En-tête sobre gris foncé #1f2937, mise en page traditionnelle' :
+                          '- En-tête minimaliste, beaucoup d\'espace blanc, typographie épurée'}
+- Police system-ui/Arial, taille corps 13-14px, interligne 1.6
+- Format A4 — @media print : marges 15mm${FOOTER}`;
   }
 }
 
