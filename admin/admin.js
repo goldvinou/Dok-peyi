@@ -54,6 +54,17 @@ let aiPrompts = safeParse('dok_ai_prompts') || buildDefaultPrompts();
 /* ── Firebase DB handle ── */
 let db = null;
 
+/* ── Connexion Firebase anticipée (disponible dès la page de login) ── */
+(function earlyFirebaseInit() {
+  try {
+    if (typeof firebase !== 'undefined' && typeof FIREBASE_CONFIG !== 'undefined'
+        && !FIREBASE_CONFIG.apiKey.startsWith('REMPLACE')) {
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      db = firebase.database();
+    }
+  } catch(e) { /* Firebase non configuré */ }
+})();
+
 /* ============================================================
    PROMPTS IA PAR DÉFAUT
    ============================================================ */
@@ -299,7 +310,38 @@ function hideApp() {
   app.setAttribute('aria-hidden', 'true');
 }
 
-function adminLogin(e) {
+/* ============================================================
+   MOTS DE PASSE — Hachage + Stockage
+   ============================================================ */
+async function hashPass(password) {
+  const data = new TextEncoder().encode(password + ':dok-peyi-salt');
+  const buf  = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function getStoredHash(username) {
+  // Firebase en priorité si dispo
+  if (db) {
+    try {
+      const snap = await db.ref('dok-peyi/users/' + username + '/passHash').once('value');
+      if (snap.val()) {
+        localStorage.setItem('dok_pass_' + username, snap.val()); // cache local
+        return snap.val();
+      }
+    } catch(e) {}
+  }
+  return localStorage.getItem('dok_pass_' + username) || null;
+}
+
+async function storeHash(username, hash) {
+  try { localStorage.setItem('dok_pass_' + username, hash); } catch(e) {}
+  if (db) db.ref('dok-peyi/users/' + username + '/passHash').set(hash).catch(() => {});
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+async function adminLogin(e) {
   if (e) e.preventDefault();
   const userEl = document.getElementById('lg-user');
   const passEl = document.getElementById('lg-pass');
@@ -312,20 +354,120 @@ function adminLogin(e) {
   if (errEl) errEl.style.display = 'none';
   if (btn)   { btn.textContent = 'Connexion…'; btn.disabled = true; }
 
-  setTimeout(() => {
-    const found = USERS.find(x => x.user === u && x.pass === p);
-    if (found) {
-      currentUser = { ...found };
-      try { sessionStorage.setItem('dok_auth_user', JSON.stringify(currentUser)); } catch(ex) {}
-      showApp();
-      updateUserUI();
-      init();
+  const found = USERS.find(x => x.user === u);
+  if (!found) { _loginError(errEl, btn, passEl); return; }
+
+  let ok = false, isFirstLogin = false;
+  try {
+    const storedHash = await getStoredHash(u);
+    if (storedHash) {
+      // Mot de passe personnalisé — comparer le hash
+      ok = (await hashPass(p)) === storedHash;
     } else {
-      if (errEl) { errEl.textContent = 'Identifiant ou mot de passe incorrect.'; errEl.style.display = 'block'; }
-      if (btn)   { btn.textContent = 'Se connecter →'; btn.disabled = false; }
-      if (passEl) { passEl.value = ''; passEl.focus(); }
+      // Aucun mot de passe personnalisé → vérifier le mot de passe temporaire
+      ok = (p === found.pass);
+      isFirstLogin = ok;
     }
-  }, 400);
+  } catch(err) {
+    ok = (p === found.pass);  // fallback si Web Crypto indisponible
+  }
+
+  if (ok) {
+    currentUser = { ...found };
+    try { sessionStorage.setItem('dok_auth_user', JSON.stringify(currentUser)); } catch(ex) {}
+    showApp();
+    updateUserUI();
+    init();
+    if (isFirstLogin) setTimeout(showChangePassModal, 900);
+  } else {
+    _loginError(errEl, btn, passEl);
+  }
+}
+
+function _loginError(errEl, btn, passEl) {
+  if (errEl) { errEl.textContent = 'Identifiant ou mot de passe incorrect.'; errEl.style.display = 'block'; }
+  if (btn)   { btn.textContent = 'Se connecter →'; btn.disabled = false; }
+  if (passEl) { passEl.value = ''; passEl.focus(); }
+}
+
+/* ============================================================
+   MODALE — Choisir / Changer son mot de passe
+   ============================================================ */
+function showChangePassModal() {
+  let m = document.getElementById('chpass-modal');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'chpass-modal';
+    m.innerHTML = `
+      <div class="chpm-bg" onclick="skipPassChange()"></div>
+      <div class="chpm-card">
+        <div class="chpm-icon">🔑</div>
+        <h2 class="chpm-title">Choisis ton mot de passe</h2>
+        <p class="chpm-sub">Crée un mot de passe personnel sécurisé.<br>Tu l'utiliseras à toutes tes prochaines connexions.</p>
+        <div class="form-group">
+          <label style="display:block;font-size:.82rem;font-weight:700;color:var(--gray-700);margin-bottom:7px">Nouveau mot de passe *</label>
+          <input type="password" id="chp-new" class="chpm-input" placeholder="Minimum 8 caractères" autocomplete="new-password">
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label style="display:block;font-size:.82rem;font-weight:700;color:var(--gray-700);margin-bottom:7px">Confirmer *</label>
+          <input type="password" id="chp-confirm" class="chpm-input" placeholder="Répète le mot de passe" autocomplete="new-password">
+        </div>
+        <p id="chp-err" style="color:#ef4444;font-size:.82rem;margin-bottom:12px;display:none;background:#fef2f2;border-radius:8px;padding:10px"></p>
+        <button class="btn-modal-save" style="width:100%;font-size:.9rem;padding:14px" onclick="saveNewPass()">
+          <span id="chp-btn-lbl">Enregistrer mon mot de passe →</span>
+        </button>
+        <button class="btn-modal-cancel" style="width:100%;margin-top:8px;font-size:.82rem" onclick="skipPassChange()">Plus tard</button>
+      </div>`;
+    document.body.appendChild(m);
+  }
+  m.style.display = 'flex';
+  requestAnimationFrame(() => m.classList.add('open'));
+  document.getElementById('chp-new')?.focus();
+}
+
+async function saveNewPass() {
+  const newPass = document.getElementById('chp-new')?.value    || '';
+  const confirm = document.getElementById('chp-confirm')?.value || '';
+  const errEl   = document.getElementById('chp-err');
+  const btnLbl  = document.getElementById('chp-btn-lbl');
+
+  if (errEl) errEl.style.display = 'none';
+
+  if (newPass.length < 8) {
+    errEl.textContent = '❌ Le mot de passe doit faire au moins 8 caractères.';
+    errEl.style.display = 'block'; return;
+  }
+  if (newPass !== confirm) {
+    errEl.textContent = '❌ Les deux mots de passe ne correspondent pas.';
+    errEl.style.display = 'block'; return;
+  }
+
+  if (btnLbl) btnLbl.textContent = 'Enregistrement…';
+  const saveBtn = document.querySelector('#chpass-modal .btn-modal-save');
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    const hash = await hashPass(newPass);
+    await storeHash(currentUser.user, hash);
+    closePassModal();
+    showToast(`✅ Mot de passe enregistré, ${currentUser.nom} !`, 'success');
+  } catch(err) {
+    if (errEl) { errEl.textContent = '❌ Erreur : ' + err.message; errEl.style.display = 'block'; }
+    if (saveBtn) saveBtn.disabled = false;
+    if (btnLbl)  btnLbl.textContent = 'Enregistrer mon mot de passe →';
+  }
+}
+
+function skipPassChange() {
+  closePassModal();
+  showToast('Tu pourras changer ton mot de passe via "🔑 Changer mot de passe" dans la barre latérale.', 'success');
+}
+
+function closePassModal() {
+  const m = document.getElementById('chpass-modal');
+  if (!m) return;
+  m.classList.remove('open');
+  setTimeout(() => { m.style.display = 'none'; }, 300);
 }
 
 function logout() {
