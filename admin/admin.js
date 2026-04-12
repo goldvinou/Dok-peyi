@@ -23,10 +23,11 @@ const STATUT_CLASS = {
 
 // ===== ÉTAT =====
 const APP = {
-  section:    'dashboard',
-  filters:    { search: '', statut: 'all', service: 'all' },
-  charts:     {},
-  modalId:    null
+  section:      'dashboard',
+  filters:      { search: '', statut: 'all', service: 'all' },
+  charts:       {},
+  modalId:      null,
+  generatedCV:  null
 };
 
 // ===== DONNÉES =====
@@ -174,6 +175,16 @@ function init() {
 
   // Rendre le dashboard
   renderDashboard();
+
+  // Détection de nouvelles commandes en temps réel (autre onglet)
+  window.addEventListener('storage', function(e) {
+    if (e.key !== 'dok_demandes') return;
+    demandes = safeParse('dok_demandes') || [];
+    refreshBadge();
+    if (APP.section === 'dashboard') renderDashboard();
+    if (APP.section === 'demandes')  applyFilters();
+    showToast('Nouvelle commande reçue !', 'success');
+  });
 }
 
 // Auth gérée par le script inline dans index.html
@@ -189,6 +200,9 @@ const SECTION_TITLES = {
 };
 
 function showSection(name, navEl) {
+  // Relire les données fraîches depuis localStorage
+  demandes = safeParse('dok_demandes') || [];
+
   // Cacher toutes les sections
   document.querySelectorAll('.adm-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`s-${name}`).classList.add('active');
@@ -333,7 +347,7 @@ function renderRevenueChart() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         y: {
@@ -374,7 +388,7 @@ function renderDonutChart() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       cutout: '68%',
       plugins: { legend: { display: false } }
     }
@@ -551,6 +565,19 @@ function openModal(id) {
       ${detailsHtml}
     </div>` : ''}
 
+    ${d.service === 'cv' ? `
+    <div class="modal-section">
+      <div class="modal-section-title">Générer le CV avec IA ✨</div>
+      <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">✨ Générer le CV automatiquement</button>
+      <div id="cv-result" style="display:none;margin-top:14px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-modal-save" onclick="downloadCV()">⬇ Télécharger PDF</button>
+          <a id="cv-mailto" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center" target="_blank">📧 Email</a>
+          ${d.whatsapp ? `<a id="cv-wa" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center" target="_blank">💬 WhatsApp</a>` : ''}
+        </div>
+      </div>
+    </div>` : ''}
+
     <div class="modal-section">
       <div class="modal-section-title">Changer le statut</div>
       <div class="modal-status-change">
@@ -608,6 +635,62 @@ function closeModal() {
 
 function closeModalOutside(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+/* ============================================================
+   GÉNÉRATION CV PAR IA
+   ============================================================ */
+async function generateCV(id) {
+  const d = demandes.find(dm => dm.id === id);
+  if (!d) return;
+
+  const btn = document.getElementById('btn-gen-cv');
+  if (!btn) return;
+  btn.textContent = '⏳ Génération en cours…';
+  btn.disabled = true;
+  APP.generatedCV = null;
+
+  try {
+    const res = await fetch('/api/generate-cv', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ demande: d })
+    });
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.error || 'Erreur API');
+
+    APP.generatedCV = json.cv;
+
+    // Préparer lien email
+    const mailto = document.getElementById('cv-mailto');
+    if (mailto) {
+      mailto.href = `mailto:${encodeURIComponent(d.email)}?subject=${encodeURIComponent("Votre CV Dok'péyi")}&body=${encodeURIComponent(`Bonjour ${d.prenom},\n\nVotre CV est prêt. Vous trouverez le fichier PDF en pièce jointe.\n\nCordialement,\nDok'péyi`)}`;
+    }
+
+    // Préparer lien WhatsApp
+    const waEl = document.getElementById('cv-wa');
+    if (waEl && d.whatsapp) {
+      const num = d.whatsapp.replace(/[\s\-().]/g, '').replace(/^\+/, '');
+      waEl.href = `https://wa.me/${num}?text=${encodeURIComponent(`Bonjour ${d.prenom}, votre CV est prêt ! Je vous l'envoie en pièce jointe.`)}`;
+    }
+
+    document.getElementById('cv-result').style.display = 'block';
+    btn.textContent = '✅ CV généré — téléchargez ci-dessous';
+    showToast('CV généré avec succès !', 'success');
+  } catch (e) {
+    btn.textContent = '❌ Erreur — réessayer';
+    btn.disabled = false;
+    showToast('Erreur lors de la génération du CV', 'error');
+  }
+}
+
+function downloadCV() {
+  if (!APP.generatedCV) return;
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Autorisez les popups pour télécharger', 'error'); return; }
+  w.document.write(APP.generatedCV);
+  w.document.close();
+  setTimeout(() => { try { w.print(); } catch(e) {} }, 700);
 }
 
 /* ============================================================
