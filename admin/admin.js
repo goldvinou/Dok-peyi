@@ -39,6 +39,9 @@ let demandes  = safeParse('dok_demandes') || [];
 let services  = safeParse('dok_services') || buildDefaultServices();
 let aiPrompts = safeParse('dok_ai_prompts') || buildDefaultPrompts();
 
+/* ── Firebase DB handle ── */
+let db = null;
+
 /* ============================================================
    PROMPTS IA PAR DÉFAUT
    ============================================================ */
@@ -317,15 +320,20 @@ function init() {
   // Rendre le dashboard
   renderDashboard();
 
-  // Détection de nouvelles commandes en temps réel (autre onglet)
-  window.addEventListener('storage', function(e) {
-    if (e.key !== 'dok_demandes') return;
-    demandes = safeParse('dok_demandes') || [];
-    refreshBadge();
-    if (APP.section === 'dashboard') renderDashboard();
-    if (APP.section === 'demandes')  applyFilters();
-    showToast('Nouvelle commande reçue !', 'success');
-  });
+  // Sync Firebase (temps réel entre appareils/admins)
+  initFirebase();
+
+  // Fallback : sync localStorage (même appareil, onglets différents)
+  if (!db) {
+    window.addEventListener('storage', function(e) {
+      if (e.key !== 'dok_demandes') return;
+      demandes = safeParse('dok_demandes') || [];
+      refreshBadge();
+      if (APP.section === 'dashboard') renderDashboard();
+      if (APP.section === 'demandes')  applyFilters();
+      showToast('Nouvelle commande reçue !', 'success');
+    });
+  }
 }
 
 // Auth gérée par le script inline dans index.html
@@ -342,8 +350,9 @@ const SECTION_TITLES = {
 };
 
 function showSection(name, navEl) {
-  // Relire les données fraîches depuis localStorage
-  demandes = safeParse('dok_demandes') || [];
+  // Firebase maintient demandes à jour en temps réel
+  // En fallback localStorage (Firebase non configuré)
+  if (!db) demandes = safeParse('dok_demandes') || [];
 
   // Cacher toutes les sections
   document.querySelectorAll('.adm-section').forEach(s => s.classList.remove('active'));
@@ -653,7 +662,8 @@ function quickChangeStatus(id, newStatus) {
   const dem = demandes.find(d => d.id === id);
   if (!dem) return;
   dem.statut = newStatus;
-  saveData();
+  if (db) fbUpdate(id, { statut: newStatus });
+  else    saveData();
   refreshBadge();
   showToast(`Statut mis à jour : ${STATUT_LABELS[newStatus]}`, 'success');
 }
@@ -661,7 +671,8 @@ function quickChangeStatus(id, newStatus) {
 function deleteDemande(id) {
   if (!confirm('Supprimer cette demande définitivement ?')) return;
   demandes = demandes.filter(d => d.id !== id);
-  saveData();
+  if (db) fbDelete(id);
+  else    saveData();
   refreshBadge();
   applyFilters();
   showToast('Demande supprimée', 'error');
@@ -814,7 +825,8 @@ function saveModal() {
   if (sel)  d.statut = sel.value;
   if (note) d.note   = note.value;
 
-  saveData();
+  if (db) fbUpdate(d.id, { statut: d.statut, note: d.note });
+  else    saveData();
   refreshBadge();
   closeModal();
   showToast('Modifications enregistrées', 'success');
@@ -1184,10 +1196,83 @@ function renderByServiceChart() {
 }
 
 /* ============================================================
+   FIREBASE — Temps réel multi-admin
+   ============================================================ */
+function initFirebase() {
+  if (typeof firebase === 'undefined') return;
+  if (!FIREBASE_CONFIG || FIREBASE_CONFIG.apiKey.startsWith('REMPLACE')) return;
+
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.database();
+
+    /* Listener temps réel — se déclenche pour TOUS les admins connectés */
+    let firstLoad = true;
+    db.ref('dok-peyi/demandes').on('value', snapshot => {
+      const raw = snapshot.val() || {};
+      demandes = Object.values(raw).sort((a, b) => b.id - a.id);
+      try { localStorage.setItem('dok_demandes', JSON.stringify(demandes)); } catch(e) {}
+
+      refreshBadge();
+      if (APP.section === 'dashboard') renderDashboard();
+      if (APP.section === 'demandes')  applyFilters();
+      if (APP.section === 'stats')     renderStats();
+
+      if (!firstLoad) {
+        showToast('🔄 Données synchronisées en temps réel', 'success');
+      }
+      firstLoad = false;
+    }, err => {
+      console.warn('Firebase sync error:', err.message);
+    });
+
+    /* Migration unique : si Firebase vide → charger depuis localStorage */
+    db.ref('dok-peyi/demandes').once('value', snapshot => {
+      if (!snapshot.val()) {
+        const local = safeParse('dok_demandes') || [];
+        if (local.length > 0) {
+          const obj = {};
+          local.forEach(d => { obj[d.id] = d; });
+          db.ref('dok-peyi/demandes').set(obj).then(() => {
+            showToast(`✅ ${local.length} commandes synchronisées sur Firebase`, 'success');
+          });
+        }
+      }
+    });
+
+    showToast('🔥 Firebase connecté — synchronisation active', 'success');
+  } catch(e) {
+    console.warn('Firebase init failed, fallback localStorage:', e.message);
+  }
+}
+
+/* Mise à jour ciblée d'un champ (statut, note…) */
+function fbUpdate(id, changes) {
+  if (db) db.ref('dok-peyi/demandes/' + id).update(changes).catch(console.error);
+}
+
+/* Suppression */
+function fbDelete(id) {
+  if (db) db.ref('dok-peyi/demandes/' + id).remove().catch(console.error);
+}
+
+/* Écriture d'une nouvelle demande (appelé depuis script.js via bridge) */
+function fbWrite(demande) {
+  if (db) db.ref('dok-peyi/demandes/' + demande.id).set(demande).catch(console.error);
+}
+
+/* ============================================================
    PERSISTANCE
    ============================================================ */
 function saveData() {
-  localStorage.setItem('dok_demandes', JSON.stringify(demandes));
+  if (db) {
+    /* Firebase — écriture atomique de toutes les demandes */
+    const obj = {};
+    demandes.forEach(d => { obj[d.id] = d; });
+    db.ref('dok-peyi/demandes').set(obj).catch(console.error);
+  }
+  /* Toujours garder localStorage en cache local */
+  try { localStorage.setItem('dok_demandes', JSON.stringify(demandes)); } catch(e) {}
 }
 
 /* ============================================================

@@ -740,6 +740,13 @@ function processPayment() {
       const existing = JSON.parse(localStorage.getItem('dok_demandes') || '[]');
       existing.unshift(newDemande);
       localStorage.setItem('dok_demandes', JSON.stringify(existing));
+
+      // Sync Firebase → visible en temps réel sur tous les appareils admin
+      try {
+        if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+          firebase.database().ref('dok-peyi/demandes/' + newDemande.id).set(newDemande);
+        }
+      } catch(fbErr) { /* silencieux si Firebase non configuré */ }
     } catch(e) {}
 
     showConfirmation();
@@ -809,6 +816,18 @@ function resetForm() {
   const section = document.getElementById('demande');
   if (section) window.scrollTo({ top: section.offsetTop - 90, behavior: 'smooth' });
 }
+
+/* ============================================================
+   FIREBASE — Init silencieux sur le site public
+   ============================================================ */
+(function initPublicFirebase() {
+  try {
+    if (typeof firebase !== 'undefined' && typeof FIREBASE_CONFIG !== 'undefined'
+        && !FIREBASE_CONFIG.apiKey.startsWith('REMPLACE')) {
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    }
+  } catch(e) { /* Firebase non configuré — mode localStorage seul */ }
+})();
 
 /* ============================================================
    MENU HAMBURGER
