@@ -390,20 +390,35 @@ function processPayment() {
     try {
       const _now = new Date();
       const _pad = n => String(n).padStart(2, '0');
+      const _id  = Date.now();
+
+      // Extraire le fichier CV pour le stocker séparément (éviter quota 5 Mo)
+      const _details = Object.assign({}, state.details || {});
+      if (_details['cv-fichier'] && _details['cv-fichier'].data) {
+        const _fileKey = 'dok_cv_' + _id;
+        try { localStorage.setItem(_fileKey, _details['cv-fichier'].data); } catch(e) {}
+        _details['cv-fichier'] = {
+          name: _details['cv-fichier'].name,
+          type: _details['cv-fichier'].type,
+          size: _details['cv-fichier'].size,
+          key:  _fileKey
+        };
+      }
+
       const newDemande = {
-        id: Date.now(),
-        date: _now.toISOString().split('T')[0],
-        heure: _pad(_now.getHours()) + ':' + _pad(_now.getMinutes()),
-        prenom: state.prenom,
-        nom: state.nom,
-        email: state.email,
-        whatsapp: state.whatsapp || '',
-        ville: '',
+        id:      _id,
+        date:    _now.toISOString().split('T')[0],
+        heure:   _pad(_now.getHours()) + ':' + _pad(_now.getMinutes()),
+        prenom:  state.prenom,
+        nom:     state.nom,
+        email:   state.email,
+        whatsapp:state.whatsapp || '',
+        ville:   '',
         service: state.service,
         montant: PRICES[state.service] || 0,
-        statut: 'en_attente',
-        details: state.details || {},
-        note: ''
+        statut:  'en_attente',
+        details: _details,
+        note:    ''
       };
       const existing = JSON.parse(localStorage.getItem('dok_demandes') || '[]');
       existing.unshift(newDemande);

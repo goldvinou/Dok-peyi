@@ -532,16 +532,17 @@ function openModal(id) {
   if (!d) return;
   APP.modalId = id;
 
-  // Filtrer cv-actuel des détails affichés (trop long, traité séparément)
+  const SKIP_KEYS = new Set(['cv-actuel', 'cv-fichier']);
   const detailsHtml = Object.entries(d.details || {})
-    .filter(([k]) => k !== 'cv-actuel')
+    .filter(([k]) => !SKIP_KEYS.has(k))
     .map(([k, v]) => `
     <div class="modal-row">
       <span class="modal-key">${k}</span>
-      <span class="modal-val">${escHtml(v)}</span>
+      <span class="modal-val">${escHtml(String(v))}</span>
     </div>`).join('');
 
-  const hasCVFile     = d.details && d.details['cv-fichier'] && d.details['cv-fichier'].data;
+  const _cvf          = d.details && d.details['cv-fichier'];
+  const hasCVFile     = _cvf && (_cvf.data || _cvf.key);
   const hasExistingCV = hasCVFile;
 
   document.getElementById('modal-content').innerHTML = `
@@ -549,6 +550,39 @@ function openModal(id) {
       ${SERVICE_ICONS[d.service]} Demande #${d.id}
       <span class="badge ${STATUT_CLASS[d.statut] || ''}" style="margin-left:auto">${STATUT_LABELS[d.statut] || d.statut}</span>
     </div>
+
+    ${d.service === 'cv' ? `
+    <div class="modal-section cv-ai-section">
+      <div class="modal-section-title">Générer le CV avec IA ✨</div>
+
+      ${hasCVFile ? `
+      <div class="cv-base-badge">
+        ✅ CV du client disponible — l'IA va le moderniser
+        <button class="btn-dl-orig" onclick="downloadOriginalCV(${d.id})">⬇ Voir l'original</button>
+      </div>` : `
+      <div class="cv-base-badge cv-base-empty">
+        📝 Pas de CV fourni — l'IA crée depuis les infos du formulaire
+      </div>`}
+
+      <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">
+        ✨ ${hasCVFile ? 'Moderniser le CV' : 'Générer le CV'}
+      </button>
+
+      <div id="cv-result" style="display:none;margin-top:18px">
+        <div class="cv-actions-row">
+          <button class="btn-modal-save" onclick="previewCV()">👁 Aperçu</button>
+          <button class="btn-modal-save" onclick="downloadCV()">⬇ PDF</button>
+          <a id="cv-mailto" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">📧 Email</a>
+          ${d.whatsapp ? `<a id="cv-wa" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">💬 WhatsApp</a>` : ''}
+        </div>
+        <details class="cv-editor-details">
+          <summary>✏️ Modifier le CV généré</summary>
+          <p style="font-size:.78rem;color:var(--gray-500);margin-bottom:8px">Modifie le HTML puis clique Aperçu.</p>
+          <textarea id="cv-html-editor" rows="12" oninput="APP.generatedCV=this.value"></textarea>
+          <button class="btn-ai-gen" onclick="previewCV()" style="margin-top:8px;font-size:.82rem;padding:9px 16px">🔄 Aperçu avec mes modifications</button>
+        </details>
+      </div>
+    </div>` : ''}
 
     <div class="modal-section">
       <div class="modal-section-title">Informations client</div>
@@ -571,49 +605,6 @@ function openModal(id) {
       ${detailsHtml}
     </div>` : ''}
 
-    ${hasCVFile ? `
-    <div class="modal-section">
-      <div class="modal-section-title">CV original du client</div>
-      <div class="cv-file-row">
-        <span class="cv-file-icon">📄</span>
-        <span class="cv-file-name">${escHtml(d.details['cv-fichier'].name)}</span>
-        <span class="cv-file-size">${Math.round(d.details['cv-fichier'].size / 1024)} Ko</span>
-        <button class="btn-modal-save" onclick="downloadOriginalCV(${d.id})">⬇ Télécharger</button>
-      </div>
-    </div>` : ''}
-
-    ${d.service === 'cv' ? `
-    <div class="modal-section cv-ai-section">
-      <div class="modal-section-title">Générer le CV avec IA ✨</div>
-
-      ${hasExistingCV ? `
-      <div class="cv-base-badge">
-        ✅ Le client a fourni son CV actuel comme base — l'IA va le moderniser
-      </div>` : `
-      <div class="cv-base-badge cv-base-empty">
-        📝 Pas de CV existant — l'IA va en créer un à partir des infos fournies
-      </div>`}
-
-      <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">
-        ✨ ${hasExistingCV ? 'Moderniser le CV existant' : 'Générer le CV'}
-      </button>
-
-      <div id="cv-result" style="display:none;margin-top:18px">
-        <div class="cv-actions-row">
-          <button class="btn-modal-save" onclick="previewCV()">👁 Aperçu</button>
-          <button class="btn-modal-save" onclick="downloadCV()">⬇ PDF</button>
-          <a id="cv-mailto" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">📧 Email</a>
-          ${d.whatsapp ? `<a id="cv-wa" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">💬 WhatsApp</a>` : ''}
-        </div>
-
-        <details class="cv-editor-details">
-          <summary>✏️ Modifier le CV généré</summary>
-          <p style="font-size:.78rem;color:var(--gray-500);margin-bottom:8px">Modifie le code HTML ci-dessous, puis clique sur "Aperçu" pour voir le résultat.</p>
-          <textarea id="cv-html-editor" rows="12" oninput="APP.generatedCV=this.value"></textarea>
-          <button class="btn-ai-gen" onclick="previewCV()" style="margin-top:8px;font-size:.82rem;padding:9px 16px">🔄 Aperçu avec mes modifications</button>
-        </details>
-      </div>
-    </div>` : ''}
 
     <div class="modal-section">
       <div class="modal-section-title">Changer le statut</div>
@@ -745,9 +736,11 @@ function downloadCV() {
 function downloadOriginalCV(id) {
   const d = demandes.find(dm => dm.id === id);
   if (!d || !d.details || !d.details['cv-fichier']) return;
-  const f = d.details['cv-fichier'];
+  const f    = d.details['cv-fichier'];
+  const data = f.data || (f.key ? localStorage.getItem(f.key) : null);
+  if (!data) { showToast('Fichier introuvable — peut-être trop volumineux pour le stockage local', 'error'); return; }
   const a = document.createElement('a');
-  a.href     = f.data;
+  a.href     = data;
   a.download = f.name;
   document.body.appendChild(a);
   a.click();
