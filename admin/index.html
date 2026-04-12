@@ -211,30 +211,17 @@
     <div class="login-logo">Dok'<span>péyi</span></div>
     <p class="login-sub">Espace Administration</p>
 
-    <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="on">
+    <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="off">
       <div class="form-group">
         <label for="lg-user">Identifiant</label>
-        <input type="text" id="lg-user" value="admin" placeholder="admin" autocomplete="username">
+        <input type="text" id="lg-user" value="admin" autocomplete="off" readonly>
       </div>
       <div class="form-group">
         <label for="lg-pass">Mot de passe</label>
-        <div class="pw-wrap">
-          <input type="password" id="lg-pass" value="dokpeyi2025" placeholder="••••••••" autocomplete="current-password">
-          <button type="button" class="pw-eye" onclick="togglePw()" aria-label="Afficher le mot de passe">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        </div>
+        <input type="password" id="lg-pass" value="dokpeyi2025" autocomplete="off" readonly>
       </div>
-      <p id="lg-error" class="lg-error">Identifiant ou mot de passe incorrect.</p>
-      <button type="submit" class="btn-login" id="btn-login">Se connecter</button>
+      <button type="submit" class="btn-login" id="btn-login">Se connecter →</button>
     </form>
-
-    <p class="login-hint">
-      <span>admin</span> &nbsp;/&nbsp; <span>dokpeyi2025</span>
-    </p>
   </div>
 </div>
 

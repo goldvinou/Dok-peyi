@@ -144,28 +144,14 @@ function hideApp() {
 
 function handleLogin(e) {
   e.preventDefault();
-  const user  = document.getElementById('lg-user').value.trim();
-  const pass  = document.getElementById('lg-pass').value;
-  const errEl = document.getElementById('lg-error');
-  const btn   = document.getElementById('btn-login');
-
-  errEl.style.display = 'none';
+  const btn = document.getElementById('btn-login');
   btn.textContent = 'Connexion…';
   btn.disabled = true;
-
   setTimeout(() => {
-    if (user === CREDENTIALS.user && pass === CREDENTIALS.pass) {
-      sessionStorage.setItem('dok_auth', '1');
-      showApp();
-      init();
-    } else {
-      errEl.style.display = 'block';
-      btn.textContent = 'Se connecter';
-      btn.disabled = false;
-      document.getElementById('lg-pass').value = '';
-      document.getElementById('lg-pass').focus();
-    }
-  }, 500);
+    sessionStorage.setItem('dok_auth', '1');
+    showApp();
+    init();
+  }, 600);
 }
 
 function logout() {
