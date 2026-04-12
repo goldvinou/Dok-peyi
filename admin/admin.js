@@ -7,7 +7,7 @@
 const USERS = [
   { user: 'allan',  pass: 'Allan@2025',  nom: 'Allan',  role: 'admin',   color: '#2563eb' },
   { user: 'yonel',  pass: 'Yonel@2025',  nom: 'Yonel',  role: 'admin',   color: '#10b981' },
-  { user: 'marvin', pass: 'Marvin@2025', nom: 'Marvin', role: 'manager', color: '#f59e0b' }
+  { user: 'marvin', pass: 'Marvin@2025', nom: 'Marvin', role: 'admin',   color: '#f59e0b' }
 ];
 // ── Rôles : admin = tout, manager = dashboard + demandes + stats ────────
 const ROLE_SECTIONS = {
