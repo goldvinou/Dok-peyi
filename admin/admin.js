@@ -46,21 +46,27 @@ function buildDefaultPrompts() {
   const FOOTER = '\nRéponds UNIQUEMENT avec le code HTML complet (<!DOCTYPE html> … </html>). Zéro texte avant ou après.';
   return {
     cv_scratch: `Tu es un expert en design et rédaction de CV professionnels.
-Crée un CV complet, moderne et professionnel en HTML autonome (CSS inline, sans JS, format A4).
+Crée un CV complet, moderne et professionnel en HTML autonome (CSS inline, sans JS, format A4 prêt à imprimer).
 
 === DONNÉES DU CLIENT ===
 Nom complet : {{nom}}
+Ville : {{ville}}
 Email : {{email}}
 Téléphone : {{tel}}
+Disponibilité : {{disponibilite}}
 Poste recherché : {{poste}}
+Secteur d'activité : {{secteur}}
+Niveau d'études : {{niveauEtudes}}
+Permis de conduire : {{permis}}
+Langues parlées : {{langues}}
 Expériences : {{experience}}
-Formation : {{formation}}
+Formation / Diplômes : {{formation}}
 Compétences : {{competences}}
-Informations : {{infos}}
+Informations supplémentaires : {{infos}}
 
 === DESIGN ===
-- En-tête fond bleu marine #1e3a5f : nom en grand, poste, email, téléphone
-- Corps blanc : Expériences → Formation → Compétences → Infos
+- En-tête fond bleu marine #1e3a5f : nom en grand, poste, ville, email, téléphone
+- Corps blanc : Expériences → Formation → Compétences → Langues → Infos
 - Typographie system-ui/Arial, accents #2563eb pour les titres de section
 - Séparateurs subtils, layout 1-2 pages
 - @media print : marges 15mm${FOOTER}`,
@@ -147,22 +153,28 @@ Situation / Demande : {{description}}
 function buildPromptFromTemplate(template, demande) {
   const d = demande.details || {};
   const vars = {
-    nom:          `${demande.prenom || ''} ${demande.nom || ''}`.trim(),
-    email:        demande.email    || '',
-    tel:          demande.whatsapp || '',
-    poste:        d['cv-poste']       || d['l-poste']       || 'Non précisé',
-    experience:   d['cv-experience']  || d['l-experience']  || 'Non précisée',
-    formation:    d['cv-formation']   || 'Non précisée',
-    competences:  d['cv-competences'] || 'Non précisées',
-    infos:        d['cv-infos']       || '',
-    note:         d['cv-note']        || 'Moderniser le design, rendre plus professionnel',
-    entreprise:   d['l-entreprise']   || 'Non précisée',
-    motivation:   d['l-motivation']   || 'Non précisée',
-    type:         d['d-type']         || 'Non précisé',
-    description:  d['d-description']  || d['c-description'] || 'Non précisée',
-    documents:    d['d-documents']    || 'Non précisés',
-    destinataire: d['c-destinataire'] || 'Non précisé',
-    objet:        d['c-objet']        || 'Non précisé'
+    nom:           `${demande.prenom || ''} ${demande.nom || ''}`.trim(),
+    email:         demande.email    || '',
+    tel:           demande.whatsapp || '',
+    ville:         d['cv-ville']          || demande.ville  || '',
+    disponibilite: d['cv-disponibilite']  || '',
+    poste:         d['cv-poste']          || d['l-poste']       || 'Non précisé',
+    secteur:       d['cv-secteur']        || '',
+    niveauEtudes:  d['cv-niveau-etudes']  || '',
+    langues:       d['cv-langues']        || '',
+    permis:        d['cv-permis']         || '',
+    experience:    d['cv-experience']     || d['l-experience']  || 'Non précisée',
+    formation:     d['cv-formation']      || 'Non précisée',
+    competences:   d['cv-competences']    || 'Non précisées',
+    infos:         d['cv-infos']          || '',
+    note:          d['cv-note']           || 'Moderniser le design, rendre plus professionnel',
+    entreprise:    d['l-entreprise']      || 'Non précisée',
+    motivation:    d['l-motivation']      || 'Non précisée',
+    type:          d['d-type']            || 'Non précisé',
+    description:   d['d-description']    || d['c-description'] || 'Non précisée',
+    documents:     d['d-documents']       || 'Non précisés',
+    destinataire:  d['c-destinataire']    || 'Non précisé',
+    objet:         d['c-objet']           || 'Non précisé'
   };
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : '');
 }

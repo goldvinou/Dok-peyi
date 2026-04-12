@@ -12,8 +12,9 @@ const state = {
   service:    null,
   details:    {},
   payMethod:  'card',
-  cvFileData: null,  // { name, type, size, data: 'data:...base64...' }
-  cvChoix:    null   // 'scratch' | 'improve'
+  cvFileData: null,
+  cvChoix:    null,
+  cvSubStep:  1
 };
 
 const PRICES = {
@@ -34,27 +35,69 @@ const SERVICE_NAMES = {
    NAVIGATION ENTRE ÉTAPES
    ============================================================ */
 function goNext(step) {
-  if (!validateStep(step)) return;
-
-  // Sauvegarde des données
   if (step === 1) {
-    state.prenom   = document.getElementById('f-prenom').value.trim();
-    state.nom      = document.getElementById('f-nom').value.trim();
-    state.email    = document.getElementById('f-email').value.trim();
+    const prenom = document.getElementById('f-prenom');
+    const nom    = document.getElementById('f-nom');
+    const email  = document.getElementById('f-email');
+    if (!prenom.value.trim()) { markError(prenom); return; }
+    if (!nom.value.trim())    { markError(nom);    return; }
+    if (!email.value.trim() || !email.value.includes('@')) { markError(email); return; }
+    state.prenom   = prenom.value.trim();
+    state.nom      = nom.value.trim();
+    state.email    = email.value.trim();
     const _prefix = (document.getElementById('f-prefix') || {}).value || '+594';
     const _num    = document.getElementById('f-whatsapp').value.trim();
     state.whatsapp = _num ? _prefix.replace(/-CA/, '') + ' ' + _num : '';
+    showStep(2);
+    return;
   }
-  if (step === 3) saveDetails();
-
-  const next = step + 1;
-  if (next === 3) buildDynamicFields();
-  if (next === 4) buildRecap();
-
-  showStep(next);
+  if (step === 2) {
+    if (!state.service) {
+      const grid = document.getElementById('serviceGrid');
+      grid.classList.add('shake'); setTimeout(() => grid.classList.remove('shake'), 500);
+      return;
+    }
+    buildDynamicFields();
+    showStep(3);
+    return;
+  }
+  if (step === 3) {
+    if (state.service === 'cv') {
+      if (!state.cvChoix) {
+        const ph = document.getElementById('cv-phase-choice');
+        if (ph) { ph.classList.add('shake'); setTimeout(() => ph.classList.remove('shake'), 500); }
+        return;
+      }
+      if (state.cvChoix === 'scratch') {
+        if (!validateCVSubStep(state.cvSubStep)) return;
+        if (state.cvSubStep < 4) { showCVSubStep(state.cvSubStep + 1); return; }
+        saveDetails(); buildRecap(); showStep(4); return;
+      }
+      if (state.cvChoix === 'improve') {
+        if (!state.cvFileData) {
+          const z = document.getElementById('cv-fichier-zone');
+          if (z) { z.classList.add('shake'); setTimeout(() => z.classList.remove('shake'), 500); }
+          return;
+        }
+        const note = document.getElementById('cv-note');
+        if (note && !note.value.trim()) { markError(note); return; }
+        saveDetails(); buildRecap(); showStep(4); return;
+      }
+    } else {
+      const firstReq = document.querySelector('#dynamic-fields [required]');
+      if (firstReq && !firstReq.value.trim()) { markError(firstReq); return; }
+      saveDetails(); buildRecap(); showStep(4); return;
+    }
+  }
 }
 
 function goPrev(step) {
+  if (step === 3 && state.service === 'cv') {
+    if (state.cvChoix === 'scratch' && state.cvSubStep > 1) {
+      showCVSubStep(state.cvSubStep - 1); return;
+    }
+    if (state.cvChoix) { resetCVChoice(); return; }
+  }
   showStep(step - 1);
 }
 
@@ -286,45 +329,120 @@ function buildDynamicFields() {
 }
 
 function buildCVFields(container) {
+  const tr = (typeof getTrans === 'function') ? getTrans() : {};
+  const SECTEURS  = ['Commerce','Restauration & Hôtellerie','BTP & Travaux','Santé & Social','Administration & Bureautique','Transport & Logistique','Agriculture & Environnement','Éducation & Formation','Informatique & Tech','Autre'];
+  const NIVEAUX   = ['Sans diplôme','CAP - BEP','BAC','BAC+2 (BTS, DUT)','BAC+3 (Licence)','BAC+4 (Master 1)','BAC+5 et plus','Formation professionnelle'];
+  const LANGUES   = ['Français','Créole guyanais','Anglais','Espagnol','Portugais','Brésilien','Haïtien','Mandarin','Autre'];
+  const DISPOS    = ['Immédiatement','Dans 1 mois','Dans 2 à 3 mois','À définir'];
+
   container.innerHTML = `
-    <p class="cv-path-label">Que veux-tu faire ?</p>
-    <div class="cv-path-cards">
-      <div class="cv-path-card" id="cv-card-scratch" onclick="setCVChoice('scratch')">
-        <div class="cv-path-icon">✏️</div>
-        <div class="cv-path-title">Créer mon CV de A à Z</div>
-        <div class="cv-path-desc">Tu remplis tes infos, on crée un CV professionnel complet</div>
-      </div>
-      <div class="cv-path-card" id="cv-card-improve" onclick="setCVChoice('improve')">
-        <div class="cv-path-icon">✨</div>
-        <div class="cv-path-title">Améliorer mon CV existant</div>
-        <div class="cv-path-desc">Tu joins ton CV + tu expliques ce que tu veux changer</div>
-      </div>
-    </div>
-
-    <div id="cv-fields-scratch" style="display:none">
-      <div class="form-group">
-        <label for="cv-poste">Poste recherché *</label>
-        <input type="text" id="cv-poste" placeholder="Ex: Agent d'entretien, Caissier(e), Chauffeur…">
-      </div>
-      <div class="form-group">
-        <label for="cv-experience">Tes expériences professionnelles</label>
-        <textarea id="cv-experience" placeholder="Décris tes emplois, stages, bénévolat…" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="cv-formation">Tes formations / diplômes</label>
-        <textarea id="cv-formation" placeholder="Ex: BEP Commerce, CAP, Bac Pro…" rows="2"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="cv-competences">Tes compétences</label>
-        <textarea id="cv-competences" placeholder="Ex: Permis B, maîtrise Word, langues parlées…" rows="2"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="cv-infos">Informations supplémentaires</label>
-        <textarea id="cv-infos" placeholder="Centres d'intérêt, informations à ajouter…" rows="2"></textarea>
+    <!-- Phase choix -->
+    <div id="cv-phase-choice">
+      <p class="cv-path-label">Que veux-tu faire ?</p>
+      <div class="cv-path-cards">
+        <div class="cv-path-card" id="cv-card-scratch" onclick="setCVChoice('scratch')">
+          <div class="cv-path-icon">✏️</div>
+          <div class="cv-path-title">Créer mon CV de A à Z</div>
+          <div class="cv-path-desc">Tu remplis tes infos, on crée un CV professionnel complet</div>
+        </div>
+        <div class="cv-path-card" id="cv-card-improve" onclick="setCVChoice('improve')">
+          <div class="cv-path-icon">✨</div>
+          <div class="cv-path-title">Améliorer mon CV existant</div>
+          <div class="cv-path-desc">Tu joins ton CV + tu expliques ce que tu veux changer</div>
+        </div>
       </div>
     </div>
 
-    <div id="cv-fields-improve" style="display:none">
+    <!-- Phase scratch : 4 sous-étapes -->
+    <div id="cv-phase-scratch" style="display:none">
+      <div class="cv-sub-progress">
+        <div class="cv-sub-dot active" id="cvdot-1"><span>1</span><p>${tr.cv_step1_short||'Profil'}</p></div>
+        <div class="cv-sub-line" id="cvline-1"></div>
+        <div class="cv-sub-dot" id="cvdot-2"><span>2</span><p>${tr.cv_step2_short||'Objectif'}</p></div>
+        <div class="cv-sub-line" id="cvline-2"></div>
+        <div class="cv-sub-dot" id="cvdot-3"><span>3</span><p>${tr.cv_step3_short||'Parcours'}</p></div>
+        <div class="cv-sub-line" id="cvline-3"></div>
+        <div class="cv-sub-dot" id="cvdot-4"><span>4</span><p>${tr.cv_step4_short||'Finitions'}</p></div>
+      </div>
+
+      <div class="cv-sub-panel" id="cv-sub-1">
+        <h4 class="cv-sub-title">${tr.cv_step1_title||'Qui êtes-vous ?'}</h4>
+        <div class="form-group">
+          <label for="cv-ville">${tr.cv_ville_label||'Ville / Commune'} *</label>
+          <input type="text" id="cv-ville" placeholder="Ex: Cayenne, Kourou, Saint-Laurent…">
+        </div>
+        <div class="form-group">
+          <label for="cv-disponibilite">${tr.cv_dispo_label||'Disponibilité'} *</label>
+          <select id="cv-disponibilite">
+            <option value="">— Choisir —</option>
+            ${DISPOS.map(d=>`<option>${d}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="cv-sub-panel" id="cv-sub-2" style="display:none">
+        <h4 class="cv-sub-title">${tr.cv_step2_title||'Votre objectif'}</h4>
+        <div class="form-group">
+          <label for="cv-poste">Poste recherché *</label>
+          <input type="text" id="cv-poste" placeholder="Ex: Caissier(e), Agent d'entretien, Chauffeur…">
+        </div>
+        <div class="form-group">
+          <label for="cv-secteur">${tr.cv_secteur_label||"Secteur d'activité"} *</label>
+          <select id="cv-secteur">
+            <option value="">— Choisir —</option>
+            ${SECTEURS.map(s=>`<option>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cv-niveau-etudes">${tr.cv_niveau_label||"Niveau d'études"} *</label>
+          <select id="cv-niveau-etudes">
+            <option value="">— Choisir —</option>
+            ${NIVEAUX.map(n=>`<option>${n}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>${tr.cv_permis_label||'Permis de conduire'} *</label>
+          <div class="radio-pills" id="cv-permis-group">
+            <label class="radio-pill"><input type="radio" name="cv-permis" value="Oui"><span>Oui</span></label>
+            <label class="radio-pill"><input type="radio" name="cv-permis" value="Non"><span>Non</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="cv-sub-panel" id="cv-sub-3" style="display:none">
+        <h4 class="cv-sub-title">${tr.cv_step3_title||'Votre parcours'}</h4>
+        <div class="form-group">
+          <label for="cv-experience">Expériences professionnelles</label>
+          <textarea id="cv-experience" placeholder="Emplois, stages, bénévolat, missions…" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="cv-formation">Formation / Diplômes</label>
+          <textarea id="cv-formation" placeholder="Ex: BEP Commerce, CAP, Bac Pro…" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="cv-competences">Compétences clés</label>
+          <textarea id="cv-competences" placeholder="Maîtrise Word, travail en équipe, service client…" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>${tr.cv_langues_label||'Langues parlées'} * <span class="optional">(min. 1)</span></label>
+          <div class="lang-pills" id="cv-langues-pills">
+            ${LANGUES.map(l=>`<label class="lang-pill"><input type="checkbox" class="lang-pill-input" value="${l}"><span>${l}</span></label>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="cv-sub-panel" id="cv-sub-4" style="display:none">
+        <h4 class="cv-sub-title">${tr.cv_step4_title||'Derniers détails'}</h4>
+        <div class="form-group">
+          <label for="cv-infos">Informations supplémentaires <span class="optional">(optionnel)</span></label>
+          <textarea id="cv-infos" placeholder="Centres d'intérêt, associations, autres infos…" rows="3"></textarea>
+        </div>
+        <div class="cv-recap-mini" id="cv-recap-mini"></div>
+      </div>
+    </div>
+
+    <!-- Phase améliorer -->
+    <div id="cv-phase-improve" style="display:none">
       <div class="form-group">
         <label>Ton CV actuel *</label>
         <div class="file-drop-zone" id="cv-fichier-zone" onclick="document.getElementById('cv-fichier').click()">
@@ -343,7 +461,7 @@ function buildCVFields(container) {
       </div>
       <div class="form-group">
         <label for="cv-note">Ce que tu veux changer *</label>
-        <textarea id="cv-note" placeholder="Ex: Moderniser le design, reformuler mes expériences, le rendre plus professionnel, ajouter une section compétences…" rows="4"></textarea>
+        <textarea id="cv-note" placeholder="Ex: Moderniser le design, reformuler mes expériences, le rendre plus professionnel…" rows="4"></textarea>
       </div>
     </div>
   `;
@@ -351,13 +469,106 @@ function buildCVFields(container) {
 }
 
 function setCVChoice(choice) {
-  state.cvChoix = choice;
-  ['scratch','improve'].forEach(c => {
-    const card = document.getElementById('cv-card-' + c);
-    const fields = document.getElementById('cv-fields-' + c);
-    if (card)   card.classList.toggle('selected', choice === c);
-    if (fields) fields.style.display = choice === c ? 'block' : 'none';
-  });
+  state.cvChoix   = choice;
+  state.cvSubStep = 1;
+  const phChoice  = document.getElementById('cv-phase-choice');
+  const phScratch = document.getElementById('cv-phase-scratch');
+  const phImprove = document.getElementById('cv-phase-improve');
+  if (phChoice)  phChoice.style.display  = choice ? 'none' : '';
+  if (phScratch) phScratch.style.display = choice === 'scratch' ? '' : 'none';
+  if (phImprove) phImprove.style.display = choice === 'improve' ? '' : 'none';
+  if (choice === 'scratch') showCVSubStep(1);
+  const titleEl = document.getElementById('step3-title');
+  if (titleEl) {
+    if (choice === 'scratch') titleEl.textContent = '✏️ Créer mon CV';
+    else if (choice === 'improve') titleEl.textContent = '✨ Améliorer mon CV';
+    else titleEl.textContent = 'Ton CV';
+  }
+}
+
+function resetCVChoice() {
+  state.cvChoix   = null;
+  state.cvSubStep = 1;
+  const phChoice  = document.getElementById('cv-phase-choice');
+  const phScratch = document.getElementById('cv-phase-scratch');
+  const phImprove = document.getElementById('cv-phase-improve');
+  if (phChoice)  phChoice.style.display  = '';
+  if (phScratch) phScratch.style.display = 'none';
+  if (phImprove) phImprove.style.display = 'none';
+  const titleEl = document.getElementById('step3-title');
+  if (titleEl) titleEl.textContent = 'Ton CV';
+}
+
+function showCVSubStep(n) {
+  state.cvSubStep = n;
+  for (let i = 1; i <= 4; i++) {
+    const panel = document.getElementById('cv-sub-' + i);
+    if (panel) panel.style.display = i === n ? '' : 'none';
+    const dot = document.getElementById('cvdot-' + i);
+    if (dot) {
+      dot.classList.remove('active', 'done');
+      if (i < n)      dot.classList.add('done');
+      else if (i === n) dot.classList.add('active');
+    }
+    if (i < 4) {
+      const line = document.getElementById('cvline-' + i);
+      if (line) line.classList.toggle('done', i < n);
+    }
+  }
+  if (n === 4) updateCVRecapMini();
+}
+
+function validateCVSubStep(n) {
+  if (n === 1) {
+    const ville = document.getElementById('cv-ville');
+    const dispo = document.getElementById('cv-disponibilite');
+    if (!ville || !ville.value.trim()) { if (ville) markError(ville); return false; }
+    if (!dispo || !dispo.value)        { if (dispo) markError(dispo); return false; }
+    return true;
+  }
+  if (n === 2) {
+    const poste  = document.getElementById('cv-poste');
+    const secteur = document.getElementById('cv-secteur');
+    const niveau  = document.getElementById('cv-niveau-etudes');
+    const permis  = document.querySelector('[name="cv-permis"]:checked');
+    if (!poste  || !poste.value.trim())  { if (poste)  markError(poste);  return false; }
+    if (!secteur || !secteur.value)      { if (secteur) markError(secteur); return false; }
+    if (!niveau  || !niveau.value)       { if (niveau)  markError(niveau);  return false; }
+    if (!permis) {
+      const pg = document.getElementById('cv-permis-group');
+      if (pg) { pg.classList.add('shake'); setTimeout(() => pg.classList.remove('shake'), 500); }
+      return false;
+    }
+    return true;
+  }
+  if (n === 3) {
+    const langues = document.querySelectorAll('.lang-pill-input:checked');
+    if (langues.length === 0) {
+      const lp = document.getElementById('cv-langues-pills');
+      if (lp) { lp.classList.add('shake'); setTimeout(() => lp.classList.remove('shake'), 500); }
+      return false;
+    }
+    return true;
+  }
+  return true;
+}
+
+function updateCVRecapMini() {
+  const el = document.getElementById('cv-recap-mini');
+  if (!el) return;
+  const get = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+  const langues = [...document.querySelectorAll('.lang-pill-input:checked')].map(c => c.value);
+  const permis  = (document.querySelector('[name="cv-permis"]:checked') || {}).value || '—';
+  el.innerHTML = `
+    <div class="cv-recap-grid">
+      <div class="cv-recap-item"><span class="cv-recap-key">Ville</span><span class="cv-recap-val">${escHtml(get('cv-ville')||'—')}</span></div>
+      <div class="cv-recap-item"><span class="cv-recap-key">Disponibilité</span><span class="cv-recap-val">${escHtml(get('cv-disponibilite')||'—')}</span></div>
+      <div class="cv-recap-item"><span class="cv-recap-key">Poste</span><span class="cv-recap-val">${escHtml(get('cv-poste')||'—')}</span></div>
+      <div class="cv-recap-item"><span class="cv-recap-key">Secteur</span><span class="cv-recap-val">${escHtml(get('cv-secteur')||'—')}</span></div>
+      <div class="cv-recap-item"><span class="cv-recap-key">Niveau études</span><span class="cv-recap-val">${escHtml(get('cv-niveau-etudes')||'—')}</span></div>
+      <div class="cv-recap-item"><span class="cv-recap-key">Permis</span><span class="cv-recap-val">${escHtml(permis)}</span></div>
+      <div class="cv-recap-item cv-recap-full"><span class="cv-recap-key">Langues</span><span class="cv-recap-val">${escHtml(langues.join(', ')||'—')}</span></div>
+    </div>`;
 }
 
 function saveDetails() {
@@ -367,10 +578,17 @@ function saveDetails() {
       state.details['cv-note'] = (document.getElementById('cv-note') || {}).value || '';
       if (state.cvFileData) state.details['cv-fichier'] = state.cvFileData;
     } else {
-      ['cv-poste','cv-experience','cv-formation','cv-competences','cv-infos'].forEach(id => {
+      ['cv-ville','cv-disponibilite','cv-poste','cv-secteur','cv-niveau-etudes',
+       'cv-experience','cv-formation','cv-competences','cv-infos'].forEach(id => {
         const el = document.getElementById(id);
         if (el) state.details[id] = el.value;
       });
+      // Langues (checkboxes)
+      const langues = [...document.querySelectorAll('.lang-pill-input:checked')].map(c => c.value);
+      state.details['cv-langues'] = langues.join(', ');
+      // Permis (radio)
+      const permisEl = document.querySelector('[name="cv-permis"]:checked');
+      state.details['cv-permis'] = permisEl ? permisEl.value : '';
     }
     return;
   }
@@ -512,7 +730,7 @@ function processPayment() {
         nom:     state.nom,
         email:   state.email,
         whatsapp:state.whatsapp || '',
-        ville:   '',
+        ville:   state.details['cv-ville'] || '',
         service: state.service,
         montant: PRICES[state.service] || 0,
         statut:  'en_attente',
@@ -558,6 +776,8 @@ function resetForm() {
   state.details    = {};
   state.payMethod  = 'card';
   state.cvFileData = null;
+  state.cvChoix   = null;
+  state.cvSubStep = 1;
 
   // Réinitialiser le formulaire HTML
   document.getElementById('mainForm').reset();
