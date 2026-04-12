@@ -8,54 +8,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-  <!-- Auth inline — fonctionne même si admin.js ne charge pas -->
+  <!-- Auth — gérée par admin.js (multi-utilisateurs) -->
   <script>
-    var _CREDS = { u: 'admin', p: 'dokpeyi2025' };
-
     function togglePw() {
       var f = document.getElementById('lg-pass');
       if (f) f.type = f.type === 'password' ? 'text' : 'password';
     }
-
-    function adminLogin(e) {
-      if (e) e.preventDefault();
-      var user  = (document.getElementById('lg-user') || {}).value || '';
-      var pass  = (document.getElementById('lg-pass') || {}).value || '';
-      var errEl = document.getElementById('lg-error');
-      var btn   = document.getElementById('btn-login');
-
-      if (errEl) errEl.style.display = 'none';
-      if (btn)   { btn.textContent = 'Connexion…'; btn.disabled = true; }
-
-      setTimeout(function() {
-        if (user.trim() === _CREDS.u && pass === _CREDS.p) {
-          try { sessionStorage.setItem('dok_auth', '1'); } catch(ex) {}
-          var ls  = document.getElementById('login-screen');
-          var app = document.getElementById('admin-app');
-          if (ls)  ls.style.display = 'none';
-          if (app) { app.style.display = 'flex'; app.classList.add('visible'); app.removeAttribute('aria-hidden'); }
-          try { init(); } catch(ex) { console.warn('init:', ex); }
-        } else {
-          if (errEl) errEl.style.display = 'block';
-          if (btn)   { btn.textContent = 'Se connecter →'; btn.disabled = false; }
-          var lp = document.getElementById('lg-pass');
-          if (lp) { lp.value = ''; lp.focus(); }
-        }
-      }, 500);
-    }
-
-    // Auto-login si session active
-    window.addEventListener('DOMContentLoaded', function() {
-      try {
-        if (sessionStorage.getItem('dok_auth') === '1') {
-          var ls  = document.getElementById('login-screen');
-          var app = document.getElementById('admin-app');
-          if (ls)  ls.style.display = 'none';
-          if (app) { app.style.display = 'flex'; app.classList.add('visible'); app.removeAttribute('aria-hidden'); }
-          try { init(); } catch(ex) {}
-        }
-      } catch(ex) {}
-    });
+    // adminLogin() et auto-login sont définis dans admin.js
   </script>
 
   <!-- ============================================================
@@ -497,12 +456,12 @@
     <form id="loginForm" onsubmit="adminLogin(event)" autocomplete="off" novalidate>
       <div class="form-group">
         <label for="lg-user">Identifiant</label>
-        <input type="text" id="lg-user" placeholder="Identifiant" autocomplete="off" spellcheck="false">
+        <input type="text" id="lg-user" placeholder="Ex : allan" autocomplete="off" spellcheck="false" autocapitalize="none">
       </div>
       <div class="form-group">
         <label for="lg-pass">Mot de passe</label>
         <div class="pw-wrap">
-          <input type="password" id="lg-pass" placeholder="••••••••" autocomplete="new-password">
+          <input type="password" id="lg-pass" placeholder="••••••••" autocomplete="current-password">
           <button type="button" class="pw-eye" onclick="togglePw()" aria-label="Afficher">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -511,7 +470,7 @@
           </button>
         </div>
       </div>
-      <p id="lg-error" class="lg-error">Identifiant ou mot de passe incorrect.</p>
+      <p id="lg-error" class="lg-error" style="display:none">Identifiant ou mot de passe incorrect.</p>
       <button type="submit" class="btn-login" id="btn-login">Se connecter →</button>
     </form>
   </div>
@@ -539,11 +498,11 @@
         <span class="nt">Demandes</span>
         <span class="nb" id="nb-pending">0</span>
       </a>
-      <a href="#" class="nav-item" onclick="return showSection('services', this)">
+      <a href="#" class="nav-item nav-admin-only" onclick="return showSection('services', this)">
         <span class="ni">⚙️</span>
         <span class="nt">Services &amp; Tarifs</span>
       </a>
-      <a href="#" class="nav-item" onclick="return showSection('ia', this)">
+      <a href="#" class="nav-item nav-admin-only" onclick="return showSection('ia', this)">
         <span class="ni">🤖</span>
         <span class="nt">Configuration IA</span>
       </a>
@@ -555,10 +514,10 @@
 
     <div class="sb-footer">
       <div class="sb-user">
-        <div class="sb-avatar">A</div>
+        <div class="sb-avatar" id="sb-avatar">?</div>
         <div>
-          <p class="sb-name">Administrateur</p>
-          <p class="sb-role">Dok'péyi</p>
+          <p class="sb-name" id="sb-name">—</p>
+          <p class="sb-role" id="sb-role">—</p>
         </div>
       </div>
       <a href="../index.html" target="_blank" class="sb-site-link">↗ Voir le site</a>
@@ -577,7 +536,11 @@
       <button class="topbar-hamburger" onclick="toggleSidebar()">☰</button>
       <h1 class="topbar-title" id="topbar-title">Tableau de bord</h1>
       <div class="topbar-right">
-        <span style="font-size:.7rem;color:var(--gray-400);font-weight:600;letter-spacing:.05em">v8</span>
+        <div id="topbar-user-badge" style="display:flex;align-items:center;gap:7px;background:var(--gray-100);border-radius:99px;padding:5px 12px 5px 6px;font-size:.78rem;font-weight:600;color:var(--gray-700)">
+          <div id="topbar-avatar" style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:white;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;">?</div>
+          <span id="topbar-nom">—</span>
+          <span id="topbar-role-badge" style="font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--blue-xlight);color:var(--blue)">—</span>
+        </div>
         <span class="topbar-date" id="topbar-date"></span>
         <div class="topbar-notif" onclick="showSection('demandes')">
           🔔

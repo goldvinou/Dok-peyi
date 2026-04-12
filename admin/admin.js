@@ -3,7 +3,18 @@
    ============================================================ */
 
 // ===== CONSTANTES =====
-const CREDENTIALS = { user: 'admin', pass: 'dokpeyi2025' };
+// ── Comptes utilisateurs — modifier les mots de passe ici ──────────────
+const USERS = [
+  { user: 'allan',  pass: 'Allan@2025',  nom: 'Allan',  role: 'admin',   color: '#2563eb' },
+  { user: 'lionel', pass: 'Lionel@2025', nom: 'Lionel', role: 'admin',   color: '#10b981' },
+  { user: 'marvin', pass: 'Marvin@2025', nom: 'Marvin', role: 'manager', color: '#f59e0b' }
+];
+// ── Rôles : admin = tout, manager = dashboard + demandes + stats ────────
+const ROLE_SECTIONS = {
+  admin:   ['dashboard','demandes','services','ia','stats'],
+  manager: ['dashboard','demandes','stats']
+};
+
 const PRICES_DEFAULT = { cv: 8, lettre: 5, dossier: 12, courrier: 7 };
 const SERVICE_NAMES  = { cv: 'CV Professionnel', lettre: 'Lettre de motivation', dossier: 'Dossier administratif', courrier: 'Courrier officiel' };
 const SERVICE_ICONS  = { cv: '📄', lettre: '✉️', dossier: '📁', courrier: '📮' };
@@ -29,6 +40,7 @@ const APP = {
   modalId:      null,
   generatedCV:  null
 };
+let currentUser = null;  // { user, nom, role, color }
 
 // ===== DONNÉES =====
 function safeParse(key) {
@@ -269,7 +281,7 @@ function normalize(s) { return s.toLowerCase().normalize('NFD').replace(/[\u0300
 function rand2() { return String(Math.floor(Math.random() * 90 + 10)); }
 
 /* ============================================================
-   AUTHENTIFICATION
+   AUTHENTIFICATION MULTI-UTILISATEURS
    ============================================================ */
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
@@ -287,22 +299,77 @@ function hideApp() {
   app.setAttribute('aria-hidden', 'true');
 }
 
-function handleLogin(e) {
+function adminLogin(e) {
   if (e) e.preventDefault();
-  adminLogin();
+  const userEl = document.getElementById('lg-user');
+  const passEl = document.getElementById('lg-pass');
+  const errEl  = document.getElementById('lg-error');
+  const btn    = document.getElementById('btn-login');
+
+  const u = (userEl?.value || '').trim().toLowerCase();
+  const p = passEl?.value || '';
+
+  if (errEl) errEl.style.display = 'none';
+  if (btn)   { btn.textContent = 'Connexion…'; btn.disabled = true; }
+
+  setTimeout(() => {
+    const found = USERS.find(x => x.user === u && x.pass === p);
+    if (found) {
+      currentUser = { ...found };
+      try { sessionStorage.setItem('dok_auth_user', JSON.stringify(currentUser)); } catch(ex) {}
+      showApp();
+      updateUserUI();
+      init();
+    } else {
+      if (errEl) { errEl.textContent = 'Identifiant ou mot de passe incorrect.'; errEl.style.display = 'block'; }
+      if (btn)   { btn.textContent = 'Se connecter →'; btn.disabled = false; }
+      if (passEl) { passEl.value = ''; passEl.focus(); }
+    }
+  }, 400);
 }
 
 function logout() {
   if (!confirm('Confirmer la déconnexion ?')) return;
-  sessionStorage.removeItem('dok_auth');
+  try { sessionStorage.removeItem('dok_auth_user'); } catch(ex) {}
+  currentUser = null;
   hideApp();
-  document.getElementById('lg-user').value = '';
-  document.getElementById('lg-pass').value = '';
+  const uEl = document.getElementById('lg-user');
+  const pEl = document.getElementById('lg-pass');
+  if (uEl) uEl.value = '';
+  if (pEl) pEl.value = '';
 }
 
-function togglePw() {
-  const input = document.getElementById('lg-pass');
-  input.type = input.type === 'password' ? 'text' : 'password';
+/* Met à jour tous les éléments UI avec les infos de l'utilisateur connecté */
+function updateUserUI() {
+  if (!currentUser) return;
+  const initial  = currentUser.nom.charAt(0).toUpperCase();
+  const roleLabel = currentUser.role === 'admin' ? '👑 Admin' : '🔧 Manager';
+  const allowed   = ROLE_SECTIONS[currentUser.role] || [];
+
+  // Sidebar
+  const av = document.getElementById('sb-avatar');
+  if (av) { av.textContent = initial; av.style.background = currentUser.color; }
+  const nm = document.getElementById('sb-name');
+  if (nm) nm.textContent = currentUser.nom;
+  const rl = document.getElementById('sb-role');
+  if (rl) rl.textContent = roleLabel;
+
+  // Topbar badge
+  const ta = document.getElementById('topbar-avatar');
+  if (ta) { ta.textContent = initial; ta.style.background = currentUser.color; }
+  const tn = document.getElementById('topbar-nom');
+  if (tn) tn.textContent = currentUser.nom;
+  const tb = document.getElementById('topbar-role-badge');
+  if (tb) {
+    tb.textContent = currentUser.role === 'admin' ? 'Admin' : 'Manager';
+    tb.style.background = currentUser.role === 'admin' ? '#eff6ff' : '#fef3c7';
+    tb.style.color       = currentUser.role === 'admin' ? '#2563eb' : '#d97706';
+  }
+
+  // Masquer les nav admin-only si manager
+  document.querySelectorAll('.nav-admin-only').forEach(el => {
+    el.style.display = currentUser.role === 'admin' ? '' : 'none';
+  });
 }
 
 /* ============================================================
@@ -311,19 +378,16 @@ function togglePw() {
 function init() {
   // Date dans la topbar
   const now = new Date();
-  document.getElementById('topbar-date').textContent =
-    now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const el  = document.getElementById('topbar-date');
+  if (el) el.textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-  // Badge demandes en attente
   refreshBadge();
-
-  // Rendre le dashboard
   renderDashboard();
 
-  // Sync Firebase (temps réel entre appareils/admins)
+  // Firebase sync temps réel
   initFirebase();
 
-  // Fallback : sync localStorage (même appareil, onglets différents)
+  // Fallback onglets localStorage
   if (!db) {
     window.addEventListener('storage', function(e) {
       if (e.key !== 'dok_demandes') return;
@@ -331,9 +395,31 @@ function init() {
       refreshBadge();
       if (APP.section === 'dashboard') renderDashboard();
       if (APP.section === 'demandes')  applyFilters();
-      showToast('Nouvelle commande reçue !', 'success');
+      showToast('📋 Nouvelle commande reçue !', 'success');
     });
   }
+}
+
+/* Auto-login au chargement de la page si session active */
+(function autoLogin() {
+  if (document.readyState !== 'loading') { _tryAutoLogin(); }
+  else { document.addEventListener('DOMContentLoaded', _tryAutoLogin); }
+})();
+
+function _tryAutoLogin() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('dok_auth_user') || 'null');
+    if (saved && saved.nom && saved.role) {
+      // Vérifier que l'utilisateur existe toujours (au cas où le code a changé)
+      const stillValid = USERS.find(u => u.user === saved.user && u.role === saved.role);
+      if (stillValid) {
+        currentUser = { ...saved };
+        showApp();
+        updateUserUI();
+        init();
+      }
+    }
+  } catch(ex) {}
 }
 
 // Auth gérée par le script inline dans index.html
@@ -350,8 +436,14 @@ const SECTION_TITLES = {
 };
 
 function showSection(name, navEl) {
+  // Contrôle de rôle
+  const allowed = ROLE_SECTIONS[currentUser?.role] || ['dashboard'];
+  if (!allowed.includes(name)) {
+    showToast('🔒 Accès réservé aux administrateurs', 'error');
+    return false;
+  }
+
   // Firebase maintient demandes à jour en temps réel
-  // En fallback localStorage (Firebase non configuré)
   if (!db) demandes = safeParse('dok_demandes') || [];
 
   // Cacher toutes les sections
@@ -658,12 +750,31 @@ function applyFilters() {
   renderTable('demandes-table', filtered, false);
 }
 
+/* Journal d'audit — visible dans Firebase Console → dok-peyi/audit */
+function auditLog(action, details) {
+  if (!currentUser) return;
+  const entry = {
+    user:    currentUser.nom,
+    role:    currentUser.role,
+    action,
+    details,
+    ts:      Date.now(),
+    date:    new Date().toLocaleString('fr-FR')
+  };
+  // Log dans Firebase si disponible
+  if (db) db.ref('dok-peyi/audit/' + Date.now()).set(entry).catch(() => {});
+  // Log console pour debug
+  console.log(`[Audit] ${entry.user} (${entry.role}) — ${action}: ${details}`);
+}
+
 function quickChangeStatus(id, newStatus) {
   const dem = demandes.find(d => d.id === id);
   if (!dem) return;
+  const oldStatus = dem.statut;
   dem.statut = newStatus;
   if (db) fbUpdate(id, { statut: newStatus });
   else    saveData();
+  auditLog('statut_change', `#${id} ${STATUT_LABELS[oldStatus]} → ${STATUT_LABELS[newStatus]}`);
   refreshBadge();
   showToast(`Statut mis à jour : ${STATUT_LABELS[newStatus]}`, 'success');
 }
@@ -673,6 +784,7 @@ function deleteDemande(id) {
   demandes = demandes.filter(d => d.id !== id);
   if (db) fbDelete(id);
   else    saveData();
+  auditLog('delete', `Demande #${id} supprimée`);
   refreshBadge();
   applyFilters();
   showToast('Demande supprimée', 'error');
@@ -827,6 +939,7 @@ function saveModal() {
 
   if (db) fbUpdate(d.id, { statut: d.statut, note: d.note });
   else    saveData();
+  auditLog('save_modal', `#${d.id} statut=${d.statut}${d.note ? ' + note' : ''}`);
   refreshBadge();
   closeModal();
   showToast('Modifications enregistrées', 'success');
