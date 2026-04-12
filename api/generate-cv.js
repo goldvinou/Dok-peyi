@@ -1,29 +1,32 @@
-// Runtime Node.js — pas Edge (Edge a un timeout trop court pour générer du HTML complet)
+// Edge runtime — le streaming évite le timeout Vercel Hobby (10s)
+export const config = { runtime: 'edge' };
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',  '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export default async function handler(req) {
+  const cors = {
+    'Access-Control-Allow-Origin':  '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 
-  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
-  if (req.method !== 'POST')   { res.status(405).json({ error: 'Method not allowed' }); return; }
+  if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: cors });
+  if (req.method !== 'POST')   return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { ...cors, 'content-type': 'application/json' } });
 
   const apiKey = process.env.CLAUD_API_KEY;
-  if (!apiKey) { res.status(500).json({ error: 'CLAUD_API_KEY non configurée' }); return; }
+  if (!apiKey) return new Response(JSON.stringify({ error: 'CLAUD_API_KEY non configurée' }), { status: 500, headers: { ...cors, 'content-type': 'application/json' } });
 
-  const { prompt } = req.body || {};
+  let body;
+  try { body = await req.json(); } catch(e) {
+    return new Response(JSON.stringify({ error: 'Body invalide' }), { status: 400, headers: { ...cors, 'content-type': 'application/json' } });
+  }
+
+  const { prompt } = body || {};
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
-    res.status(400).json({ error: 'Prompt manquant ou invalide' });
-    return;
+    return new Response(JSON.stringify({ error: 'Prompt manquant' }), { status: 400, headers: { ...cors, 'content-type': 'application/json' } });
   }
 
   try {
-    const ctrl = new AbortController();
-    const tid  = setTimeout(() => ctrl.abort(), 55000); // 55s — sous la limite Vercel de 60s
-
     const upstream = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      signal: ctrl.signal,
       headers: {
         'x-api-key':         apiKey,
         'anthropic-version': '2023-06-01',
@@ -32,25 +35,35 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model:      'claude-haiku-4-5-20251001',
         max_tokens: 4096,
+        stream:     true,   // ← streaming : Anthropic envoie les tokens au fur et à mesure
         messages:   [{ role: 'user', content: prompt }]
       })
     });
-    clearTimeout(tid);
 
     if (!upstream.ok) {
       const t = await upstream.text();
-      res.status(500).json({ error: `Anthropic ${upstream.status} : ${t.substring(0, 400)}` });
-      return;
+      return new Response(
+        JSON.stringify({ error: `Anthropic ${upstream.status} : ${t.substring(0, 300)}` }),
+        { status: 500, headers: { ...cors, 'content-type': 'application/json' } }
+      );
     }
 
-    const data = await upstream.json();
-    const html = (data.content?.[0]?.text) || '';
-    res.status(200).json({ cv: html });
+    // Pipe le flux SSE d'Anthropic directement vers le client
+    // → les données circulent sans interruption → pas de timeout
+    return new Response(upstream.body, {
+      status: 200,
+      headers: {
+        ...cors,
+        'content-type':    'text/event-stream',
+        'cache-control':   'no-cache, no-transform',
+        'x-accel-buffering': 'no',
+      }
+    });
 
-  } catch (err) {
-    const msg = err.name === 'AbortError'
-      ? 'Délai dépassé (55s) — le document est peut-être trop complexe, réessaie.'
-      : 'Erreur : ' + err.message;
-    res.status(500).json({ error: msg });
+  } catch(err) {
+    return new Response(
+      JSON.stringify({ error: err.message }),
+      { status: 500, headers: { ...cors, 'content-type': 'application/json' } }
+    );
   }
 }

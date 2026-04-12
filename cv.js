@@ -219,29 +219,42 @@ async function cwGenerate() {
   const prompt = cwPrompt();
 
   try {
-    const ctrl = new AbortController();
-    const tid  = setTimeout(() => ctrl.abort(), 45000);
-
+    // Lecture du flux SSE Anthropic
     const res = await fetch('/api/generate-cv', {
       method:  'POST',
-      signal:  ctrl.signal,
       headers: { 'content-type': 'application/json' },
       body:    JSON.stringify({ prompt })
     });
-    clearTimeout(tid);
-    clearInterval(timer);
 
-    if (!res.ok) {
-      const t = await res.text();
-      throw new Error('Erreur serveur (' + res.status + ')');
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('text/event-stream')) {
+      const json = await res.json().catch(() => ({}));
+      throw new Error(json.error || `Erreur ${res.status}`);
     }
 
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '', raw = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const chunk = line.slice(6).trim();
+        if (chunk === '[DONE]') break;
+        try {
+          const evt = JSON.parse(chunk);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') raw += evt.delta.text;
+          else if (evt.type === 'error') throw new Error(evt.error?.message || 'Erreur Anthropic');
+        } catch(e) { if (e.message && !e.message.includes('JSON')) throw e; }
+      }
+    }
+    clearInterval(timer);
 
-    CW.html = data.cv || '';
-    // Strip markdown code fences if the AI wrapped the HTML
-    CW.html = CW.html.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    CW.html = raw.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
     if (!CW.html || !CW.html.startsWith('<')) throw new Error('La réponse était invalide, réessaie.');
 
     cwRenderPreview();

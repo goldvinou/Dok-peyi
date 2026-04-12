@@ -1,9 +1,4 @@
 {
   "trailingSlash": true,
-  "cleanUrls": true,
-  "functions": {
-    "api/generate-cv.js": {
-      "maxDuration": 60
-    }
-  }
+  "cleanUrls": true
 }
