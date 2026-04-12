@@ -684,8 +684,9 @@ async function generateCV(id) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ demande: d })
     });
-    const json = await res.json();
-    if (!res.ok || json.error) throw new Error(json.error || 'Erreur API');
+    let json;
+    try { json = await res.json(); } catch(pe) { throw new Error(`HTTP ${res.status} — réponse non-JSON`); }
+    if (!res.ok || json.error) throw new Error(`[${res.status}] ${json.error || 'Erreur API'}`);
 
     APP.generatedCV = json.cv;
 
@@ -712,7 +713,7 @@ async function generateCV(id) {
   } catch (e) {
     btn.textContent = '❌ Erreur — réessayer';
     btn.disabled = false;
-    showToast('Erreur lors de la génération du CV', 'error');
+    showToast('Erreur : ' + e.message, 'error');
   }
 }
 
