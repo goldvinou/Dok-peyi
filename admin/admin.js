@@ -561,32 +561,37 @@ function openModal(id) {
       <span class="badge ${STATUT_CLASS[d.statut] || ''}" style="margin-left:auto">${STATUT_LABELS[d.statut] || d.statut}</span>
     </div>
 
-    ${d.service === 'cv' ? `
     <div class="modal-section cv-ai-section">
-      <div class="modal-section-title">Générer le CV avec IA ✨</div>
+      <div class="modal-section-title">${{
+        cv:       'Générer le CV',
+        lettre:   'Rédiger la lettre de motivation',
+        dossier:  'Générer le document d\'aide',
+        courrier: 'Rédiger le courrier'
+      }[d.service] || 'Générer le document'} avec IA ✨</div>
 
-      <div class="cv-base-badge ${isImprove ? '' : 'cv-base-empty'}" style="margin-bottom:10px">
-        ${isImprove
-          ? `✨ Le client veut <strong>améliorer son CV existant</strong>`
-          : `✏️ Le client veut <strong>un CV créé de A à Z</strong>`}
-      </div>
-
-      ${isImprove && cvNote ? `
-      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.83rem;color:#0369a1">
-        <strong>Souhaits du client :</strong><br>${escHtml(cvNote)}
-      </div>` : ''}
-
-      ${isImprove && hasCVFile ? `
-      <div style="margin-bottom:12px">
-        <button class="btn-dl-orig" onclick="downloadOriginalCV(${d.id})">⬇ Télécharger le CV original</button>
-      </div>` : ''}
-      ${isImprove && !hasCVFile ? `
-      <div class="cv-base-badge cv-base-empty" style="margin-bottom:12px;font-size:.8rem">
-        ⚠️ Fichier CV non reçu (trop volumineux pour le stockage local)
-      </div>` : ''}
+      ${d.service === 'cv' ? `
+        <div class="cv-base-badge ${isImprove ? '' : 'cv-base-empty'}" style="margin-bottom:10px">
+          ${isImprove
+            ? `✨ Le client veut <strong>améliorer son CV existant</strong>`
+            : `✏️ Le client veut <strong>un CV créé de A à Z</strong>`}
+        </div>
+        ${isImprove && cvNote ? `
+        <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.83rem;color:#0369a1">
+          <strong>Souhaits du client :</strong><br>${escHtml(cvNote)}
+        </div>` : ''}
+        ${isImprove && hasCVFile ? `
+        <div style="margin-bottom:12px">
+          <button class="btn-dl-orig" onclick="downloadOriginalCV(${d.id})">⬇ Télécharger le CV original</button>
+        </div>` : ''}
+      ` : ''}
 
       <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">
-        ✨ ${isImprove ? 'Moderniser le CV' : 'Générer le CV'}
+        ✨ ${{
+          cv:       isImprove ? 'Moderniser le CV' : 'Générer le CV',
+          lettre:   'Rédiger la lettre',
+          dossier:  'Générer le document',
+          courrier: 'Rédiger le courrier'
+        }[d.service] || 'Générer'}
       </button>
 
       <div id="cv-result" style="display:none;margin-top:18px">
@@ -597,13 +602,13 @@ function openModal(id) {
           ${d.whatsapp ? `<a id="cv-wa" class="btn-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 14px" target="_blank">💬 WhatsApp</a>` : ''}
         </div>
         <details class="cv-editor-details">
-          <summary>✏️ Modifier le CV généré</summary>
+          <summary>✏️ Modifier le document généré</summary>
           <p style="font-size:.78rem;color:var(--gray-500);margin-bottom:8px">Modifie le HTML puis clique Aperçu.</p>
           <textarea id="cv-html-editor" rows="12" oninput="APP.generatedCV=this.value"></textarea>
           <button class="btn-ai-gen" onclick="previewCV()" style="margin-top:8px;font-size:.82rem;padding:9px 16px">🔄 Aperçu avec mes modifications</button>
         </details>
       </div>
-    </div>` : ''}
+    </div>
 
     <div class="modal-section">
       <div class="modal-section-title">Informations client</div>
