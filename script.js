@@ -39,7 +39,9 @@ function goNext(step) {
     state.prenom   = document.getElementById('f-prenom').value.trim();
     state.nom      = document.getElementById('f-nom').value.trim();
     state.email    = document.getElementById('f-email').value.trim();
-    state.whatsapp = document.getElementById('f-whatsapp').value.trim();
+    const _prefix = (document.getElementById('f-prefix') || {}).value || '+594';
+    const _num    = document.getElementById('f-whatsapp').value.trim();
+    state.whatsapp = _num ? _prefix.replace(/-CA/, '') + ' ' + _num : '';
   }
   if (step === 3) saveDetails();
 

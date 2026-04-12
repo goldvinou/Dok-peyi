@@ -700,6 +700,36 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
 .form-group input.error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.10); }
 .form-group textarea { resize: vertical; min-height: 100px; line-height: 1.65; }
 
+/* Champ téléphone avec indicatif */
+.phone-input-wrap {
+  display: flex;
+  gap: 0;
+}
+.phone-input-wrap .phone-prefix {
+  width: auto;
+  min-width: 115px;
+  flex-shrink: 0;
+  border-radius: 12px 0 0 12px;
+  border-right: none;
+  padding: 13px 10px;
+  background: var(--gray-50);
+  font-size: .92rem;
+  cursor: pointer;
+}
+.phone-input-wrap .phone-prefix:focus {
+  z-index: 1;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+}
+.phone-input-wrap input[type="tel"] {
+  border-radius: 0 12px 12px 0;
+  flex: 1;
+  min-width: 0;
+}
+.phone-input-wrap input[type="tel"]:focus {
+  z-index: 1;
+}
+
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .form-actions {
   display: flex;

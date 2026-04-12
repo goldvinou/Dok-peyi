@@ -283,7 +283,22 @@
             </div>
             <div class="form-group">
               <label for="f-whatsapp">WhatsApp <span class="optional">(optionnel)</span></label>
-              <input type="tel" id="f-whatsapp" placeholder="+594 06 00 00 00" autocomplete="tel">
+              <div class="phone-input-wrap">
+                <select id="f-prefix" class="phone-prefix" aria-label="Indicatif pays">
+                  <option value="+594">🇬🇫 +594</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+596">🇲🇶 +596</option>
+                  <option value="+590">🇬🇵 +590</option>
+                  <option value="+509">🇭🇹 +509</option>
+                  <option value="+55">🇧🇷 +55</option>
+                  <option value="+597">🇸🇷 +597</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+32">🇧🇪 +32</option>
+                  <option value="+41">🇨🇭 +41</option>
+                  <option value="+1-CA">🇨🇦 +1</option>
+                </select>
+                <input type="tel" id="f-whatsapp" placeholder="06 00 00 00" autocomplete="tel">
+              </div>
             </div>
             <div class="form-actions">
               <button type="button" class="btn btn-primary" onclick="goNext(1)">Continuer →</button>
