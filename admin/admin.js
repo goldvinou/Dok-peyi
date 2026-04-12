@@ -34,7 +34,7 @@ function safeParse(key) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
   catch(e) { localStorage.removeItem(key); return null; }
 }
-let demandes = safeParse('dok_demandes') || generateMockData();
+let demandes = safeParse('dok_demandes') || [];
 let services = safeParse('dok_services') || buildDefaultServices();
 
 /* ============================================================
@@ -53,7 +53,7 @@ function generateMockData() {
   const VILLES  = ['Cayenne', 'Saint-Laurent', 'Kourou', 'Rémire-Montjoly', 'Macouria'];
 
   const data = [];
-  const now  = new Date('2025-04-11');
+  const now  = new Date();
 
   for (let i = 0; i < 28; i++) {
     const d = new Date(now);
@@ -299,7 +299,7 @@ function renderDashboard() {
 function renderRevenueChart() {
   const labels   = [];
   const values   = [];
-  const now      = new Date('2025-04-11');
+  const now      = new Date();
 
   for (let i = 6; i >= 0; i--) {
     const d = new Date(now);
@@ -710,7 +710,7 @@ function renderStats() {
 function renderMonthlyChart() {
   const months = [];
   const values = [];
-  const now    = new Date('2025-04-11');
+  const now    = new Date();
 
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);

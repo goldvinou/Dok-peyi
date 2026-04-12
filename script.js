@@ -325,6 +325,30 @@ function processPayment() {
 
   // Simuler le traitement (2 s)
   setTimeout(() => {
+    // Sauvegarder la demande pour l'admin
+    try {
+      const _now = new Date();
+      const _pad = n => String(n).padStart(2, '0');
+      const newDemande = {
+        id: Date.now(),
+        date: _now.toISOString().split('T')[0],
+        heure: _pad(_now.getHours()) + ':' + _pad(_now.getMinutes()),
+        prenom: state.prenom,
+        nom: state.nom,
+        email: state.email,
+        whatsapp: state.whatsapp || '',
+        ville: '',
+        service: state.service,
+        montant: PRICES[state.service] || 0,
+        statut: 'en_attente',
+        details: state.details || {},
+        note: ''
+      };
+      const existing = JSON.parse(localStorage.getItem('dok_demandes') || '[]');
+      existing.unshift(newDemande);
+      localStorage.setItem('dok_demandes', JSON.stringify(existing));
+    } catch(e) {}
+
     showConfirmation();
   }, 2000);
 }
