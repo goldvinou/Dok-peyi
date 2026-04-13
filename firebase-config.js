@@ -35,13 +35,14 @@
    ============================================================ */
 
 const FIREBASE_CONFIG = {
-  apiKey:            "REMPLACE_PAR_TA_CLE_API",
-  authDomain:        "REMPLACE_PAR_TON_PROJET.firebaseapp.com",
-  databaseURL:       "https://REMPLACE_PAR_TON_PROJET-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:         "REMPLACE_PAR_TON_PROJET",
-  storageBucket:     "REMPLACE_PAR_TON_PROJET.appspot.com",
-  messagingSenderId: "REMPLACE_PAR_TON_SENDER_ID",
-  appId:             "REMPLACE_PAR_TON_APP_ID"
+  apiKey:            "AIzaSyDQeKLH5EmnhL5vumz9KXw5skzM8dm-5po",
+  authDomain:        "dok-peyi.firebaseapp.com",
+  databaseURL:       "https://dok-peyi-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "dok-peyi",
+  storageBucket:     "dok-peyi.firebasestorage.app",
+  messagingSenderId: "491648146816",
+  appId:             "1:491648146816:web:95935218b9b9875cfcb565",
+  measurementId:     "G-140RG50HQ9"
 };
 
 /* ── Initialisation automatique ──────────────────────────────
