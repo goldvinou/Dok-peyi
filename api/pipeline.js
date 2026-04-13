@@ -8,15 +8,21 @@
 
    Actions
    ───────
-   generate         — submitted → processing → generated
+   generate         — submitted → processing → generated → pending_payment
+                      (or → needs_review if review required)
                       payload: { prompt?: string }
-                      prompt is optional — if omitted, content.js builds it
-                      from the order data (service + details).
-                      Provide prompt only to override the server-side builder
-                      (e.g., admin callers that construct their own prompts).
 
-   confirm_payment  — pending_payment → paid → delivered
-                      payload: {} (payment provider stub — no fields yet)
+   confirm_payment  — pending_payment → paid
+                      Unlocks final document. Does NOT deliver automatically.
+                      payload: { provider?, reference?, amount? }
+                        provider  : 'manual' | 'stripe' | 'paypal' | 'momo' | 'lydia'
+                        reference : provider transaction id
+                        amount    : amount charged (fallback to order.montant)
+                      See also: POST /api/payment-webhook (provider callbacks)
+
+   deliver          — paid → delivered  OR  needs_review → delivered
+                      Server-side guard: rejects if payment was never confirmed.
+                      payload: {}
 
    fail             — any → failed (forced)
                       payload: { reason?: string }
@@ -88,8 +94,17 @@ export default async function handler(req) {
 
     /* ── confirm_payment ── */
     case 'confirm_payment': {
-      // Payment provider not wired yet — transitions straight to delivered.
-      result = await handlers.confirm_payment(order, payload);
+      result = await handlers.confirm_payment(order, {
+        provider:  payload.provider  || 'manual',
+        reference: payload.reference || null,
+        amount:    payload.amount    != null ? payload.amount : undefined
+      });
+      break;
+    }
+
+    /* ── deliver ── */
+    case 'deliver': {
+      result = await handlers.deliver(order);
       break;
     }
 
