@@ -9,7 +9,11 @@
    Actions
    ───────
    generate         — submitted → processing → generated
-                      payload: { prompt: string, systemPrompt?: string }
+                      payload: { prompt?: string }
+                      prompt is optional — if omitted, content.js builds it
+                      from the order data (service + details).
+                      Provide prompt only to override the server-side builder
+                      (e.g., admin callers that construct their own prompts).
 
    confirm_payment  — pending_payment → paid → delivered
                       payload: {} (payment provider stub — no fields yet)
@@ -71,13 +75,13 @@ export default async function handler(req) {
 
     /* ── generate ── */
     case 'generate': {
-      if (!payload.prompt) return json({ ok: false, error: 'payload.prompt requis' }, 400);
-      if (!apiKey)         return json({ ok: false, error: 'CLAUD_API_KEY non configurée' }, 500);
+      if (!apiKey) return json({ ok: false, error: 'CLAUD_API_KEY non configurée' }, 500);
 
       result = await handlers.generate(order, {
-        prompt:       payload.prompt,
         apiKey,
-        systemPrompt: payload.systemPrompt || ''
+        // Optional: caller-supplied prompt overrides the server-side builder.
+        // If omitted, content.js builds the prompt from order.service + order.details.
+        promptOverride: payload.prompt || ''
       });
       break;
     }
