@@ -700,10 +700,18 @@ function refreshBadge() {
    DASHBOARD
    ============================================================ */
 function renderDashboard() {
-  const total    = demandes.length;
-  const termine  = demandes.filter(d => d.statut === 'terminé').length;
-  const attente  = demandes.filter(d => d.statut === 'en_attente').length;
-  const revenue  = demandes.filter(d => d.statut === 'terminé').reduce((s, d) => s + d.montant, 0);
+  const total = demandes.length;
+
+  // "Completed" covers both legacy ('terminé') and pipeline ('delivered', 'paid') terminal states.
+  const DONE_STATUSES = new Set(['terminé', 'delivered', 'paid']);
+  // "Pending" covers anything that needs admin attention.
+  const PENDING_STATUSES = new Set(['en_attente', 'submitted', 'pending_payment', 'needs_review']);
+
+  const termine = demandes.filter(d => DONE_STATUSES.has(d.statut)).length;
+  const attente = demandes.filter(d => PENDING_STATUSES.has(d.statut)).length;
+  const revenue = demandes
+    .filter(d => DONE_STATUSES.has(d.statut))
+    .reduce((s, d) => s + (d.montant || 0), 0);
 
   // KPIs
   document.getElementById('kpi-grid').innerHTML = `
@@ -754,9 +762,10 @@ function renderRevenueChart() {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const str = d.toISOString().split('T')[0];
+    const DONE = new Set(['terminé', 'delivered', 'paid']);
     const rev = demandes
-      .filter(dm => dm.date === str && dm.statut === 'terminé')
-      .reduce((s, dm) => s + dm.montant, 0);
+      .filter(dm => dm.date === str && DONE.has(dm.statut))
+      .reduce((s, dm) => s + (dm.montant || 0), 0);
     labels.push(d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }));
     values.push(rev);
   }
@@ -1024,6 +1033,84 @@ function openModal(id) {
   const hasCVFile     = _cvf && (_cvf.data || _cvf.key);
   const isImprove     = cvChoix === 'improve';
 
+  /* ── Pipeline section: review alert, payment info, action buttons ── */
+  const PIPELINE_STATUSES = new Set(['submitted','processing','generated',
+    'pending_payment','paid','needs_review','delivered','failed']);
+  const isPipelineOrder = Array.isArray(d._pipeline) && d._pipeline.length > 0
+    || PIPELINE_STATUSES.has(d.statut);
+
+  let pipelineSection = '';
+  if (isPipelineOrder) {
+    // Review alert
+    const reviewAlert = (d.reviewRequired && d.reviewReason)
+      ? `<div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;
+           padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#991b1b">
+           ⚠️ <strong>Revue requise :</strong> ${escHtml(d.reviewReason)}
+         </div>`
+      : '';
+
+    // Payment badge
+    const paymentInfo = d._payment
+      ? `<div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;
+            padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#166534">
+            💳 Paiement confirmé ${new Date(d._payment.confirmedAt).toLocaleString('fr-FR')}${
+              d._payment.reference ? ` · Réf : ${escHtml(String(d._payment.reference))}` : ''}${
+              d._payment.provider && d._payment.provider !== 'manual'
+                ? ` · ${escHtml(d._payment.provider)}` : ''}
+         </div>`
+      : '';
+
+    // Action buttons based on current status
+    let actionBtns = '';
+    if (d.statut === 'pending_payment') {
+      actionBtns = `<button class="btn-modal-save"
+        onclick="pipelineAction(${d.id},'confirm_payment',{provider:'manual'})">
+        ✅ Confirmer le paiement
+      </button>`;
+    } else if (d.statut === 'needs_review') {
+      if (d._payment) {
+        // Post-payment review — payment already done, just deliver
+        actionBtns = `<button class="btn-modal-save"
+          onclick="pipelineAction(${d.id},'deliver')">
+          📦 Livrer (revue terminée)
+        </button>`;
+      } else {
+        // Pre-payment review (e.g. sejour) — confirm payment first
+        actionBtns = `<button class="btn-modal-save"
+          style="background:linear-gradient(135deg,#d97706,#f59e0b)"
+          onclick="pipelineAction(${d.id},'confirm_payment',{provider:'manual'})">
+          💳 Approuver + confirmer paiement
+        </button>`;
+      }
+    } else if (d.statut === 'paid') {
+      actionBtns = `<button class="btn-modal-save"
+        onclick="pipelineAction(${d.id},'deliver')">
+        📦 Livrer la commande
+      </button>`;
+    }
+
+    // View pipeline-generated document
+    const docViewBtn = d._documents?.final
+      ? `<button class="btn-modal-save"
+           style="background:linear-gradient(135deg,#475569,#334155)"
+           onclick="viewPipelineDoc(${d.id})">
+           👁 Voir le document
+         </button>`
+      : '';
+
+    const hasContent = reviewAlert || paymentInfo || actionBtns || docViewBtn;
+    if (hasContent) {
+      pipelineSection = `
+        <div class="modal-section">
+          <div class="modal-section-title">Pipeline de traitement</div>
+          ${reviewAlert}${paymentInfo}
+          ${actionBtns || docViewBtn
+            ? `<div style="display:flex;gap:8px;flex-wrap:wrap">${actionBtns}${docViewBtn}</div>`
+            : ''}
+        </div>`;
+    }
+  }
+
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">
       ${SERVICE_ICONS[d.service]} Demande #${d.id}
@@ -1090,7 +1177,7 @@ function openModal(id) {
         <!-- Étape 2 : Envoi -->
         <div style="background:var(--blue-xlight);border:1.5px solid #bfdbfe;border-radius:12px;padding:16px;margin-top:14px">
           <div style="font-size:.7rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Étape 2 — Envoyer au client</div>
-          <p style="font-size:.79rem;color:var(--gray-600);margin-bottom:12px;line-height:1.5">Télécharge le PDF ci-dessus, puis clique le bouton d'envoi ci-dessous.<br>La commande sera automatiquement marquée <strong>Terminée</strong>.</p>
+          <p style="font-size:.79rem;color:var(--gray-600);margin-bottom:12px;line-height:1.5">Télécharge le PDF ci-dessus, puis clique le bouton d'envoi ci-dessous.<br>La commande sera automatiquement marquée comme complétée.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             ${d.whatsapp ? `<button class="btn-ai-gen" onclick="sendDocWhatsApp(${d.id})" style="background:linear-gradient(135deg,#15803d,#16a34a)">💬 WhatsApp — ${escHtml(d.whatsapp)}</button>` : ''}
             <button class="btn-ai-gen" onclick="sendDocEmail(${d.id})" style="background:linear-gradient(135deg,#d97706,#f59e0b)">📧 Email — ${escHtml(d.email)}</button>
@@ -1115,6 +1202,8 @@ function openModal(id) {
       <div class="modal-row"><span class="modal-key">Date</span><span class="modal-val">${formatDate(d.date)} à ${d.heure}</span></div>
     </div>
 
+    ${pipelineSection}
+
     ${Object.keys(d.details || {}).length ? `
     <div class="modal-section">
       <div class="modal-section-title">Informations fournies</div>
@@ -1127,10 +1216,22 @@ function openModal(id) {
       <div class="modal-status-change">
         <label>Statut actuel :</label>
         <select class="status-select" id="modal-statut-sel">
-          <option value="en_attente" ${d.statut === 'en_attente' ? 'selected' : ''}>En attente</option>
-          <option value="en_cours"   ${d.statut === 'en_cours'   ? 'selected' : ''}>En cours</option>
-          <option value="terminé"    ${d.statut === 'terminé'    ? 'selected' : ''}>Terminé</option>
-          <option value="annulé"     ${d.statut === 'annulé'     ? 'selected' : ''}>Annulé</option>
+          <optgroup label="Pipeline">
+            <option value="submitted"       ${d.statut === 'submitted'       ? 'selected' : ''}>Soumis</option>
+            <option value="processing"      ${d.statut === 'processing'      ? 'selected' : ''}>Génération IA</option>
+            <option value="generated"       ${d.statut === 'generated'       ? 'selected' : ''}>Généré</option>
+            <option value="pending_payment" ${d.statut === 'pending_payment' ? 'selected' : ''}>Paiement en cours</option>
+            <option value="paid"            ${d.statut === 'paid'            ? 'selected' : ''}>Payé</option>
+            <option value="needs_review"    ${d.statut === 'needs_review'    ? 'selected' : ''}>À vérifier</option>
+            <option value="delivered"       ${d.statut === 'delivered'       ? 'selected' : ''}>Livré</option>
+            <option value="failed"          ${d.statut === 'failed'          ? 'selected' : ''}>Échec</option>
+          </optgroup>
+          <optgroup label="Ancien système">
+            <option value="en_attente" ${d.statut === 'en_attente' ? 'selected' : ''}>En attente</option>
+            <option value="en_cours"   ${d.statut === 'en_cours'   ? 'selected' : ''}>En cours</option>
+            <option value="terminé"    ${d.statut === 'terminé'    ? 'selected' : ''}>Terminé</option>
+            <option value="annulé"     ${d.statut === 'annulé'     ? 'selected' : ''}>Annulé</option>
+          </optgroup>
         </select>
       </div>
     </div>
@@ -1283,18 +1384,70 @@ function sendDocEmail(id) {
 /* ── Marquer la commande comme terminée après envoi ── */
 function markSent(id) {
   const d = demandes.find(dm => dm.id === id);
-  if (!d || d.statut === 'terminé') return;
-  d.statut = 'terminé';
-  if (db) fbUpdate(id, { statut: 'terminé' });
+  if (!d) return;
+
+  // Pipeline orders (identified by _pipeline audit trail) use 'delivered';
+  // legacy orders keep the old 'terminé' status.
+  const isPipeline  = Array.isArray(d._pipeline) && d._pipeline.length > 0;
+  const doneStatus  = isPipeline ? 'delivered' : 'terminé';
+  const doneLabel   = isPipeline ? 'Livré'     : 'Terminé';
+  const doneCls     = isPipeline ? 'badge-delivered' : 'badge-termine';
+
+  if (d.statut === doneStatus || d.statut === 'terminé' || d.statut === 'delivered') return;
+
+  d.statut = doneStatus;
+  if (db) fbUpdate(id, { statut: doneStatus });
   else    saveData();
-  auditLog('document_envoyé', `#${id} — document envoyé au client`);
+  auditLog('document_envoyé', `#${id} — document envoyé, statut → ${doneStatus}`);
   refreshBadge();
+
   // Mettre à jour la modale ouverte
   const badge = document.querySelector('#modal-content .modal-title .badge');
-  if (badge) { badge.textContent = 'Terminé'; badge.className = 'badge badge-termine'; }
+  if (badge) { badge.textContent = doneLabel; badge.className = `badge ${doneCls}`; }
   const sel = document.getElementById('modal-statut-sel');
-  if (sel) sel.value = 'terminé';
-  showToast('✅ Document envoyé — commande marquée Terminée !', 'success');
+  if (sel) sel.value = doneStatus;
+  showToast(`✅ Document envoyé — commande marquée ${doneLabel} !`, 'success');
+}
+
+/* ── Pipeline action: POST /api/pipeline and refresh the open modal ── */
+async function pipelineAction(id, action, payload = {}) {
+  const d = demandes.find(dm => dm.id === id);
+  if (!d) return null;
+
+  try {
+    const res  = await fetch('/api/pipeline', {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({ action, order: d, payload })
+    });
+    const json = await res.json();
+    if (!res.ok || !json.ok) throw new Error(json.error || `Erreur ${res.status}`);
+
+    // Update the local order object in-place
+    Object.assign(d, json.order);
+    if (db) fbUpdate(id, json.order);
+    else    saveData();
+    auditLog(action, `#${id} → ${json.order.statut}`);
+    refreshBadge();
+
+    // Re-render the modal so the pipeline section reflects the new state
+    openModal(id);
+    showToast('Statut mis à jour : ' + (STATUT_LABELS[json.order.statut] || json.order.statut), 'success');
+    return json.order;
+  } catch (e) {
+    showToast('Erreur pipeline : ' + e.message, 'error');
+    return null;
+  }
+}
+
+/* ── View a pipeline-generated document (stored in order._documents.final) ── */
+function viewPipelineDoc(id) {
+  const d = demandes.find(dm => dm.id === id);
+  if (!d?._documents?.final) { showToast('Document non disponible', 'error'); return; }
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Autorisez les popups du navigateur', 'error'); return; }
+  w.document.write(d._documents.final);
+  w.document.close();
 }
 
 function downloadOriginalCV(id) {
