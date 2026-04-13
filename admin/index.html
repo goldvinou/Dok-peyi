@@ -81,10 +81,10 @@
     .topbar-hamburger{display:none;background:none;border:none;font-size:1.2rem;color:var(--gray-600);padding:6px}
     .topbar-title{font-size:1rem;font-weight:700;color:var(--dark);letter-spacing:-0.02em}
     .topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
-    .topbar-clock{display:flex;flex-direction:column;align-items:flex-end;gap:1px;padding:5px 10px;background:var(--gray-100);border-radius:10px;cursor:default;user-select:none}
-    .topbar-clock-time{font-size:.95rem;font-weight:700;color:var(--dark);letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
-    .topbar-clock-date{font-size:.65rem;color:var(--gray-400);white-space:nowrap;text-transform:capitalize;letter-spacing:.01em}
-    @media(max-width:640px){.topbar-clock-date{display:none}.topbar-clock{padding:5px 9px}}
+    .topbar-clock{display:flex;flex-direction:column;align-items:flex-end;gap:1px;padding:5px 11px;background:var(--gray-100);border-radius:10px;cursor:default;user-select:none;min-width:72px}
+    .topbar-clock-time{font-size:.95rem;font-weight:700;color:var(--dark);letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;text-align:right}
+    .topbar-clock-date{font-size:.63rem;color:var(--gray-500);white-space:nowrap;text-transform:capitalize;letter-spacing:.01em;text-align:right}
+    @media(max-width:480px){.topbar-clock{padding:5px 9px}.topbar-clock-time{font-size:.88rem}.topbar-clock-date{font-size:.6rem}}
     .topbar-notif{position:relative;font-size:1.1rem;cursor:pointer;padding:6px;border-radius:10px;transition:background var(--t)}
     .topbar-notif:hover{background:var(--gray-100)}
     .notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--orange);border-radius:50%;border:2px solid var(--white)}

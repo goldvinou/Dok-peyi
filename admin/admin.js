@@ -575,7 +575,7 @@ function startClock() {
     const tEl  = document.getElementById('topbar-time');
     const dEl  = document.getElementById('topbar-date-lbl');
     if (tEl) tEl.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    if (dEl) dEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    if (dEl) dEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   }
   tick();
   setInterval(tick, 1000);
