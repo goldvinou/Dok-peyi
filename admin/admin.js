@@ -15,9 +15,9 @@ const ROLE_SECTIONS = {
   manager: ['dashboard','demandes','stats']
 };
 
-const PRICES_DEFAULT = { cv: 8, lettre: 5, dossier: 12, courrier: 7 };
-const SERVICE_NAMES  = { cv: 'CV Professionnel', lettre: 'Lettre de motivation', dossier: 'Dossier administratif', courrier: 'Courrier officiel' };
-const SERVICE_ICONS  = { cv: '📄', lettre: '✉️', dossier: '📁', courrier: '📮' };
+const PRICES_DEFAULT = { cv: 8, lettre: 5, dossier: 12, courrier: 7, sejour: 15 };
+const SERVICE_NAMES  = { cv: 'CV Professionnel', lettre: 'Lettre de motivation', dossier: 'Dossier administratif', courrier: 'Courrier officiel', sejour: 'Titre de séjour' };
+const SERVICE_ICONS  = { cv: '📄', lettre: '✉️', dossier: '📁', courrier: '📮', sejour: '🛂' };
 
 const STATUT_LABELS = {
   en_attente: 'En attente',
@@ -172,7 +172,30 @@ Situation / Demande : {{description}}
 - Coordonnées destinataire, Objet en gras
 - Corps : contexte → demande précise → justification
 - Formule de politesse officielle, signature
-- Format A4, marges 25mm, ton officiel adapté à l'administration${FOOTER}`
+- Format A4, marges 25mm, ton officiel adapté à l'administration${FOOTER}`,
+
+    sejour: `Tu es un assistant administratif professionnel spécialisé en droit des étrangers (Guyane / France).
+Génère un document d'aide personnalisé en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Nationalité : {{nationalite}}
+Type de demande : {{choix}}
+Situation actuelle : {{situation}}
+Documents disponibles : {{documents}}
+
+=== CONTENU ===
+1. Résumé de la situation et du type de demande
+2. Démarches recommandées étape par étape (numérotées)
+3. Checklist des documents à préparer ☐
+4. Organismes compétents en Guyane (Préfecture de Guyane, OFII, France Services…) avec adresses et horaires
+5. Délais habituels et points de vigilance importants
+6. Bandeau d'avertissement visible : "Ce document est une aide informatique. Il ne remplace pas un conseil juridique professionnel."
+
+- En-tête fond rouge #b91c1c, accents #ef4444, corps blanc, @media print marges 15mm
+- Inclure un disclaimer légal en bas de page${FOOTER}`
   };
 }
 
@@ -197,10 +220,13 @@ function buildPromptFromTemplate(template, demande) {
     entreprise:    d['l-entreprise']      || 'Non précisée',
     motivation:    d['l-motivation']      || 'Non précisée',
     type:          d['d-type']            || 'Non précisé',
-    description:   d['d-description']    || d['c-description'] || 'Non précisée',
-    documents:     d['d-documents']       || 'Non précisés',
+    description:   d['d-description']    || d['c-description'] || d['description']  || 'Non précisée',
+    documents:     d['d-documents']       || d['documents']    || 'Non précisés',
     destinataire:  d['c-destinataire']    || 'Non précisé',
-    objet:         d['c-objet']           || 'Non précisé'
+    objet:         d['c-objet']           || 'Non précisé',
+    nationalite:   d['nationalite']       || 'Non précisée',
+    situation:     d['situation']         || 'Non précisée',
+    choix:         d['sw-choice']         || ''
   };
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : '');
 }
@@ -284,7 +310,8 @@ function buildDefaultServices() {
     cv:      { name: 'CV Professionnel',      icon: '📄', price: 8,  active: true,  desc: 'Un CV professionnel, clair et efficace pour décrocher un emploi.' },
     lettre:  { name: 'Lettre de motivation',  icon: '✉️', price: 5,  active: true,  desc: 'Une lettre personnalisée et convaincante pour ta candidature.' },
     dossier: { name: 'Dossier administratif', icon: '📁', price: 12, active: true,  desc: 'Accompagnement complet pour monter ton dossier CAF, logement, emploi…' },
-    courrier:{ name: 'Courrier officiel',      icon: '📮', price: 7,  active: true,  desc: 'Rédaction de courriers pour mairies, préfectures et administrations.' }
+    courrier:{ name: 'Courrier officiel',      icon: '📮', price: 7,  active: true,  desc: 'Rédaction de courriers pour mairies, préfectures et administrations.' },
+    sejour:  { name: 'Titre de séjour',        icon: '🛂', price: 15, active: true,  desc: 'Accompagnement pour les démarches de titre de séjour en Guyane.' }
   };
 }
 
@@ -751,14 +778,14 @@ function renderRevenueChart() {
    CHART : DONUT PAR SERVICE
    ============================================================ */
 function renderDonutChart() {
-  const counts = { cv: 0, lettre: 0, dossier: 0, courrier: 0 };
+  const counts = { cv: 0, lettre: 0, dossier: 0, courrier: 0, sejour: 0 };
   demandes.forEach(d => { if (counts[d.service] !== undefined) counts[d.service]++; });
 
   destroyChart('donut');
   const ctx = document.getElementById('ch-donut');
   if (!ctx) return;
 
-  const colors = ['#2563eb', '#10b981', '#f59e0b', '#6366f1'];
+  const colors = ['#2563eb', '#10b981', '#f59e0b', '#6366f1', '#ef4444'];
   const keys   = Object.keys(counts);
 
   APP.charts.donut = new Chart(ctx, {
@@ -974,7 +1001,8 @@ function openModal(id) {
         cv:       'Générer le CV',
         lettre:   'Rédiger la lettre de motivation',
         dossier:  'Générer le document d\'aide',
-        courrier: 'Rédiger le courrier'
+        courrier: 'Rédiger le courrier',
+        sejour:   'Générer le guide titre de séjour'
       }[d.service] || 'Générer le document'} avec IA ✨</div>
 
       ${d.service === 'cv' ? `
@@ -998,7 +1026,8 @@ function openModal(id) {
           cv:       isImprove ? 'Moderniser le CV' : 'Générer le CV',
           lettre:   'Rédiger la lettre',
           dossier:  'Générer le document',
-          courrier: 'Rédiger le courrier'
+          courrier: 'Rédiger le courrier',
+          sejour:   'Générer le guide séjour'
         }[d.service] || 'Générer'}
       </button>
 
@@ -1135,10 +1164,10 @@ async function generateCV(id) {
 
   try {
     // Choisir le bon template selon le service et le choix CV
-    const cvChoix   = (d.details || {})['cv-choix'] || 'scratch';
+    const cvChoix   = (d.details || {})['cv-choix'] || (d.details || {})['sw-choice'] || 'scratch';
     const promptKey = d.service === 'cv'
       ? (cvChoix === 'improve' ? 'cv_improve' : 'cv_scratch')
-      : d.service;
+      : d.service; // 'lettre' | 'dossier' | 'courrier' | 'sejour'
     const template = aiPrompts[promptKey] || buildDefaultPrompts()[promptKey] || '';
     const prompt   = buildPromptFromTemplate(template, d);
 
@@ -1197,7 +1226,7 @@ function downloadCV(id) {
 function sendDocWhatsApp(id) {
   const d = demandes.find(dm => dm.id === id);
   if (!d || !d.whatsapp) return;
-  const svcLabel = { cv: 'CV', lettre: 'lettre de motivation', dossier: 'document administratif', courrier: 'courrier officiel' };
+  const svcLabel = { cv: 'CV', lettre: 'lettre de motivation', dossier: 'document administratif', courrier: 'courrier officiel', sejour: 'guide titre de séjour' };
   const doc = svcLabel[d.service] || 'document';
   const num = d.whatsapp.replace(/[\s\-().]/g, '').replace(/^\+/, '');
   const msg = `Bonjour ${d.prenom} 👋\n\nVotre ${doc} est prêt ! Je vous l'envoie en pièce jointe (PDF).\n\nN'hésitez pas si vous avez des questions 😊\n\n— L'équipe Dok'péyi`;
@@ -1209,7 +1238,7 @@ function sendDocWhatsApp(id) {
 function sendDocEmail(id) {
   const d = demandes.find(dm => dm.id === id);
   if (!d) return;
-  const svcLabel = { cv: 'CV', lettre: 'lettre de motivation', dossier: 'document administratif', courrier: 'courrier officiel' };
+  const svcLabel = { cv: 'CV', lettre: 'lettre de motivation', dossier: 'document administratif', courrier: 'courrier officiel', sejour: 'guide titre de séjour' };
   const doc     = svcLabel[d.service] || 'document';
   const subject = `Votre ${doc} — Dok'péyi`;
   const body    = `Bonjour ${d.prenom},\n\nVotre ${doc} est prêt. Vous trouverez le fichier PDF en pièce jointe.\n\nN'hésitez pas à nous contacter si vous avez des questions.\n\nCordialement,\nL'équipe Dok'péyi`;
@@ -1323,7 +1352,10 @@ function renderAIConfig() {
       vars: ['nom','email','tel','type','description','documents'] },
     { key: 'courrier', icon: '📮', title: 'Courrier officiel',
       desc: 'Rédige un courrier formel pour l\'administration',
-      vars: ['nom','email','tel','destinataire','objet','description'] }
+      vars: ['nom','email','tel','destinataire','objet','description'] },
+    { key: 'sejour', icon: '🛂', title: 'Titre de séjour',
+      desc: 'Guide personnalisé pour les démarches de titre de séjour (review obligatoire)',
+      vars: ['nom','email','tel','nationalite','situation','choix','documents'] }
   ];
 
   grid.innerHTML = CONFIGS.map(c => `
@@ -1353,7 +1385,7 @@ function renderAIConfig() {
 }
 
 function saveAIPrompts() {
-  ['cv_scratch','cv_improve','lettre','dossier','courrier'].forEach(k => {
+  ['cv_scratch','cv_improve','lettre','dossier','courrier','sejour'].forEach(k => {
     const el = document.getElementById('ia-' + k);
     if (el) aiPrompts[k] = el.value;
   });
@@ -1459,8 +1491,8 @@ function renderMonthlyChart() {
 }
 
 function renderByServiceChart() {
-  const svcs    = ['cv', 'lettre', 'dossier', 'courrier'];
-  const colors  = ['#2563eb', '#10b981', '#f59e0b', '#6366f1'];
+  const svcs    = ['cv', 'lettre', 'dossier', 'courrier', 'sejour'];
+  const colors  = ['#2563eb', '#10b981', '#f59e0b', '#6366f1', '#ef4444'];
   const revenues = svcs.map(k =>
     demandes.filter(d => d.service === k && d.statut === 'terminé')
             .reduce((s, d) => s + d.montant, 0)

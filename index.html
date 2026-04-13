@@ -129,7 +129,7 @@
           <h3 data-i18n="svc1_name">Création de CV</h3>
           <p data-i18n="svc1_desc">Un CV professionnel, clair et efficace pour décrocher un emploi</p>
           <div class="card-price"><span data-i18n="from">à partir de</span> <strong>8€</strong></div>
-          <a href="/cv" class="btn btn-outline" data-i18n="btn_start">Commencer</a>
+          <a href="/service?s=cv" class="btn btn-outline" data-i18n="btn_start">Commencer</a>
         </div>
         <div class="card service-card featured reveal">
           <div class="card-badge">Populaire</div>
@@ -137,21 +137,28 @@
           <h3 data-i18n="svc2_name">Lettre de motivation</h3>
           <p data-i18n="svc2_desc">Une lettre personnalisée et convaincante pour ta candidature</p>
           <div class="card-price"><span data-i18n="from">à partir de</span> <strong>5€</strong></div>
-          <a href="#demande" class="btn btn-primary" data-service="lettre" data-i18n="btn_start">Commencer</a>
+          <a href="/service?s=lettre" class="btn btn-primary" data-i18n="btn_start">Commencer</a>
         </div>
         <div class="card service-card reveal">
           <div class="card-icon">📁</div>
           <h3 data-i18n="svc3_name">Aide aux dossiers</h3>
           <p data-i18n="svc3_desc">Accompagnement pour monter ton dossier CAF, logement, emploi…</p>
-          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>10€</strong></div>
-          <a href="#demande" class="btn btn-outline" data-service="dossier" data-i18n="btn_start">Commencer</a>
+          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>12€</strong></div>
+          <a href="/service?s=dossier" class="btn btn-outline" data-i18n="btn_start">Commencer</a>
         </div>
         <div class="card service-card reveal">
           <div class="card-icon">📮</div>
           <h3 data-i18n="svc4_name">Courriers officiels</h3>
           <p data-i18n="svc4_desc">Rédaction pour mairies, préfectures, administrations et autres</p>
           <div class="card-price"><span data-i18n="from">à partir de</span> <strong>7€</strong></div>
-          <a href="#demande" class="btn btn-outline" data-service="courrier" data-i18n="btn_start">Commencer</a>
+          <a href="/service?s=courrier" class="btn btn-outline" data-i18n="btn_start">Commencer</a>
+        </div>
+        <div class="card service-card reveal">
+          <div class="card-icon">🛂</div>
+          <h3>Titre de séjour</h3>
+          <p>Accompagnement pour vos démarches de titre de séjour en Guyane</p>
+          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>15€</strong></div>
+          <a href="/service?s=sejour" class="btn btn-outline">Commencer</a>
         </div>
       </div>
     </div>
@@ -200,9 +207,9 @@
           <ul class="pricing-features">
             <li>✓ Personnalisée selon ton profil</li>
             <li>✓ Format PDF livré</li>
-            <li>✓ Livraison sous 24h</li>
+            <li>✓ Livraison immédiate</li>
           </ul>
-          <a href="#demande" class="btn btn-outline" data-service="lettre" data-i18n="btn_choose">Choisir</a>
+          <a href="/service?s=lettre" class="btn btn-outline" data-i18n="btn_choose">Choisir</a>
         </div>
         <div class="card pricing-card reveal">
           <div class="pricing-icon">📮</div>
@@ -211,9 +218,9 @@
           <ul class="pricing-features">
             <li>✓ Ton officiel adapté</li>
             <li>✓ Prêt à envoyer</li>
-            <li>✓ Livraison sous 24h</li>
+            <li>✓ Livraison immédiate</li>
           </ul>
-          <a href="#demande" class="btn btn-outline" data-service="courrier" data-i18n="btn_choose">Choisir</a>
+          <a href="/service?s=courrier" class="btn btn-outline" data-i18n="btn_choose">Choisir</a>
         </div>
         <div class="card pricing-card featured reveal">
           <div class="card-badge">Recommandé</div>
@@ -225,187 +232,76 @@
             <li>✓ Format PDF livré</li>
             <li>✓ Révision incluse</li>
           </ul>
-          <a href="/cv" class="btn btn-primary" data-i18n="btn_choose">Choisir</a>
+          <a href="/service?s=cv" class="btn btn-primary" data-i18n="btn_choose">Choisir</a>
         </div>
         <div class="card pricing-card reveal">
           <div class="pricing-icon">📁</div>
           <h3 data-i18n="svc3_name">Dossier administratif</h3>
-          <div class="price">10–15€</div>
+          <div class="price">12€</div>
           <ul class="pricing-features">
-            <li>✓ Selon complexité</li>
-            <li>✓ Accompagnement complet</li>
-            <li>✓ Délai selon dossier</li>
+            <li>✓ Checklist personnalisée</li>
+            <li>✓ Étapes guidées</li>
+            <li>✓ Livraison immédiate</li>
           </ul>
-          <a href="#demande" class="btn btn-outline" data-service="dossier" data-i18n="btn_choose">Choisir</a>
+          <a href="/service?s=dossier" class="btn btn-outline" data-service="dossier" data-i18n="btn_choose">Choisir</a>
+        </div>
+        <div class="card pricing-card reveal">
+          <div class="pricing-icon">🛂</div>
+          <h3>Titre de séjour</h3>
+          <div class="price">15€</div>
+          <ul class="pricing-features">
+            <li>✓ Démarches guidées</li>
+            <li>✓ Vérification manuelle</li>
+            <li>✓ Réponse sous 24–48h</li>
+          </ul>
+          <a href="/service?s=sejour" class="btn btn-outline">Choisir</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== FORMULAIRE ===== -->
+  <!-- ===== FAIRE MA DEMANDE ===== -->
   <section class="section" id="demande">
     <div class="container">
       <div class="section-head reveal">
         <h2 data-i18n="form_title">Fais ta demande</h2>
-        <p data-i18n="form_sub">Remplis ce formulaire, on s'occupe du reste</p>
+        <p data-i18n="form_sub">Choisis ton service et commence en quelques minutes</p>
       </div>
-      <div class="form-wrapper">
-
-        <!-- Barre de progression -->
-        <div class="progress-bar">
-          <div class="prog-step active" data-step="1"><span>1</span><p>Infos</p></div>
-          <div class="prog-line"></div>
-          <div class="prog-step" data-step="2"><span>2</span><p>Service</p></div>
-          <div class="prog-line"></div>
-          <div class="prog-step" data-step="3"><span>3</span><p>Détails</p></div>
-          <div class="prog-line"></div>
-          <div class="prog-step" data-step="4"><span>4</span><p>Paiement</p></div>
-        </div>
-
-        <form id="mainForm" novalidate>
-
-          <!-- ÉTAPE 1 — Informations personnelles -->
-          <div class="form-step active" id="step-1">
-            <h3>Tes informations</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="f-prenom">Prénom *</label>
-                <input type="text" id="f-prenom" placeholder="Ton prénom" autocomplete="given-name">
-              </div>
-              <div class="form-group">
-                <label for="f-nom">Nom *</label>
-                <input type="text" id="f-nom" placeholder="Ton nom" autocomplete="family-name">
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="f-email">Email *</label>
-              <input type="email" id="f-email" placeholder="ton@email.com" autocomplete="email">
-            </div>
-            <div class="form-group">
-              <label for="f-whatsapp">WhatsApp <span class="optional">(optionnel)</span></label>
-              <div class="phone-input-wrap">
-                <select id="f-prefix" class="phone-prefix" aria-label="Indicatif pays">
-                  <option value="+594">🇬🇫 +594</option>
-                  <option value="+33">🇫🇷 +33</option>
-                  <option value="+596">🇲🇶 +596</option>
-                  <option value="+590">🇬🇵 +590</option>
-                  <option value="+509">🇭🇹 +509</option>
-                  <option value="+55">🇧🇷 +55</option>
-                  <option value="+597">🇸🇷 +597</option>
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+32">🇧🇪 +32</option>
-                  <option value="+41">🇨🇭 +41</option>
-                  <option value="+1-CA">🇨🇦 +1</option>
-                </select>
-                <input type="tel" id="f-whatsapp" placeholder="06 00 00 00" autocomplete="tel">
-              </div>
-            </div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-primary" onclick="goNext(1)">Continuer →</button>
-            </div>
-          </div>
-
-          <!-- ÉTAPE 2 — Choix du service -->
-          <div class="form-step" id="step-2">
-            <h3>Quel document as-tu besoin ?</h3>
-            <div class="service-grid" id="serviceGrid">
-              <div class="service-choice" data-val="cv" onclick="pickService(this)">
-                <span class="sc-icon">📄</span>
-                <span class="sc-name">CV</span>
-                <span class="sc-price">8€</span>
-              </div>
-              <div class="service-choice" data-val="lettre" onclick="pickService(this)">
-                <span class="sc-icon">✉️</span>
-                <span class="sc-name">Lettre de motivation</span>
-                <span class="sc-price">5€</span>
-              </div>
-              <div class="service-choice" data-val="dossier" onclick="pickService(this)">
-                <span class="sc-icon">📁</span>
-                <span class="sc-name">Dossier administratif</span>
-                <span class="sc-price">10–15€</span>
-              </div>
-              <div class="service-choice" data-val="courrier" onclick="pickService(this)">
-                <span class="sc-icon">📮</span>
-                <span class="sc-name">Courrier officiel</span>
-                <span class="sc-price">7€</span>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-ghost" onclick="goPrev(2)">← Retour</button>
-              <button type="button" class="btn btn-primary" id="btn-step2-next" onclick="goNext(2)" disabled>Continuer →</button>
-            </div>
-          </div>
-
-          <!-- ÉTAPE 3 — Détails dynamiques -->
-          <div class="form-step" id="step-3">
-            <h3 id="step3-title">Dis-nous en plus</h3>
-            <div id="dynamic-fields"></div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-ghost" onclick="goPrev(3)">← Retour</button>
-              <button type="button" class="btn btn-primary" id="btn-step3-next" onclick="goNext(3)">Continuer →</button>
-            </div>
-          </div>
-
-          <!-- ÉTAPE 4 — Récapitulatif et paiement -->
-          <div class="form-step" id="step-4">
-            <h3>Récapitulatif et paiement</h3>
-            <div class="recap" id="recap"></div>
-
-            <div class="pay-block">
-              <h4>💳 Paiement sécurisé</h4>
-              <div class="pay-tabs">
-                <button type="button" class="pay-tab active" onclick="switchTab(this,'card')">Carte bancaire</button>
-                <button type="button" class="pay-tab" onclick="switchTab(this,'paypal')">PayPal</button>
-              </div>
-
-              <div id="pay-card" class="pay-form">
-                <div class="form-group">
-                  <label>Numéro de carte</label>
-                  <input type="text" id="card-num" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number">
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Expiration</label>
-                    <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5" oninput="fmtExp(this)" autocomplete="cc-exp">
-                  </div>
-                  <div class="form-group">
-                    <label>CVV</label>
-                    <input type="text" id="card-cvv" placeholder="123" maxlength="3" oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="cc-csc">
-                  </div>
-                </div>
-              </div>
-
-              <div id="pay-paypal" class="pay-form hidden">
-                <div class="paypal-info">
-                  <p>📧 Tu seras redirigé vers PayPal pour finaliser ton paiement en toute sécurité</p>
-                </div>
-              </div>
-
-              <div class="pay-secure">🔒 Paiement 100% sécurisé</div>
-            </div>
-
-            <div class="form-actions">
-              <button type="button" class="btn btn-ghost" onclick="goPrev(4)">← Retour</button>
-              <button type="button" class="btn btn-primary btn-pay" id="btn-pay" onclick="processPayment()">
-                <span id="pay-label">Payer et recevoir mon document</span>
-                <span id="pay-spinner" class="spinner hidden"></span>
-              </button>
-            </div>
-          </div>
-
-          <!-- ÉTAPE 5 — Confirmation -->
-          <div class="form-step" id="step-5">
-            <div class="success">
-              <div class="success-icon">✅</div>
-              <h3>Demande envoyée avec succès !</h3>
-              <p>Merci <strong id="s-name"></strong> ! Ton document sera prêt sous 24h.</p>
-              <p>Tu recevras une notification à <strong id="s-email"></strong></p>
-              <button type="button" class="btn btn-primary" onclick="resetForm()">Faire une nouvelle demande</button>
-            </div>
-          </div>
-
-        </form>
+      <div class="grid-3" style="max-width:760px;margin:0 auto">
+        <a href="/service?s=cv" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
+          <span style="font-size:2.2rem">📄</span>
+          <strong>CV Professionnel</strong>
+          <span style="font-size:.85rem;color:#64748b;text-align:center">Créer, améliorer ou professionnaliser</span>
+          <span style="background:#eff6ff;color:#2563eb;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">8€</span>
+        </a>
+        <a href="/service?s=lettre" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
+          <span style="font-size:2.2rem">✉️</span>
+          <strong>Lettre de motivation</strong>
+          <span style="font-size:.85rem;color:#64748b;text-align:center">Créer, améliorer ou adapter</span>
+          <span style="background:#ecfdf5;color:#10b981;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">5€</span>
+        </a>
+        <a href="/service?s=courrier" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
+          <span style="font-size:2.2rem">📮</span>
+          <strong>Courrier officiel</strong>
+          <span style="font-size:.85rem;color:#64748b;text-align:center">Demande, réclamation ou contestation</span>
+          <span style="background:#f5f3ff;color:#7c3aed;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">7€</span>
+        </a>
+        <a href="/service?s=dossier" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
+          <span style="font-size:2.2rem">📁</span>
+          <strong>Dossier administratif</strong>
+          <span style="font-size:.85rem;color:#64748b;text-align:center">CAF, logement, aide sociale…</span>
+          <span style="background:#fffbeb;color:#f59e0b;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">12€</span>
+        </a>
+        <a href="/service?s=sejour" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
+          <span style="font-size:2.2rem">🛂</span>
+          <strong>Titre de séjour</strong>
+          <span style="font-size:.85rem;color:#64748b;text-align:center">Première demande, renouvellement…</span>
+          <span style="background:#fef2f2;color:#ef4444;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">15€</span>
+        </a>
       </div>
+      <p style="text-align:center;font-size:.78rem;color:#94a3b8;margin-top:24px;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.6">
+        Dok'péyi est un service d'aide à la rédaction. Ce service ne remplace pas une administration ou un professionnel du droit. Les documents générés par IA doivent être vérifiés avant utilisation.
+      </p>
     </div>
   </section>
 
