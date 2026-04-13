@@ -52,6 +52,11 @@ const STATUT_CLASS = {
   annulé:     'badge-annule'
 };
 
+// "Completed" covers both legacy ('terminé') and pipeline ('delivered', 'paid') terminal states.
+const DONE_STATUSES    = new Set(['terminé', 'delivered', 'paid']);
+// "Pending" covers anything waiting on admin attention.
+const PENDING_STATUSES = new Set(['en_attente', 'submitted', 'pending_payment', 'needs_review']);
+
 // ===== ÉTAT =====
 const APP = {
   section:      'dashboard',
@@ -702,11 +707,6 @@ function refreshBadge() {
 function renderDashboard() {
   const total = demandes.length;
 
-  // "Completed" covers both legacy ('terminé') and pipeline ('delivered', 'paid') terminal states.
-  const DONE_STATUSES = new Set(['terminé', 'delivered', 'paid']);
-  // "Pending" covers anything that needs admin attention.
-  const PENDING_STATUSES = new Set(['en_attente', 'submitted', 'pending_payment', 'needs_review']);
-
   const termine = demandes.filter(d => DONE_STATUSES.has(d.statut)).length;
   const attente = demandes.filter(d => PENDING_STATUSES.has(d.statut)).length;
   const revenue = demandes
@@ -762,9 +762,8 @@ function renderRevenueChart() {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const str = d.toISOString().split('T')[0];
-    const DONE = new Set(['terminé', 'delivered', 'paid']);
     const rev = demandes
-      .filter(dm => dm.date === str && DONE.has(dm.statut))
+      .filter(dm => dm.date === str && DONE_STATUSES.has(dm.statut))
       .reduce((s, dm) => s + (dm.montant || 0), 0);
     labels.push(d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }));
     values.push(rev);

@@ -38,22 +38,9 @@
 
 export const config = { runtime: 'edge' };
 
-import { handlers } from '../lib/pipeline.js';
-import { getDocument } from '../lib/documents.js';
-
-/* ── CORS headers ─────────────────────────────────────────── */
-const CORS = Object.freeze({
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type'
-});
-
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...CORS, 'content-type': 'application/json' }
-  });
-}
+import { handlers }     from '../lib/pipeline.js';
+import { getDocument }  from '../lib/documents.js';
+import { json, CORS }   from '../lib/edge-response.js';
 
 /* ── Handler ──────────────────────────────────────────────── */
 export default async function handler(req) {

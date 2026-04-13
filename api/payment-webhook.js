@@ -33,21 +33,14 @@
 
 export const config = { runtime: 'edge' };
 
-import { handlers } from '../lib/pipeline.js';
+import { handlers }            from '../lib/pipeline.js';
+import { json, CORS as _CORS } from '../lib/edge-response.js';
 
-/* ── CORS ─────────────────────────────────────────────────── */
+/* ── Extended CORS for webhook endpoints (extra allowed headers) ── */
 const CORS = Object.freeze({
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  ..._CORS,
   'Access-Control-Allow-Headers': 'Content-Type, X-Webhook-Secret, Stripe-Signature'
 });
-
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...CORS, 'content-type': 'application/json' }
-  });
-}
 
 /* ── Handler ──────────────────────────────────────────────── */
 export default async function handler(req) {
