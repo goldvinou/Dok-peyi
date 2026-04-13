@@ -11,8 +11,8 @@ const USERS = [
 ];
 // ── Rôles : admin = tout, manager = dashboard + demandes + stats ────────
 const ROLE_SECTIONS = {
-  admin:   ['dashboard','demandes','services','ia','stats'],
-  manager: ['dashboard','demandes','stats']
+  admin:   ['dashboard','demandes','services','ia','stats','workspace'],
+  manager: ['dashboard','demandes','stats','workspace']
 };
 
 const PRICES_DEFAULT = { cv: 8, lettre: 5, dossier: 12, courrier: 7, sejour: 15 };
@@ -626,7 +626,8 @@ const SECTION_TITLES = {
   demandes:  'Demandes',
   services:  'Services & Tarifs',
   ia:        'Configuration IA',
-  stats:     'Statistiques'
+  stats:     'Statistiques',
+  workspace: 'Workspace'
 };
 
 function showSection(name, navEl) {
@@ -663,6 +664,7 @@ function showSection(name, navEl) {
   if (name === 'services')  renderServices();
   if (name === 'ia')        renderAIConfig();
   if (name === 'stats')     renderStats();
+  if (name === 'workspace') renderWorkspace();
 
   // Fermer la sidebar sur mobile
   closeSidebar();
