@@ -567,7 +567,7 @@ function updateUserUI() {
 }
 
 /* ============================================================
-   HORLOGE TOPBAR
+   HORLOGE + CALENDRIER TOPBAR
    ============================================================ */
 function startClock() {
   function tick() {
@@ -579,6 +579,113 @@ function startClock() {
   }
   tick();
   setInterval(tick, 1000);
+
+  // Fermer le calendrier en cliquant ailleurs
+  document.addEventListener('click', function(e) {
+    const pop = document.getElementById('cal-pop');
+    const clk = document.getElementById('topbar-clock');
+    if (pop && !pop.contains(e.target) && clk && !clk.contains(e.target)) {
+      closeCal();
+    }
+  });
+}
+
+let _calDate = new Date();
+
+function toggleCal() {
+  const pop = document.getElementById('cal-pop');
+  const clk = document.getElementById('topbar-clock');
+  if (!pop) return;
+  const isOpen = pop.classList.contains('visible');
+  if (isOpen) {
+    closeCal();
+  } else {
+    _calDate = new Date();
+    renderCal(_calDate.getFullYear(), _calDate.getMonth());
+    pop.classList.add('visible');
+    clk && clk.classList.add('cal-open');
+  }
+}
+
+function closeCal() {
+  const pop = document.getElementById('cal-pop');
+  const clk = document.getElementById('topbar-clock');
+  pop && pop.classList.remove('visible');
+  clk && clk.classList.remove('cal-open');
+}
+
+function calNav(dir) {
+  _calDate.setMonth(_calDate.getMonth() + dir);
+  renderCal(_calDate.getFullYear(), _calDate.getMonth());
+}
+
+function calGoToday() {
+  _calDate = new Date();
+  renderCal(_calDate.getFullYear(), _calDate.getMonth());
+}
+
+function renderCal(year, month) {
+  const today     = new Date();
+  const todayY    = today.getFullYear();
+  const todayM    = today.getMonth();
+  const todayD    = today.getDate();
+
+  // Header mois/année
+  const monthLbl = document.getElementById('cal-month-lbl');
+  if (monthLbl) {
+    monthLbl.textContent = new Date(year, month, 1)
+      .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }
+
+  // Jours de la semaine (L M M J V S D)
+  const daysRow = document.getElementById('cal-days-row');
+  if (daysRow) {
+    const names = ['L','M','M','J','V','S','D'];
+    daysRow.innerHTML = names.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  }
+
+  // Points d'événements = jours avec des demandes ce mois
+  const eventDays = new Set();
+  demandes.forEach(d => {
+    if (!d.date) return;
+    const dt = new Date(d.date);
+    if (dt.getFullYear() === year && dt.getMonth() === month) {
+      eventDays.add(dt.getDate());
+    }
+  });
+
+  // Grille
+  const grid   = document.getElementById('cal-grid');
+  if (!grid) return;
+
+  const firstDay = new Date(year, month, 1).getDay(); // 0=dim
+  const lead     = (firstDay === 0) ? 6 : firstDay - 1; // lundi = 0
+  const daysInM  = new Date(year, month + 1, 0).getDate();
+  const prevDays = new Date(year, month, 0).getDate();
+
+  let cells = '';
+
+  // Jours du mois précédent
+  for (let i = lead - 1; i >= 0; i--) {
+    cells += `<div class="cal-cell other">${prevDays - i}</div>`;
+  }
+
+  // Jours du mois courant
+  for (let d = 1; d <= daysInM; d++) {
+    const isToday = (year === todayY && month === todayM && d === todayD);
+    const hasEv   = eventDays.has(d);
+    const cls     = ['cal-cell', isToday ? 'today' : '', hasEv ? 'has-event' : ''].filter(Boolean).join(' ');
+    cells += `<div class="${cls}">${d}</div>`;
+  }
+
+  // Compléter avec jours suivants
+  const total = lead + daysInM;
+  const trail = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let d = 1; d <= trail; d++) {
+    cells += `<div class="cal-cell other">${d}</div>`;
+  }
+
+  grid.innerHTML = cells;
 }
 
 /* ============================================================
