@@ -197,12 +197,69 @@
     .btn-icon.danger:hover{border-color:var(--red);color:var(--red);background:var(--red-light)}
     .status-select{padding:5px 9px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:.77rem;color:var(--gray-700);cursor:pointer;outline:none;background:var(--white);transition:border-color var(--t)}
     .status-select:focus{border-color:var(--blue)}
-    /* ===== FILTERS ===== */
+    /* ===== FILTERS (legacy — kept for stats page) ===== */
     .filters-bar{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
     .filter-search-wrap{flex:1;min-width:200px;position:relative;display:flex;align-items:center}
     .search-icon{position:absolute;left:12px;font-size:.9rem;pointer-events:none}
     .filter-search-wrap input{width:100%;padding:10px 14px 10px 36px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:.88rem;outline:none;background:var(--white);transition:border-color var(--t),box-shadow var(--t)}
     .filter-search-wrap input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+    /* ===== DEMANDES PREMIUM ===== */
+    .dem-search-bar{position:relative;display:flex;align-items:center;margin-bottom:10px}
+    .dem-search-icon{position:absolute;left:14px;pointer-events:none;color:var(--gray-400)}
+    .dem-search-input{width:100%;padding:11px 90px 11px 42px;border:1.5px solid var(--gray-200);border-radius:14px;font-size:.88rem;color:var(--dark);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s}
+    .dem-search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+    .dem-search-input::placeholder{color:var(--gray-400)}
+    .dem-search-count{position:absolute;right:12px;font-size:.7rem;font-weight:600;color:var(--gray-500);background:var(--gray-100);padding:3px 8px;border-radius:99px;white-space:nowrap;pointer-events:none}
+    .dem-filters-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;margin-bottom:6px}
+    .dem-filters-scroll::-webkit-scrollbar{display:none}
+    .dem-filter-group{display:flex;gap:5px;white-space:nowrap;margin-bottom:6px}
+    .dem-chip{padding:5px 12px;border-radius:99px;border:1.5px solid var(--gray-200);background:var(--white);font-size:.74rem;font-weight:600;color:var(--gray-500);cursor:pointer;transition:all .17s;white-space:nowrap;flex-shrink:0;line-height:1.4}
+    .dem-chip:hover{border-color:var(--gray-300);color:var(--gray-700);background:var(--gray-50)}
+    .dem-chip.active{background:var(--dark);border-color:var(--dark);color:#fff}
+    .dem-chip.ch-orange.active{background:#ea580c;border-color:#ea580c}
+    .dem-chip.ch-blue.active{background:#2563eb;border-color:#2563eb}
+    .dem-chip.ch-indigo.active{background:#4f46e5;border-color:#4f46e5}
+    .dem-chip.ch-green.active{background:#059669;border-color:#059669}
+    .dem-chip.ch-red.active{background:#dc2626;border-color:#dc2626}
+    .dem-meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px}
+    .dem-meta-count{font-size:.76rem;font-weight:600;color:var(--gray-400)}
+    .dem-sort-sel{font-size:.74rem;border:1.5px solid var(--gray-200);border-radius:99px;padding:4px 11px;color:var(--gray-600);background:var(--white);outline:none;cursor:pointer;transition:border-color .2s}
+    .dem-sort-sel:hover{border-color:var(--gray-300)}
+    .dem-list{display:flex;flex-direction:column;gap:7px}
+    .dem-card{background:var(--white);border:1.5px solid rgba(226,232,240,.85);border-radius:16px;padding:13px 14px 11px 18px;cursor:pointer;transition:box-shadow .2s,transform .2s,border-color .2s;position:relative;overflow:hidden}
+    .dem-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3.5px}
+    .dem-card:hover{box-shadow:0 6px 22px rgba(0,0,0,.08);transform:translateY(-1px);border-color:rgba(203,213,225,.95)}
+    .dem-card.st-wait::before{background:#f97316}
+    .dem-card.st-active::before{background:#3b82f6}
+    .dem-card.st-review::before{background:#f59e0b}
+    .dem-card.st-done::before{background:#10b981}
+    .dem-card.st-dead::before{background:#ef4444}
+    .dem-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+    .dem-st-pill{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:99px;letter-spacing:.01em;flex-shrink:0}
+    .dem-st-pill::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+    .st-wait .dem-st-pill{background:rgba(249,115,22,.1);color:#c2410c}.st-wait .dem-st-pill::before{background:#f97316}
+    .st-active .dem-st-pill{background:rgba(59,130,246,.1);color:#1d4ed8}.st-active .dem-st-pill::before{background:#3b82f6}
+    .st-review .dem-st-pill{background:rgba(245,158,11,.1);color:#b45309}.st-review .dem-st-pill::before{background:#f59e0b}
+    .st-done .dem-st-pill{background:rgba(16,185,129,.1);color:#065f46}.st-done .dem-st-pill::before{background:#10b981}
+    .st-dead .dem-st-pill{background:rgba(239,68,68,.1);color:#b91c1c}.st-dead .dem-st-pill::before{background:#ef4444}
+    .dem-svc-tag{display:inline-flex;align-items:center;gap:4px;font-size:.71rem;font-weight:600;color:var(--gray-500);background:var(--gray-100);padding:3px 9px;border-radius:99px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dem-card-body{margin-bottom:9px}
+    .dem-card-name{font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:1px}
+    .dem-card-email{font-size:.73rem;color:var(--gray-400);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dem-card-foot{display:flex;align-items:center;gap:8px}
+    .dem-card-date{font-size:.71rem;color:var(--gray-400);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dem-card-price{font-size:.86rem;font-weight:700;color:var(--dark);flex-shrink:0}
+    .dem-card-acts{display:flex;align-items:center;gap:4px;flex-shrink:0}
+    .dem-act{width:29px;height:29px;border-radius:9px;border:1.5px solid var(--gray-200);background:var(--white);color:var(--gray-500);display:flex;align-items:center;justify-content:center;font-size:.78rem;cursor:pointer;transition:all .17s;flex-shrink:0}
+    .dem-act:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-xlight)}
+    .dem-act.del:hover{border-color:#ef4444;color:#ef4444;background:#fef2f2}
+    .dem-st-sel{height:29px;padding:0 7px;border:1.5px solid var(--gray-200);border-radius:9px;font-size:.7rem;color:var(--gray-600);background:var(--white);outline:none;cursor:pointer;transition:border-color .2s;max-width:110px}
+    .dem-st-sel:hover{border-color:var(--gray-300)}
+    .dem-st-sel:focus{border-color:var(--blue)}
+    .dem-empty{text-align:center;padding:56px 24px}
+    .dem-empty-ico{font-size:2.8rem;margin-bottom:14px;filter:grayscale(1);opacity:.35}
+    .dem-empty-title{font-size:.95rem;font-weight:700;color:var(--gray-500);margin-bottom:6px}
+    .dem-empty-sub{font-size:.8rem;color:var(--gray-400);line-height:1.5}
     .filters-bar select{padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:.85rem;color:var(--gray-700);background:var(--white);outline:none;cursor:pointer;transition:border-color var(--t)}
     .filters-bar select:focus{border-color:var(--blue)}
     /* ===== FORM ELEMENTS ===== */
@@ -1338,41 +1395,48 @@
 
       <!-- ========== SECTION : DEMANDES ========== -->
       <section class="adm-section" id="s-demandes">
-        <div class="filters-bar">
-          <div class="filter-search-wrap">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="f-search" placeholder="Rechercher un client…" oninput="applyFilters()">
+
+        <!-- Barre de recherche -->
+        <div class="dem-search-bar">
+          <svg class="dem-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="dem-search-input" type="text" id="f-search" placeholder="Rechercher client, email…" oninput="applyFilters()" autocomplete="off">
+          <span class="dem-search-count" id="dem-count"></span>
+        </div>
+
+        <!-- Chips statut -->
+        <div class="dem-filters-scroll">
+          <div class="dem-filter-group" id="dem-chips-statut">
+            <button class="dem-chip active"      data-type="statut" onclick="setDemChip('statut','all',this)">Tous</button>
+            <button class="dem-chip ch-orange"   data-type="statut" onclick="setDemChip('statut','wait',this)">⏳ En attente</button>
+            <button class="dem-chip ch-blue"     data-type="statut" onclick="setDemChip('statut','active',this)">⚡ En cours</button>
+            <button class="dem-chip ch-indigo"   data-type="statut" onclick="setDemChip('statut','review',this)">🔍 À réviser</button>
+            <button class="dem-chip ch-green"    data-type="statut" onclick="setDemChip('statut','done',this)">✓ Terminé</button>
+            <button class="dem-chip ch-red"      data-type="statut" onclick="setDemChip('statut','dead',this)">✕ Annulé</button>
           </div>
-          <select id="f-statut" onchange="applyFilters()">
-            <option value="all">Tous les statuts</option>
-            <optgroup label="Pipeline">
-              <option value="submitted">Soumis</option>
-              <option value="processing">Génération IA</option>
-              <option value="generated">Généré</option>
-              <option value="pending_payment">Paiement en cours</option>
-              <option value="paid">Payé</option>
-              <option value="needs_review">À vérifier</option>
-              <option value="delivered">Livré</option>
-              <option value="failed">Échec</option>
-            </optgroup>
-            <optgroup label="Ancien système">
-              <option value="en_attente">En attente</option>
-              <option value="en_cours">En cours</option>
-              <option value="terminé">Terminé</option>
-              <option value="annulé">Annulé</option>
-            </optgroup>
-          </select>
-          <select id="f-service" onchange="applyFilters()">
-            <option value="all">Tous les services</option>
-            <option value="cv">CV</option>
-            <option value="lettre">Lettre motivation</option>
-            <option value="dossier">Dossier admin.</option>
-            <option value="courrier">Courrier officiel</option>
+          <!-- Chips service -->
+          <div class="dem-filter-group" id="dem-chips-service">
+            <button class="dem-chip active" data-type="service" onclick="setDemChip('service','all',this)">Tous services</button>
+            <button class="dem-chip"        data-type="service" onclick="setDemChip('service','cv',this)">📄 CV</button>
+            <button class="dem-chip"        data-type="service" onclick="setDemChip('service','lettre',this)">✉️ Lettre</button>
+            <button class="dem-chip"        data-type="service" onclick="setDemChip('service','dossier',this)">📁 Dossier</button>
+            <button class="dem-chip"        data-type="service" onclick="setDemChip('service','courrier',this)">📮 Courrier</button>
+            <button class="dem-chip"        data-type="service" onclick="setDemChip('service','sejour',this)">🛂 Séjour</button>
+          </div>
+        </div>
+
+        <!-- Ligne méta : compteur + tri -->
+        <div class="dem-meta-row">
+          <span class="dem-meta-count" id="dem-meta-count"></span>
+          <select class="dem-sort-sel" id="dem-sort" onchange="applyFilters()">
+            <option value="desc">Plus récent</option>
+            <option value="asc">Plus ancien</option>
+            <option value="amount">Montant ↓</option>
           </select>
         </div>
-        <div class="table-card">
-          <div id="demandes-table"></div>
-        </div>
+
+        <!-- Liste des cartes -->
+        <div id="demandes-table"></div>
+
       </section>
 
       <!-- ========== SECTION : SERVICES & TARIFS ========== -->

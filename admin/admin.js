@@ -72,9 +72,10 @@ function safeParse(key) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
   catch(e) { localStorage.removeItem(key); return null; }
 }
-let demandes  = safeParse('dok_demandes') || [];
-let services  = safeParse('dok_services') || buildDefaultServices();
-let aiPrompts = safeParse('dok_ai_prompts') || buildDefaultPrompts();
+let demandes    = safeParse('dok_demandes') || [];
+let services    = safeParse('dok_services') || buildDefaultServices();
+let aiPrompts   = safeParse('dok_ai_prompts') || buildDefaultPrompts();
+let _demFilters = { statut: 'all', service: 'all' };
 
 /* ── Firebase DB handle ── */
 let db = null;
@@ -1112,25 +1113,113 @@ function renderDemandes() {
   applyFilters();
 }
 
+/* ── Chip filter ── */
+function setDemChip(type, val, btn) {
+  _demFilters[type] = val;
+  const grp = type === 'statut' ? '#dem-chips-statut' : '#dem-chips-service';
+  document.querySelectorAll(grp + ' .dem-chip').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  applyFilters();
+}
+
 function applyFilters() {
-  const search  = (document.getElementById('f-search')  || {}).value || '';
-  const statut  = (document.getElementById('f-statut')  || {}).value || 'all';
-  const service = (document.getElementById('f-service') || {}).value || 'all';
+  const search = (document.getElementById('f-search')  || {}).value || '';
+  const sort   = (document.getElementById('dem-sort')  || {}).value || 'desc';
+
+  const WAIT   = new Set(['submitted','en_attente','pending_payment']);
+  const ACTIVE = new Set(['processing','generated','en_cours']);
+  const REVIEW = new Set(['needs_review']);
+  const DONE   = new Set(['paid','delivered','terminé']);
+  const DEAD   = new Set(['failed','annulé']);
 
   let filtered = [...demandes];
 
   if (search.trim()) {
     const q = search.toLowerCase();
     filtered = filtered.filter(d =>
-      d.prenom.toLowerCase().includes(q) ||
-      d.nom.toLowerCase().includes(q) ||
-      d.email.toLowerCase().includes(q)
+      (d.prenom || '').toLowerCase().includes(q) ||
+      (d.nom    || '').toLowerCase().includes(q) ||
+      (d.email  || '').toLowerCase().includes(q)
     );
   }
-  if (statut  !== 'all') filtered = filtered.filter(d => d.statut  === statut);
+
+  const statut = _demFilters.statut || 'all';
+  if (statut !== 'all') {
+    const grp = statut === 'wait' ? WAIT : statut === 'active' ? ACTIVE :
+                statut === 'review' ? REVIEW : statut === 'done' ? DONE : DEAD;
+    filtered = filtered.filter(d => grp.has(d.statut));
+  }
+
+  const service = _demFilters.service || 'all';
   if (service !== 'all') filtered = filtered.filter(d => d.service === service);
 
-  renderTable('demandes-table', filtered, false);
+  if (sort === 'asc')    filtered.sort((a,b) => (a.id||0)-(b.id||0));
+  else if (sort === 'amount') filtered.sort((a,b) => (b.montant||0)-(a.montant||0));
+  else                   filtered.sort((a,b) => (b.id||0)-(a.id||0));
+
+  const total = demandes.length;
+  const shown = filtered.length;
+  const cEl = document.getElementById('dem-count');
+  const mEl = document.getElementById('dem-meta-count');
+  if (cEl) cEl.textContent = total ? (shown < total ? `${shown} / ${total}` : `${total}`) : '';
+  if (mEl) mEl.textContent = shown === 0 ? '' : shown === 1 ? '1 demande' : `${shown} demandes`;
+
+  renderDemandesCards('demandes-table', filtered);
+}
+
+/* ── Cards renderer ── */
+function renderDemandesCards(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  if (!data.length) {
+    el.innerHTML = `
+      <div class="dem-empty">
+        <div class="dem-empty-ico">📭</div>
+        <div class="dem-empty-title">Aucune demande trouvée</div>
+        <div class="dem-empty-sub">Essaie un autre filtre ou attends<br>une nouvelle commande.</div>
+      </div>`;
+    return;
+  }
+
+  const CARD_CLS = {
+    submitted:'st-wait', en_attente:'st-wait', pending_payment:'st-wait',
+    processing:'st-active', generated:'st-active', en_cours:'st-active',
+    needs_review:'st-review',
+    paid:'st-done', delivered:'st-done', terminé:'st-done',
+    failed:'st-dead', annulé:'st-dead'
+  };
+
+  el.innerHTML = '<div class="dem-list">' + data.map(d => {
+    const cc      = CARD_CLS[d.statut] || 'st-wait';
+    const nom     = [d.prenom, d.nom].filter(Boolean).join(' ') || '—';
+    const stLbl   = STATUT_LABELS[d.statut] || d.statut || '—';
+    const svcIco  = SERVICE_ICONS[d.service] || '📄';
+    const svcName = SERVICE_NAMES[d.service] || d.service || '—';
+    const dateLbl = d.date ? formatDate(d.date) + (d.heure ? ' · ' + d.heure : '') : '—';
+    const opts = ['submitted','processing','generated','pending_payment','paid','needs_review','delivered','failed','en_attente','en_cours','terminé','annulé']
+      .map(s => `<option value="${s}"${d.statut===s?' selected':''}>${STATUT_LABELS[s]||s}</option>`).join('');
+
+    return `<div class="dem-card ${cc}" onclick="openModal(${d.id})">
+      <div class="dem-card-top">
+        <span class="dem-st-pill">${stLbl}</span>
+        <span class="dem-svc-tag">${svcIco} ${escHtml(svcName)}</span>
+      </div>
+      <div class="dem-card-body">
+        <div class="dem-card-name">${escHtml(nom)}</div>
+        <div class="dem-card-email">${escHtml(d.email || '')}</div>
+      </div>
+      <div class="dem-card-foot">
+        <span class="dem-card-date">${dateLbl}</span>
+        <span class="dem-card-price">${d.montant || 0}€</span>
+        <div class="dem-card-acts" onclick="event.stopPropagation()">
+          <button class="dem-act" title="Voir" onclick="openModal(${d.id})">👁</button>
+          <select class="dem-st-sel" title="Statut" onchange="quickChangeStatus(${d.id},this.value)">${opts}</select>
+          <button class="dem-act del" title="Supprimer" onclick="deleteDemande(${d.id})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
 }
 
 /* Journal d'audit — visible dans Firebase Console → dok-peyi/audit */
