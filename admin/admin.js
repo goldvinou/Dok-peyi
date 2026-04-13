@@ -426,7 +426,7 @@ async function adminLogin(e) {
 
   if (ok) {
     currentUser = { ...found };
-    try { sessionStorage.setItem('dok_auth_user', JSON.stringify(currentUser)); } catch(ex) {}
+    try { localStorage.setItem('dok_auth_user', JSON.stringify(currentUser)); } catch(ex) {}
     showApp();
     updateUserUI();
     init();
@@ -524,7 +524,7 @@ function closePassModal() {
 
 function logout() {
   if (!confirm('Confirmer la déconnexion ?')) return;
-  try { sessionStorage.removeItem('dok_auth_user'); } catch(ex) {}
+  try { localStorage.removeItem('dok_auth_user'); } catch(ex) {}
   currentUser = null;
   hideApp();
   const uEl = document.getElementById('lg-user');
@@ -602,7 +602,7 @@ function init() {
 
 function _tryAutoLogin() {
   try {
-    const saved = JSON.parse(sessionStorage.getItem('dok_auth_user') || 'null');
+    const saved = JSON.parse(localStorage.getItem('dok_auth_user') || 'null');
     if (saved && saved.nom && saved.role) {
       // Vérifier que l'utilisateur existe toujours (au cas où le code a changé)
       const stillValid = USERS.find(u => u.user === saved.user && u.role === saved.role);
