@@ -196,26 +196,106 @@
     .ia-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.10);background:var(--white)}
     .btn-ia-reset{padding:7px 16px;background:transparent;color:var(--gray-500);border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:.8rem;font-weight:600;cursor:pointer;transition:all var(--t)}
     .btn-ia-reset:hover{border-color:var(--gray-400);color:var(--gray-800)}
-    /* ===== WORKSPACE ===== */
-    .ws-nav{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;position:relative}
-    .ws-tabs{display:flex;gap:4px;flex:1;flex-wrap:wrap;background:var(--white);padding:5px;border-radius:var(--radius-lg);border:1.5px solid var(--gray-200);box-shadow:var(--shadow)}
-    .ws-tab{padding:8px 15px;border:none;background:transparent;border-radius:var(--radius);font-weight:600;font-size:.83rem;color:var(--gray-500);cursor:pointer;transition:all var(--t);white-space:nowrap}
-    .ws-tab:hover{background:var(--gray-100);color:var(--dark)}
-    .ws-tab.active{background:var(--blue);color:var(--white);box-shadow:0 2px 8px rgba(37,99,235,.3)}
-    .ws-pane{display:none;flex-direction:column}
-    .ws-pane.active{display:flex;animation:secIn .25s cubic-bezier(0.16,1,0.3,1)}
-    /* ── Notif ── */
-    .ws-notif-btn{position:relative;padding:9px 13px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius);cursor:pointer;font-size:.95rem;transition:all var(--t);flex-shrink:0}
-    .ws-notif-btn:hover{border-color:var(--blue)}
-    .ws-notif-count{position:absolute;top:-6px;right:-6px;background:var(--orange);color:var(--white);font-size:.6rem;font-weight:800;min-width:17px;height:17px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--white)}
-    .ws-notif-panel{position:absolute;right:0;top:calc(100% + 8px);width:300px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:200;max-height:380px;overflow-y:auto}
-    .ws-notif-header{padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
-    .ws-notif-header h4{font-size:.85rem;font-weight:700;color:var(--dark)}
-    .ws-notif-clear{font-size:.78rem;color:var(--blue);cursor:pointer;font-weight:600}
-    .ws-notif-clear:hover{text-decoration:underline}
-    .ws-notif-item{padding:10px 16px;border-bottom:1px solid var(--gray-100);font-size:.82rem;color:var(--gray-700);line-height:1.4}
-    .ws-notif-item:last-child{border-bottom:none}
-    .ws-notif-empty{padding:22px;text-align:center;color:var(--gray-400);font-size:.85rem}
+    /* ===== WORKSPACE — Apple-level redesign ===== */
+    /* breakout of .content padding */
+    #s-workspace.active{margin:-28px -28px -48px;padding:0;animation:none;overflow:hidden}
+    /* shell */
+    .wsp-shell{display:flex;height:calc(100vh - var(--topbar-h));background:#030812;overflow:hidden}
+    /* ── Sidebar ── */
+    .wsp-sidebar{width:236px;flex-shrink:0;background:rgba(3,10,28,.92);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border-right:1px solid rgba(99,179,237,.07);display:flex;flex-direction:column;padding:22px 14px 14px;gap:18px}
+    .wsp-brand{display:flex;align-items:center;gap:10px;padding:0 4px 4px}
+    .wsp-brand-icon{width:28px;height:28px;flex-shrink:0}
+    .wsp-brand-name{font-size:1.05rem;font-weight:800;color:#e2e8f0;letter-spacing:-.025em}
+    .wsp-profile{display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,255,255,.032);border:1px solid rgba(255,255,255,.055);border-radius:14px}
+    .wsp-profile-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1e40af);display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 0 14px rgba(59,130,246,.38)}
+    .wsp-profile-name{font-size:.84rem;font-weight:700;color:#e2e8f0;line-height:1.2}
+    .wsp-profile-role{font-size:.7rem;color:rgba(148,163,184,.55);margin-top:2px}
+    .wsp-nav{flex:1;display:flex;flex-direction:column;gap:2px}
+    .wsp-item{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:12px;text-decoration:none!important;color:rgba(148,163,184,.6);font-size:.845rem;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid transparent;position:relative;overflow:hidden}
+    .wsp-item:hover{background:rgba(255,255,255,.048);color:#cbd5e1}
+    .wsp-item.active{background:linear-gradient(135deg,rgba(37,99,235,.38),rgba(79,70,229,.28));color:#93c5fd;border-color:rgba(59,130,246,.26);box-shadow:0 0 24px rgba(59,130,246,.1),inset 0 1px 0 rgba(255,255,255,.06)}
+    .wsp-item.active::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:3px;background:linear-gradient(180deg,#60a5fa,#3b82f6);border-radius:0 3px 3px 0}
+    .wsp-ico{font-size:.88rem;width:20px;text-align:center;flex-shrink:0}
+    .wsp-lbl{flex:1}
+    .wsp-arr{font-size:1rem;opacity:.5;display:none}
+    .wsp-item.active .wsp-arr{display:block}
+    /* legacy ws-tab compat: active state is overridden by .wsp-item.active */
+    .ws-tab{border:none;background:none;padding:0;font:inherit;cursor:pointer;text-align:left;width:100%}
+    .wsp-sidebar-foot{display:flex;justify-content:center;gap:6px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05);flex-shrink:0}
+    .wsp-foot-btn{width:34px;height:34px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;color:rgba(148,163,184,.5);font-size:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+    .wsp-foot-btn:hover{background:rgba(255,255,255,.09);color:#e2e8f0}
+    /* ── Content area ── */
+    .wsp-content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:radial-gradient(ellipse at 70% 15%,rgba(37,99,235,.07) 0%,transparent 55%),radial-gradient(ellipse at 15% 80%,rgba(79,70,229,.05) 0%,transparent 50%),#050d1e}
+    /* header */
+    .wsp-header{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.05);gap:12px}
+    .wsp-h-user{display:flex;align-items:center;gap:9px}
+    .wsp-h-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1e40af);display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 0 10px rgba(59,130,246,.3)}
+    .wsp-h-name{font-size:.87rem;font-weight:700;color:#e2e8f0}
+    .wsp-h-sep{color:rgba(148,163,184,.3);margin:0 2px}
+    .wsp-h-badge{font-size:.7rem;font-weight:700;color:#93c5fd;background:rgba(59,130,246,.14);padding:2px 8px;border-radius:99px;border:1px solid rgba(59,130,246,.2)}
+    .wsp-h-date{text-align:center;flex-shrink:0}
+    .wsp-h-dn{font-size:.67rem;color:rgba(148,163,184,.48);text-transform:capitalize;letter-spacing:.05em}
+    .wsp-h-dd{font-size:1.5rem;font-weight:800;color:#e2e8f0;line-height:1;letter-spacing:-.03em}
+    .wsp-h-dm{font-size:.67rem;color:rgba(148,163,184,.48)}
+    .wsp-h-bell{width:38px;height:38px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;transition:all .2s;color:#e2e8f0;flex-shrink:0}
+    .wsp-h-bell:hover{background:rgba(255,255,255,.1);box-shadow:0 0 14px rgba(59,130,246,.2)}
+    /* panes */
+    .ws-pane{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+    .ws-pane.active{display:flex;animation:none}
+    /* notif panel (repositioned) */
+    .ws-notif-panel{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);width:280px;background:#161b22;border:1.5px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.5);z-index:300;max-height:340px;overflow-y:auto}
+    .ws-notif-header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between}
+    .ws-notif-header h4{font-size:.85rem;font-weight:700;color:#e2e8f0}
+    .ws-notif-item{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.06);font-size:.82rem;color:#8b949e;line-height:1.4}
+    .ws-notif-empty{padding:22px;text-align:center;color:#4b5563;font-size:.85rem}
+    /* ── Home dashboard ── */
+    .wsp-home{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:16px}
+    .wsp-home::-webkit-scrollbar{width:5px}
+    .wsp-home::-webkit-scrollbar-track{background:transparent}
+    .wsp-home::-webkit-scrollbar-thumb{background:#1c2a40;border-radius:99px}
+    /* quick actions */
+    .wsp-qa{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .wsp-qa-btn{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:.84rem;font-weight:700;transition:all .28s var(--spring);text-align:left}
+    .wsp-qa-btn:hover{transform:translateY(-2px)}
+    .wsp-qa-primary{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border-color:rgba(59,130,246,.4);box-shadow:0 8px 24px rgba(37,99,235,.28)}
+    .wsp-qa-primary:hover{box-shadow:0 12px 32px rgba(37,99,235,.42)}
+    .wsp-qa-secondary{background:rgba(255,255,255,.04);color:#94a3b8}
+    .wsp-qa-secondary:hover{background:rgba(255,255,255,.08);color:#e2e8f0;border-color:rgba(255,255,255,.14)}
+    .wsp-qa-icon{font-size:1.1rem;width:28px;height:28px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-style:normal}
+    .wsp-qa-primary .wsp-qa-icon{background:rgba(255,255,255,.2)}
+    /* stats */
+    .wsp-stats{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:16px 20px;display:flex;align-items:center;gap:0}
+    .wsp-stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0}
+    .wsp-stat-icon{font-size:.95rem;margin-bottom:2px}
+    .wsp-stat-val{font-size:1.6rem;font-weight:800;color:#e2e8f0;line-height:1;letter-spacing:-.03em}
+    .wsp-stat-val.orange{color:#f0883e}
+    .wsp-stat-val.green{color:#3fb950}
+    .wsp-stat-lbl{font-size:.7rem;color:rgba(148,163,184,.5);text-align:center;line-height:1.3}
+    .wsp-stat-sep{width:1px;background:rgba(255,255,255,.07);align-self:stretch;margin:0 4px}
+    /* projects section */
+    .wsp-prj-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .wsp-prj-title{font-size:.92rem;font-weight:800;color:#e2e8f0;letter-spacing:-.01em}
+    .wsp-prj-filters{display:flex;gap:4px}
+    .wsp-prj-flt{background:transparent;border:1px solid rgba(255,255,255,.07);border-radius:8px;color:rgba(148,163,184,.5);font-size:.74rem;font-weight:600;padding:4px 10px;cursor:pointer;transition:all .18s}
+    .wsp-prj-flt.on{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.3);color:#93c5fd}
+    .wsp-prj-flt:hover:not(.on){background:rgba(255,255,255,.05);color:#e2e8f0}
+    .wsp-prj-list{display:flex;flex-direction:column;gap:8px}
+    .wsp-prj-row{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.032);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 14px;cursor:pointer;transition:all .22s var(--spring)}
+    .wsp-prj-row:hover{background:rgba(255,255,255,.06);border-color:rgba(59,130,246,.22);transform:translateX(3px)}
+    .wsp-prj-row-icon{font-size:1.1rem;flex-shrink:0}
+    .wsp-prj-row-body{flex:1;min-width:0}
+    .wsp-prj-row-name{font-size:.85rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .wsp-prj-row-sub{display:flex;align-items:center;gap:8px;margin-top:5px}
+    .wsp-sp{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0}
+    .wsp-sp-todo{background:rgba(75,85,99,.25);color:#9ca3af}
+    .wsp-sp-prog{background:rgba(240,136,62,.15);color:#f0883e}
+    .wsp-sp-done{background:rgba(63,185,80,.15);color:#3fb950}
+    .wsp-prj-bar-wrap{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;min-width:40px;max-width:100px}
+    .wsp-prj-bar{height:100%;border-radius:99px;transition:width .5s ease}
+    .wsp-prj-tasks{font-size:.7rem;color:rgba(148,163,184,.45);white-space:nowrap;flex-shrink:0}
+    .wsp-prj-arrow{color:rgba(148,163,184,.3);font-size:.9rem;flex-shrink:0}
+    .wsp-prj-empty{text-align:center;padding:32px 16px;color:rgba(148,163,184,.35);font-size:.84rem}
+    @media(max-width:860px){.wsp-shell{flex-direction:column}.wsp-sidebar{width:100%;height:auto;flex-direction:row;padding:10px 12px;gap:10px;flex-shrink:0;overflow-x:auto}.wsp-brand,.wsp-profile{display:none}.wsp-nav{flex-direction:row;gap:4px;flex:none}.wsp-item{padding:7px 12px;border-radius:10px;white-space:nowrap}.wsp-arr{display:none!important}.wsp-sidebar-foot{border:none;padding:0}.wsp-qa{grid-template-columns:1fr 1fr}}
     /* ── Chat dark ── */
     .chat-shell{display:flex;flex-direction:column;height:calc(100vh - var(--topbar-h) - 130px);min-height:460px;background:#0d1117;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.45)}
     .chat-header{display:flex;align-items:center;gap:12px;padding:16px 22px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);backdrop-filter:blur(12px)}
@@ -265,7 +345,7 @@
     .chat-empty p{font-size:.87rem;font-weight:500}
     /* ── Projects ── */
     .ws-pane-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-    .ws-pane-header h3{font-size:1rem;font-weight:700;color:var(--dark)}
+    .ws-pane-header h3{font-size:1rem;font-weight:700;color:#e6edf3}
     .btn-ws-new{padding:9px 16px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:var(--white);border:none;border-radius:var(--radius);font-weight:700;font-size:.83rem;transition:all .3s var(--spring);box-shadow:0 3px 10px rgba(37,99,235,.28)}
     .btn-ws-new:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,.38)}
     .project-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
@@ -1220,32 +1300,77 @@
 
       <!-- ========== SECTION : WORKSPACE ========== -->
       <section class="adm-section" id="s-workspace">
+        <div class="wsp-shell">
 
-        <!-- Tab bar -->
-        <div class="ws-nav" id="ws-nav">
-          <div class="ws-tabs">
-            <button class="ws-tab active" id="wst-chat"     onclick="showWSTab('chat',     this)">💬 Chat</button>
-            <button class="ws-tab"        id="wst-projects" onclick="showWSTab('projects', this)">📂 Projets</button>
-            <button class="ws-tab"        id="wst-tasks"    onclick="showWSTab('tasks',    this)">✅ Tâches</button>
-            <button class="ws-tab"        id="wst-notes"    onclick="showWSTab('notes',    this)">📝 Notes</button>
-            <button class="ws-tab"        id="wst-ai"       onclick="showWSTab('ai',       this)">🤖 Assistants IA</button>
-          </div>
-          <!-- Notification bell -->
-          <div class="ws-notif-btn" onclick="toggleWSNotifs()" title="Notifications">
-            🔔
-            <span class="ws-notif-count" id="ws-notif-count" style="display:none">0</span>
-          </div>
-          <!-- Notification panel -->
-          <div class="ws-notif-panel" id="ws-notif-panel" style="display:none"></div>
-        </div>
+          <!-- ══ SIDEBAR ══ -->
+          <aside class="wsp-sidebar">
 
-        <!-- Panes (rendered by JS) -->
-        <div class="ws-pane active" id="ws-chat-pane"></div>
-        <div class="ws-pane"        id="ws-projects-pane"></div>
-        <div class="ws-pane"        id="ws-tasks-pane"></div>
-        <div class="ws-pane"        id="ws-notes-pane"></div>
-        <div class="ws-pane"        id="ws-ai-pane"></div>
+            <!-- Logo -->
+            <div class="wsp-brand">
+              <div class="wsp-brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" width="28" height="28">
+                  <path d="M12 3L22 21H2L12 3Z" fill="url(#wbg)" stroke="rgba(147,197,253,.25)" stroke-width=".8"/>
+                  <defs><linearGradient id="wbg" x1="12" y1="3" x2="12" y2="21" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#93c5fd"/><stop offset="1" stop-color="#3b82f6" stop-opacity=".45"/>
+                  </linearGradient></defs>
+                </svg>
+              </div>
+              <span class="wsp-brand-name">Dok'Peyi</span>
+            </div>
 
+            <!-- Profile -->
+            <div class="wsp-profile">
+              <div class="wsp-profile-av" id="wsp-av">?</div>
+              <div>
+                <div class="wsp-profile-name" id="wsp-name">—</div>
+                <div class="wsp-profile-role" id="wsp-role">—</div>
+              </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="wsp-nav">
+              <a class="wsp-item ws-tab active" id="wst-home"     href="#" onclick="return showWSTab('home',     this)"><span class="wsp-ico">⊙</span><span class="wsp-lbl">Accueil</span><span class="wsp-arr">›</span></a>
+              <a class="wsp-item ws-tab"         id="wst-chat"     href="#" onclick="return showWSTab('chat',     this)"><span class="wsp-ico">💬</span><span class="wsp-lbl">Chat</span><span class="wsp-arr">›</span></a>
+              <a class="wsp-item ws-tab"         id="wst-projects" href="#" onclick="return showWSTab('projects', this)"><span class="wsp-ico">📁</span><span class="wsp-lbl">Projets</span><span class="wsp-arr">›</span></a>
+              <a class="wsp-item ws-tab"         id="wst-tasks"    href="#" onclick="return showWSTab('tasks',    this)"><span class="wsp-ico">✅</span><span class="wsp-lbl">Tâches</span><span class="wsp-arr">›</span></a>
+              <a class="wsp-item ws-tab"         id="wst-notes"    href="#" onclick="return showWSTab('notes',    this)"><span class="wsp-ico">📝</span><span class="wsp-lbl">Notes</span><span class="wsp-arr">›</span></a>
+              <a class="wsp-item ws-tab"         id="wst-ai"       href="#" onclick="return showWSTab('ai',       this)"><span class="wsp-ico">🤖</span><span class="wsp-lbl">Assistant IA</span><span class="wsp-arr">›</span></a>
+            </nav>
+
+            <!-- Footer -->
+            <div class="wsp-sidebar-foot" style="position:relative">
+              <button class="wsp-foot-btn" onclick="showSection('dashboard')" title="Dashboard admin">📊</button>
+              <button class="wsp-foot-btn" onclick="toggleWSNotifs()" title="Notifications">🔔</button>
+              <button class="wsp-foot-btn" onclick="logout()" title="Déconnexion" style="font-size:.75rem">⏻</button>
+              <div class="ws-notif-panel" id="ws-notif-panel" style="display:none;bottom:42px;top:auto;left:50%;transform:translateX(-50%)"></div>
+            </div>
+          </aside>
+
+          <!-- ══ CONTENU ══ -->
+          <div class="wsp-content">
+
+            <!-- Header -->
+            <header class="wsp-header">
+              <div class="wsp-h-user">
+                <div class="wsp-h-av" id="wsp-h-av">?</div>
+                <span class="wsp-h-name" id="wsp-h-name">—</span>
+                <span class="wsp-h-sep">|</span>
+                <span class="wsp-h-badge" id="wsp-h-badge">—</span>
+              </div>
+              <div class="wsp-h-date" id="wsp-h-date"></div>
+              <button class="wsp-h-bell" onclick="toggleWSNotifs()">🔔</button>
+            </header>
+
+            <!-- Panes -->
+            <div class="ws-pane active" id="ws-home-pane"     style="display:flex"></div>
+            <div class="ws-pane"        id="ws-chat-pane"></div>
+            <div class="ws-pane"        id="ws-projects-pane"></div>
+            <div class="ws-pane"        id="ws-tasks-pane"></div>
+            <div class="ws-pane"        id="ws-notes-pane"></div>
+            <div class="ws-pane"        id="ws-ai-pane"></div>
+
+          </div><!-- /wsp-content -->
+        </div><!-- /wsp-shell -->
       </section>
 
     </main>

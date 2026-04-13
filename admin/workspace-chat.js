@@ -10,7 +10,7 @@
    ============================================================ */
 
 /* ── État global du workspace ──────────────────────────────── */
-let wsCurrentTab  = 'chat';
+let wsCurrentTab  = 'home';
 let wsAttachments = [];          // fichiers en attente d'envoi
 
 /* ── Données chat ──────────────────────────────────────────── */
@@ -59,7 +59,52 @@ function _wsDay(iso) {
 function renderWorkspace() {
   // Recharger depuis localStorage à chaque ouverture de section
   wsMessages = _wsLoad('dok_ws_chat') || wsMessages;
+
+  // Peupler les éléments UI du nouveau layout
+  _wspUpdateUserUI();
+  _wspUpdateDate();
+
   showWSTab(wsCurrentTab);
+}
+
+/* ── Peupler avatar + nom + rôle dans sidebar et header ─────── */
+function _wspUpdateUserUI() {
+  const u = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : null;
+  if (!u) return;
+
+  const init  = (u.nom || '?').charAt(0).toUpperCase();
+  const role  = u.role === 'admin' ? 'Admin' : 'Manager';
+  const color = u.color || '#3b82f6';
+
+  // Sidebar profile
+  const av   = document.getElementById('wsp-av');
+  const nm   = document.getElementById('wsp-name');
+  const rl   = document.getElementById('wsp-role');
+  if (av) { av.textContent = init; av.style.background = `linear-gradient(135deg, ${color}, ${color}88)`; }
+  if (nm)   nm.textContent  = u.nom  || '—';
+  if (rl)   rl.textContent  = role;
+
+  // Header
+  const hav  = document.getElementById('wsp-h-av');
+  const hnm  = document.getElementById('wsp-h-name');
+  const hbdg = document.getElementById('wsp-h-badge');
+  if (hav) { hav.textContent = init; hav.style.background = `linear-gradient(135deg, ${color}, ${color}88)`; }
+  if (hnm)   hnm.textContent  = u.nom  || '—';
+  if (hbdg)  hbdg.textContent = role;
+}
+
+/* ── Afficher la date dans le header ─────────────────────────── */
+function _wspUpdateDate() {
+  const el = document.getElementById('wsp-h-date');
+  if (!el) return;
+  const d   = new Date();
+  const dn  = d.toLocaleDateString('fr-FR', { weekday: 'long' });
+  const dd  = d.getDate();
+  const dm  = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  el.innerHTML = `
+    <div class="wsp-h-dn">${dn}</div>
+    <div class="wsp-h-dd">${dd}</div>
+    <div class="wsp-h-dm">${dm}</div>`;
 }
 
 /* ============================================================
@@ -73,24 +118,168 @@ function showWSTab(tab, el) {
     p.classList.remove('active');
     p.style.display = 'none';
   });
-  // Désactiver tous les boutons
-  document.querySelectorAll('.ws-tab').forEach(t => t.classList.remove('active'));
+  // Désactiver tous les items nav (wsp-item + legacy ws-tab)
+  document.querySelectorAll('.wsp-item').forEach(t => t.classList.remove('active'));
 
   // Activer le panneau cible
   const pane = document.getElementById(`ws-${tab}-pane`);
   if (pane) { pane.style.display = 'flex'; pane.classList.add('active'); }
 
-  // Activer le bouton
+  // Activer l'item nav
   if (el) {
-    el.classList.add('active');
+    // Remonter au .wsp-item si le clic vient d'un élément enfant
+    const item = el.closest ? (el.closest('.wsp-item') || el) : el;
+    item.classList.add('active');
   } else {
     const btn = document.getElementById(`wst-${tab}`);
     if (btn) btn.classList.add('active');
   }
 
   // Rendu à la demande
-  if (tab === 'chat') _renderChat();
-  else _renderComingSoon(tab);
+  if      (tab === 'home') renderWSHome();
+  else if (tab === 'chat') _renderChat();
+  else                     _renderComingSoon(tab);
+
+  return false; // prevent <a> default navigation
+}
+
+
+/* ============================================================
+   HOME DASHBOARD
+   ============================================================ */
+function renderWSHome() {
+  const pane = document.getElementById('ws-home-pane');
+  if (!pane) return;
+
+  /* ── Lire les données ── */
+  const projects = _wspReadLS('dok_ws_projects') || [];
+  const tasks    = _wspReadLS('dok_ws_tasks')    || [];
+
+  const prjActive = projects.filter(p => p.status !== 'done').length;
+  const tasksTodo = tasks.filter(t => t.status === 'todo').length;
+  const prjDone   = projects.filter(p => p.status === 'done').length;
+
+  /* ── Projets pour la liste (tous par défaut) ── */
+  let homeFilter = 'all';
+
+  pane.innerHTML = `
+    <div class="wsp-home" id="wsp-home-scroll">
+
+      <!-- Actions rapides -->
+      <div class="wsp-qa">
+        <button class="wsp-qa-btn wsp-qa-primary"
+          onclick="showWSTab('projects',document.getElementById('wst-projects'));setTimeout(()=>typeof prjToggleNewForm==='function'&&prjToggleNewForm(),120)">
+          <span class="wsp-qa-icon">＋</span>
+          <span>Nouveau projet</span>
+        </button>
+        <button class="wsp-qa-btn wsp-qa-secondary"
+          onclick="showWSTab('tasks',document.getElementById('wst-tasks'));setTimeout(()=>typeof tskToggleNew==='function'&&tskToggleNew(),120)">
+          <span class="wsp-qa-icon">✅</span>
+          <span>Nouvelle tâche</span>
+        </button>
+        <button class="wsp-qa-btn wsp-qa-secondary"
+          onclick="showWSTab('chat',document.getElementById('wst-chat'))">
+          <span class="wsp-qa-icon">💬</span>
+          <span>Ouvrir chat</span>
+        </button>
+        <button class="wsp-qa-btn wsp-qa-secondary"
+          onclick="showWSTab('ai',document.getElementById('wst-ai'))">
+          <span class="wsp-qa-icon">🤖</span>
+          <span>Assistant IA</span>
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="wsp-stats">
+        <div class="wsp-stat">
+          <div class="wsp-stat-icon">📁</div>
+          <div class="wsp-stat-val">${prjActive}</div>
+          <div class="wsp-stat-lbl">Projets<br>actifs</div>
+        </div>
+        <div class="wsp-stat-sep"></div>
+        <div class="wsp-stat">
+          <div class="wsp-stat-icon">⏳</div>
+          <div class="wsp-stat-val orange">${tasksTodo}</div>
+          <div class="wsp-stat-lbl">À faire<br>aujourd'hui</div>
+        </div>
+        <div class="wsp-stat-sep"></div>
+        <div class="wsp-stat">
+          <div class="wsp-stat-icon">✅</div>
+          <div class="wsp-stat-val green">${prjDone}</div>
+          <div class="wsp-stat-lbl">Projets<br>terminés</div>
+        </div>
+      </div>
+
+      <!-- Projets récents -->
+      <div>
+        <div class="wsp-prj-head">
+          <span class="wsp-prj-title">Projets</span>
+          <div class="wsp-prj-filters" id="wsp-home-filters">
+            <button class="wsp-prj-flt on"  onclick="wspHomeFilter('all',this)">Tous</button>
+            <button class="wsp-prj-flt"     onclick="wspHomeFilter('todo',this)">À faire</button>
+            <button class="wsp-prj-flt"     onclick="wspHomeFilter('inprogress',this)">En cours</button>
+            <button class="wsp-prj-flt"     onclick="wspHomeFilter('done',this)">Terminé</button>
+          </div>
+        </div>
+        <div class="wsp-prj-list" id="wsp-home-prjlist"></div>
+      </div>
+
+    </div>`;
+
+  _wspRenderPrjList('all');
+}
+
+function wspHomeFilter(val, btn) {
+  document.querySelectorAll('#wsp-home-filters .wsp-prj-flt').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  _wspRenderPrjList(val);
+}
+
+function _wspRenderPrjList(filter) {
+  const el = document.getElementById('wsp-home-prjlist');
+  if (!el) return;
+
+  const projects = _wspReadLS('dok_ws_projects') || [];
+  const tasks    = _wspReadLS('dok_ws_tasks')    || [];
+  const STATUS   = { todo:'wsp-sp-todo', inprogress:'wsp-sp-prog', done:'wsp-sp-done' };
+  const LABELS   = { todo:'À faire', inprogress:'En cours', done:'Terminé' };
+  const BARS     = { todo:'#4b5563', inprogress:'#388bfd', done:'#3fb950' };
+
+  const filtered = filter === 'all' ? projects : projects.filter(p => p.status === filter);
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="wsp-prj-empty">Aucun projet${filter!=='all'?' dans cette catégorie':''}.</div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.slice(0, 8).map(p => {
+    const prjTasks = tasks.filter(t => t.projectId === p.id);
+    const done     = prjTasks.filter(t => t.status === 'done').length;
+    const total    = prjTasks.length;
+    const pct      = total ? Math.round(done / total * 100) : 0;
+    const barColor = BARS[p.status] || '#4b5563';
+    const sp       = STATUS[p.status] || 'wsp-sp-todo';
+    const lbl      = LABELS[p.status] || 'À faire';
+
+    return `
+      <div class="wsp-prj-row" onclick="showWSTab('projects',document.getElementById('wst-projects'));setTimeout(()=>typeof prjOpenDetail==='function'&&prjOpenDetail('${p.id}'),150)">
+        <span class="wsp-prj-row-icon">📁</span>
+        <div class="wsp-prj-row-body">
+          <div class="wsp-prj-row-name">${_esc(p.title)}</div>
+          <div class="wsp-prj-row-sub">
+            <span class="wsp-sp ${sp}">${lbl}</span>
+            <div class="wsp-prj-bar-wrap"><div class="wsp-prj-bar" style="width:${pct}%;background:${barColor}"></div></div>
+            <span class="wsp-prj-tasks">${done}/${total} tâches</span>
+          </div>
+        </div>
+        <span class="wsp-prj-arrow">›</span>
+      </div>`;
+  }).join('');
+}
+
+function _wspReadLS(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+  catch (e) { return null; }
 }
 
 
