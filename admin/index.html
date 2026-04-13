@@ -80,8 +80,11 @@
     .topbar{height:var(--topbar-h);background:rgba(255,255,255,.88);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border-bottom:1px solid rgba(226,232,240,.7);display:flex;align-items:center;gap:16px;padding:0 28px;flex-shrink:0;z-index:10;box-shadow:0 1px 12px rgba(0,0,0,.06)}
     .topbar-hamburger{display:none;background:none;border:none;font-size:1.2rem;color:var(--gray-600);padding:6px}
     .topbar-title{font-size:1rem;font-weight:700;color:var(--dark);letter-spacing:-0.02em}
-    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px}
-    .topbar-date{font-size:.8rem;color:var(--gray-500)}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+    .topbar-clock{display:flex;flex-direction:column;align-items:flex-end;gap:1px;padding:5px 10px;background:var(--gray-100);border-radius:10px;cursor:default;user-select:none}
+    .topbar-clock-time{font-size:.95rem;font-weight:700;color:var(--dark);letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+    .topbar-clock-date{font-size:.65rem;color:var(--gray-400);white-space:nowrap;text-transform:capitalize;letter-spacing:.01em}
+    @media(max-width:640px){.topbar-clock-date{display:none}.topbar-clock{padding:5px 9px}}
     .topbar-notif{position:relative;font-size:1.1rem;cursor:pointer;padding:6px;border-radius:10px;transition:background var(--t)}
     .topbar-notif:hover{background:var(--gray-100)}
     .notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--orange);border-radius:50%;border:2px solid var(--white)}
@@ -1255,7 +1258,10 @@
           <span id="topbar-nom">—</span>
           <span id="topbar-role-badge" style="font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--blue-xlight);color:var(--blue)">—</span>
         </div>
-        <span class="topbar-date" id="topbar-date"></span>
+        <div class="topbar-clock" id="topbar-clock">
+          <span class="topbar-clock-time" id="topbar-time">--:--</span>
+          <span class="topbar-clock-date" id="topbar-date-lbl">—</span>
+        </div>
         <div class="topbar-notif" onclick="showSection('demandes')">
           🔔
           <span class="notif-dot" id="notif-dot" style="display:none"></span>

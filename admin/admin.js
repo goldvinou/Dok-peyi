@@ -567,13 +567,26 @@ function updateUserUI() {
 }
 
 /* ============================================================
+   HORLOGE TOPBAR
+   ============================================================ */
+function startClock() {
+  function tick() {
+    const now  = new Date();
+    const tEl  = document.getElementById('topbar-time');
+    const dEl  = document.getElementById('topbar-date-lbl');
+    if (tEl) tEl.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (dEl) dEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+/* ============================================================
    INITIALISATION
    ============================================================ */
 function init() {
-  // Date dans la topbar
-  const now = new Date();
-  const el  = document.getElementById('topbar-date');
-  if (el) el.textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  // Horloge live dans la topbar
+  startClock();
 
   refreshBadge();
   renderDashboard();
