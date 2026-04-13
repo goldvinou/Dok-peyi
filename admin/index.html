@@ -92,17 +92,33 @@
     @keyframes secIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     /* ===== KPI CARDS ===== */
     .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
-    .kpi-card{background:var(--white);border-radius:var(--radius-lg);padding:22px 20px;border:1.5px solid rgba(226,232,240,.7);position:relative;overflow:hidden;transition:transform .4s var(--spring),box-shadow .25s}
+    .kpi-card{background:var(--white);border-radius:var(--radius-lg);padding:20px 18px;border:1.5px solid rgba(226,232,240,.7);position:relative;overflow:hidden;transition:transform .4s var(--spring),box-shadow .25s}
     .kpi-card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 16px 36px rgba(0,0,0,.10)}
     .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
     .kpi-card.blue::before{background:linear-gradient(90deg,var(--blue),var(--blue-mid))}
     .kpi-card.green::before{background:linear-gradient(90deg,var(--green-dark),var(--green))}
     .kpi-card.orange::before{background:linear-gradient(90deg,#d97706,var(--orange))}
     .kpi-card.purple::before{background:linear-gradient(90deg,#7c3aed,var(--purple))}
-    .kpi-label{font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
-    .kpi-value{font-size:2rem;font-weight:800;color:var(--dark);line-height:1;margin-bottom:8px;letter-spacing:-0.04em}
+    .kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+    .kpi-label{font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em}
+    .kpi-icon{font-size:1.6rem;opacity:.28;flex-shrink:0;margin-top:-2px}
+    .kpi-value{font-size:2rem;font-weight:800;color:var(--dark);line-height:1;margin-bottom:6px;letter-spacing:-0.04em}
     .kpi-sub{font-size:.77rem;color:var(--gray-500)}
-    .kpi-icon{position:absolute;top:18px;right:18px;font-size:1.7rem;opacity:.12}
+    /* dashboard recent list compact */
+    .dash-dem-list{display:flex;flex-direction:column}
+    .dash-dem-row{display:flex;align-items:center;gap:10px;padding:11px 20px;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .15s}
+    .dash-dem-row:hover{background:var(--gray-50)}
+    .dash-dem-row:last-child{border-bottom:none}
+    .dash-dem-svc{font-size:.95rem;flex-shrink:0}
+    .dash-dem-info{flex:1;min-width:0}
+    .dash-dem-name{font-size:.84rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dash-dem-meta{display:flex;align-items:center;gap:5px;margin-top:2px}
+    .dash-dem-type{font-size:.72rem;color:var(--gray-400)}
+    .dash-dem-dot{width:3px;height:3px;background:var(--gray-300);border-radius:50%;flex-shrink:0}
+    .dash-dem-time{font-size:.72rem;color:var(--gray-400)}
+    .dash-dem-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+    .dash-dem-amount{font-size:.82rem;font-weight:700;color:var(--dark)}
+    .dash-dem-empty{text-align:center;padding:20px;color:var(--gray-400);font-size:.85rem}
     /* ===== CHARTS ===== */
     .row-2{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:24px}
     .chart-card{background:var(--white);border-radius:var(--radius-lg);border:1.5px solid rgba(226,232,240,.7);overflow:hidden;box-shadow:var(--shadow)}
@@ -839,8 +855,11 @@
       .sidebar.open{transform:translateX(0)}
       .sb-overlay.visible{display:block}
       .topbar-hamburger{display:flex}
-      .content{padding:18px 16px 40px}
-      .kpi-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+      .content{padding:16px 14px 40px}
+      .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+      .kpi-card{padding:14px 13px}
+      .kpi-value{font-size:1.7rem}
+      .kpi-icon{font-size:1.3rem}
       .filters-bar{flex-direction:column}
       .filter-search-wrap{min-width:auto}
       .filters-bar select{width:100%}
@@ -850,7 +869,13 @@
       .table-card .admin-table{min-width:680px}
       .svc-form-row{grid-template-columns:1fr}
     }
-    @media(max-width:480px){.kpi-grid{grid-template-columns:1fr}.topbar{padding:0 16px}}
+    @media(max-width:480px){
+      .kpi-grid{grid-template-columns:repeat(2,1fr);gap:9px}
+      .kpi-card{padding:12px 12px}
+      .kpi-value{font-size:1.55rem}
+      .kpi-icon{font-size:1.2rem}
+      .topbar{padding:0 14px}
+    }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {

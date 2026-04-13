@@ -718,26 +718,34 @@ function renderDashboard() {
   // KPIs
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi-card blue">
-      <div class="kpi-icon">📋</div>
-      <div class="kpi-label">Total demandes</div>
+      <div class="kpi-top">
+        <div class="kpi-label">Total demandes</div>
+        <div class="kpi-icon">📋</div>
+      </div>
       <div class="kpi-value">${total}</div>
       <div class="kpi-sub">Depuis le début</div>
     </div>
     <div class="kpi-card green">
-      <div class="kpi-icon">💶</div>
-      <div class="kpi-label">Revenus générés</div>
+      <div class="kpi-top">
+        <div class="kpi-label">Revenus générés</div>
+        <div class="kpi-icon">💶</div>
+      </div>
       <div class="kpi-value">${revenue}€</div>
       <div class="kpi-sub">${termine} commandes terminées</div>
     </div>
     <div class="kpi-card orange">
-      <div class="kpi-icon">⏳</div>
-      <div class="kpi-label">En attente</div>
+      <div class="kpi-top">
+        <div class="kpi-label">En attente</div>
+        <div class="kpi-icon">⏳</div>
+      </div>
       <div class="kpi-value">${attente}</div>
       <div class="kpi-sub">À traiter</div>
     </div>
-    <div class="kpi-card red">
-      <div class="kpi-icon">📈</div>
-      <div class="kpi-label">Taux de réussite</div>
+    <div class="kpi-card purple">
+      <div class="kpi-top">
+        <div class="kpi-label">Taux de réussite</div>
+        <div class="kpi-icon">📈</div>
+      </div>
       <div class="kpi-value">${total ? Math.round((termine / total) * 100) : 0}%</div>
       <div class="kpi-sub">Demandes complétées</div>
     </div>
@@ -747,9 +755,51 @@ function renderDashboard() {
   renderRevenueChart();
   renderDonutChart();
 
-  // Tableau récent
-  const recent = [...demandes].slice(0, 6);
-  renderTable('recent-list', recent, true);
+  // Dernières demandes (compact)
+  const recent = [...demandes].slice(0, 5);
+  renderRecentCompact('recent-list', recent);
+}
+
+/* ============================================================
+   DASHBOARD : LISTE COMPACTE RÉCENTE
+   ============================================================ */
+function renderRecentCompact(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  if (!data.length) {
+    el.innerHTML = '<div class="dash-dem-empty">📭 Aucune demande pour le moment</div>';
+    return;
+  }
+
+  function relTime(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    const diff = Math.floor((Date.now() - d) / 1000);
+    if (diff < 60)    return 'À l\'instant';
+    if (diff < 3600)  return Math.floor(diff / 60) + ' min';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' h';
+    return Math.floor(diff / 86400) + ' j';
+  }
+
+  el.innerHTML = '<div class="dash-dem-list">' + data.map(d => `
+    <div class="dash-dem-row" onclick="openModal(${d.id})">
+      <span class="dash-dem-svc">${SERVICE_ICONS[d.service] || '📄'}</span>
+      <div class="dash-dem-info">
+        <div class="dash-dem-name">${escHtml(d.prenom || '')} ${escHtml(d.nom || '')}</div>
+        <div class="dash-dem-meta">
+          <span class="dash-dem-type">${SERVICE_NAMES[d.service] || d.service}</span>
+          <span class="dash-dem-dot"></span>
+          <span class="dash-dem-time">${relTime(d.date)}</span>
+        </div>
+      </div>
+      <div class="dash-dem-right">
+        <span class="badge ${STATUT_CLASS[d.statut] || ''}">${STATUT_LABELS[d.statut] || d.statut}</span>
+        <span class="dash-dem-amount">${d.montant}€</span>
+      </div>
+    </div>
+  `).join('') + '</div>';
 }
 
 /* ============================================================
