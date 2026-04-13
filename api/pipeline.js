@@ -17,12 +17,19 @@
    fail             — any → failed (forced)
                       payload: { reason?: string }
 
-   Response: { ok: boolean, order: object, error?: string }
+   get_document     — retrieve preview or final document
+                      payload: { type: 'preview' | 'final' }
+                      Access control enforced by lib/documents.js:
+                        preview → order.statut ∈ {generated, pending_payment, paid, needs_review, delivered}
+                        final   → order.statut ∈ {paid, needs_review, delivered}
+
+   Response: { ok: boolean, order?: object, html?: string, error?: string }
    ============================================================ */
 
 export const config = { runtime: 'edge' };
 
 import { handlers } from '../lib/pipeline.js';
+import { getDocument } from '../lib/documents.js';
 
 /* ── CORS headers ─────────────────────────────────────────── */
 const CORS = Object.freeze({
@@ -86,6 +93,18 @@ export default async function handler(req) {
     case 'fail': {
       result = await handlers.fail(order, { reason: payload.reason });
       break;
+    }
+
+    /* ── get_document ── */
+    case 'get_document': {
+      const type = payload.type;
+      if (!type || !['preview', 'final'].includes(type)) {
+        return json({ ok: false, error: 'payload.type requis : "preview" ou "final"' }, 400);
+      }
+      // getDocument enforces status-based access control
+      result = getDocument(order, type);
+      // Return 403 when access is denied (wrong status), 200 otherwise
+      return json(result, result.ok ? 200 : 403);
     }
 
     default:
