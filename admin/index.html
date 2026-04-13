@@ -295,7 +295,27 @@
     .wsp-prj-tasks{font-size:.7rem;color:rgba(148,163,184,.45);white-space:nowrap;flex-shrink:0}
     .wsp-prj-arrow{color:rgba(148,163,184,.3);font-size:.9rem;flex-shrink:0}
     .wsp-prj-empty{text-align:center;padding:32px 16px;color:rgba(148,163,184,.35);font-size:.84rem}
-    @media(max-width:860px){.wsp-shell{flex-direction:column}.wsp-sidebar{width:100%;height:auto;flex-direction:row;padding:10px 12px;gap:10px;flex-shrink:0;overflow-x:auto}.wsp-brand,.wsp-profile{display:none}.wsp-nav{flex-direction:row;gap:4px;flex:none}.wsp-item{padding:7px 12px;border-radius:10px;white-space:nowrap}.wsp-arr{display:none!important}.wsp-sidebar-foot{border:none;padding:0}.wsp-qa{grid-template-columns:1fr 1fr}}
+    @media(max-width:860px){.wsp-qa{grid-template-columns:1fr 1fr}}
+    /* ── Hamburger button (visible sur mobile/tablette) ── */
+    .wsp-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;cursor:pointer;padding:9px 8px;flex-shrink:0;transition:background .2s}
+    .wsp-hamburger:hover{background:rgba(255,255,255,.1)}
+    .wsp-hamburger span{display:block;height:2px;background:#93c5fd;border-radius:2px;transition:all .3s cubic-bezier(0.16,1,0.3,1)}
+    .wsp-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .wsp-hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+    .wsp-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+    /* ── Overlay backdrop ── */
+    .wsp-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:498;opacity:0;transition:opacity .3s ease}
+    .wsp-overlay.open{display:block;opacity:1}
+    /* ── Drawer mobile/tablette (< 1024px) ── */
+    @media(max-width:1023px){
+      .wsp-hamburger{display:flex}
+      .wsp-sidebar{position:fixed;top:0;left:0;height:100dvh;height:100vh;z-index:499;transform:translateX(-105%);transition:transform .32s cubic-bezier(0.16,1,0.3,1);box-shadow:none;border-right:1px solid rgba(99,179,253,.12)}
+      .wsp-sidebar.open{transform:translateX(0);box-shadow:0 0 80px rgba(0,0,0,.7)}
+    }
+    /* ── Desktop (>= 1024px) : sidebar toujours visible + bouton collapse ── */
+    @media(min-width:1024px){
+      .wsp-collapse-btn{display:flex}
+    }
     /* ── Chat dark ── */
     .chat-shell{display:flex;flex-direction:column;height:calc(100vh - var(--topbar-h) - 130px);min-height:460px;background:#0d1117;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.45)}
     .chat-header{display:flex;align-items:center;gap:12px;padding:16px 22px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);backdrop-filter:blur(12px)}
@@ -1302,8 +1322,11 @@
       <section class="adm-section" id="s-workspace">
         <div class="wsp-shell">
 
+          <!-- Overlay (ferme la sidebar au clic en dehors) -->
+          <div class="wsp-overlay" id="wsp-overlay" onclick="wspCloseSidebar()"></div>
+
           <!-- ══ SIDEBAR ══ -->
-          <aside class="wsp-sidebar">
+          <aside class="wsp-sidebar" id="wsp-sidebar">
 
             <!-- Logo -->
             <div class="wsp-brand">
@@ -1351,6 +1374,10 @@
 
             <!-- Header -->
             <header class="wsp-header">
+              <!-- Hamburger (mobile/tablette) -->
+              <button class="wsp-hamburger" id="wsp-hamburger" onclick="wspToggleSidebar()" aria-label="Menu">
+                <span></span><span></span><span></span>
+              </button>
               <div class="wsp-h-user">
                 <div class="wsp-h-av" id="wsp-h-av">?</div>
                 <span class="wsp-h-name" id="wsp-h-name">—</span>

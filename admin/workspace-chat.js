@@ -67,6 +67,45 @@ function renderWorkspace() {
   showWSTab(wsCurrentTab);
 }
 
+/* ── Drawer sidebar (mobile / tablette) ──────────────────────── */
+function wspToggleSidebar() {
+  const sidebar  = document.getElementById('wsp-sidebar');
+  const overlay  = document.getElementById('wsp-overlay');
+  const hamburger = document.getElementById('wsp-hamburger');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', !isOpen);
+  if (overlay)  overlay.classList.toggle('open',  !isOpen);
+  if (hamburger) hamburger.classList.toggle('open', !isOpen);
+}
+
+function wspCloseSidebar() {
+  const sidebar   = document.getElementById('wsp-sidebar');
+  const overlay   = document.getElementById('wsp-overlay');
+  const hamburger = document.getElementById('wsp-hamburger');
+  if (sidebar)   sidebar.classList.remove('open');
+  if (overlay)   overlay.classList.remove('open');
+  if (hamburger) hamburger.classList.remove('open');
+}
+
+/* ── Swipe depuis le bord gauche → ouvre ; swipe gauche → ferme ── */
+(function _wspSwipe() {
+  let startX = 0, startY = 0;
+  document.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    // Seulement quand on est dans le workspace
+    if (!document.getElementById('s-workspace')?.classList.contains('active')) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = Math.abs(e.changedTouches[0].clientY - startY);
+    if (dy > 50) return;                  // scroll vertical → ignorer
+    if (dx > 55 && startX < 28) wspToggleSidebar();  // swipe →  depuis le bord
+    if (dx < -55) wspCloseSidebar();                  // swipe ←  fermer
+  }, { passive: true });
+})();
+
 /* ── Peupler avatar + nom + rôle dans sidebar et header ─────── */
 function _wspUpdateUserUI() {
   const u = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : null;
@@ -134,6 +173,9 @@ function showWSTab(tab, el) {
     const btn = document.getElementById(`wst-${tab}`);
     if (btn) btn.classList.add('active');
   }
+
+  // Fermer la sidebar sur mobile après sélection
+  wspCloseSidebar();
 
   // Rendu à la demande
   if      (tab === 'home') renderWSHome();
