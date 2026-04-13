@@ -20,12 +20,32 @@ const SERVICE_NAMES  = { cv: 'CV Professionnel', lettre: 'Lettre de motivation',
 const SERVICE_ICONS  = { cv: '📄', lettre: '✉️', dossier: '📁', courrier: '📮', sejour: '🛂' };
 
 const STATUT_LABELS = {
+  /* ── New pipeline statuses ── */
+  submitted:       'Soumis',
+  processing:      'Génération IA',
+  generated:       'Généré',
+  pending_payment: 'Paiement en cours',
+  paid:            'Payé',
+  needs_review:    'À vérifier',
+  delivered:       'Livré',
+  failed:          'Échec',
+  /* ── Legacy statuses (kept for existing orders) ── */
   en_attente: 'En attente',
   en_cours:   'En cours',
   terminé:    'Terminé',
   annulé:     'Annulé'
 };
 const STATUT_CLASS = {
+  /* ── New pipeline statuses ── */
+  submitted:       'badge-submitted',
+  processing:      'badge-processing',
+  generated:       'badge-generated',
+  pending_payment: 'badge-pending-payment',
+  paid:            'badge-paid',
+  needs_review:    'badge-needs-review',
+  delivered:       'badge-delivered',
+  failed:          'badge-failed',
+  /* ── Legacy statuses ── */
   en_attente: 'badge-attente',
   en_cours:   'badge-cours',
   terminé:    'badge-termine',
@@ -661,7 +681,9 @@ function closeSidebar() {
    BADGE DEMANDES EN ATTENTE
    ============================================================ */
 function refreshBadge() {
-  const count = demandes.filter(d => d.statut === 'en_attente').length;
+  // Count orders that need admin attention (new pipeline + legacy)
+  const ATTENTION = new Set(['submitted', 'paid', 'needs_review', 'en_attente']);
+  const count = demandes.filter(d => ATTENTION.has(d.statut)).length;
   const badge = document.getElementById('nb-pending');
   const dot   = document.getElementById('notif-dot');
   if (count > 0) {
@@ -862,10 +884,22 @@ function renderTable(containerId, data, compact) {
           <button class="btn-icon" title="Voir détails" onclick="openModal(${d.id})">👁</button>
           ${!compact ? `
           <select class="status-select" onchange="quickChangeStatus(${d.id}, this.value)">
-            <option value="en_attente" ${d.statut === 'en_attente' ? 'selected' : ''}>En attente</option>
-            <option value="en_cours"   ${d.statut === 'en_cours'   ? 'selected' : ''}>En cours</option>
-            <option value="terminé"    ${d.statut === 'terminé'    ? 'selected' : ''}>Terminé</option>
-            <option value="annulé"     ${d.statut === 'annulé'     ? 'selected' : ''}>Annulé</option>
+            <optgroup label="Pipeline">
+              <option value="submitted"       ${d.statut === 'submitted'       ? 'selected' : ''}>Soumis</option>
+              <option value="processing"      ${d.statut === 'processing'      ? 'selected' : ''}>Génération IA</option>
+              <option value="generated"       ${d.statut === 'generated'       ? 'selected' : ''}>Généré</option>
+              <option value="pending_payment" ${d.statut === 'pending_payment' ? 'selected' : ''}>Paiement en cours</option>
+              <option value="paid"            ${d.statut === 'paid'            ? 'selected' : ''}>Payé</option>
+              <option value="needs_review"    ${d.statut === 'needs_review'    ? 'selected' : ''}>À vérifier</option>
+              <option value="delivered"       ${d.statut === 'delivered'       ? 'selected' : ''}>Livré</option>
+              <option value="failed"          ${d.statut === 'failed'          ? 'selected' : ''}>Échec</option>
+            </optgroup>
+            <optgroup label="Ancien système">
+              <option value="en_attente" ${d.statut === 'en_attente' ? 'selected' : ''}>En attente</option>
+              <option value="en_cours"   ${d.statut === 'en_cours'   ? 'selected' : ''}>En cours</option>
+              <option value="terminé"    ${d.statut === 'terminé'    ? 'selected' : ''}>Terminé</option>
+              <option value="annulé"     ${d.statut === 'annulé'     ? 'selected' : ''}>Annulé</option>
+            </optgroup>
           </select>
           <button class="btn-icon danger" title="Supprimer" onclick="deleteDemande(${d.id})">🗑</button>
           ` : ''}

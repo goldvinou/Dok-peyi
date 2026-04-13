@@ -119,7 +119,8 @@ const SSW = {
   personal: { prenom: '', nom: '', email: '', phone: '' },
   details:  {},
   html:     null,
-  paid:     false
+  paid:     false,
+  orderId:  null   // set by swSaveOrder(), used by swUpdateOrderStatus()
 };
 
 /* ── INIT ─────────────────────────────────────────────────── */
@@ -511,6 +512,8 @@ function swSaveOrder() {
     const id  = Date.now();
     const cfg = SVC[SSW.svc];
 
+    // Default to 'submitted'. The wizard will call swUpdateOrderStatus() to
+    // advance through the pipeline as the user progresses.
     const demande = {
       id,
       date:     now.toISOString().split('T')[0],
@@ -522,10 +525,12 @@ function swSaveOrder() {
       ville:    '',
       service:  SSW.svc,
       montant:  cfg.price,
-      statut:   cfg.reviewRequired ? 'en_cours' : 'en_attente',
+      statut:   'submitted',
       details:  Object.assign({}, SSW.details, { 'sw-choice': SSW.choice }),
       note:     ''
     };
+
+    SSW.orderId = id;
 
     const existing = JSON.parse(localStorage.getItem('dok_demandes') || '[]');
     existing.unshift(demande);
@@ -536,6 +541,42 @@ function swSaveOrder() {
         firebase.database().ref('dok-peyi/demandes/' + id).set(demande);
     } catch(_) {}
   } catch(_) {}
+}
+
+/**
+ * Advance the current order to a new status.
+ * Uses dokTransition() from lib/statuses.js to validate the move.
+ *
+ * @param {string} next   - Target status (use DOK_STATUS constants).
+ * @param {object} [opts]
+ * @param {boolean} [opts.force] - Skip validation (e.g. admin override).
+ * @returns {boolean} true if the transition was applied.
+ */
+function swUpdateOrderStatus(next, opts) {
+  if (!SSW.orderId) return false;
+
+  const list = JSON.parse(localStorage.getItem('dok_demandes') || '[]');
+  const idx  = list.findIndex(d => d.id === SSW.orderId);
+  if (idx === -1) return false;
+
+  const result = (typeof dokTransition === 'function')
+    ? dokTransition(list[idx].statut, next, opts)
+    : { ok: true, status: next }; // graceful fallback if statuses.js not loaded
+
+  if (!result.ok) {
+    console.warn('[Dok\'péyi] Status transition blocked:', result.error);
+    return false;
+  }
+
+  list[idx].statut = result.status;
+  localStorage.setItem('dok_demandes', JSON.stringify(list));
+
+  try {
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0)
+      firebase.database().ref('dok-peyi/demandes/' + SSW.orderId + '/statut').set(result.status);
+  } catch(_) {}
+
+  return true;
 }
 
 function swShowConfirm() {
