@@ -583,6 +583,85 @@
     .nte-ed-content::-webkit-scrollbar-track{background:transparent}
     .nte-ed-content::-webkit-scrollbar-thumb{background:#30363d;border-radius:99px}
     @media(max-width:860px){.nte-shell{flex-direction:column}.nte-sidebar{width:100%;max-height:220px;border-right:none;border-bottom:1px solid rgba(255,255,255,.07)}.nte-list{max-height:120px}}
+    /* ===== AI MODULE (dark) ===== */
+    .wai-shell{display:flex;flex-direction:column;height:calc(100vh - var(--topbar-h) - 130px);min-height:460px;background:#0d1117;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+    /* header */
+    .wai-header{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#161b22;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;flex-wrap:wrap}
+    .wai-header-left{display:flex;align-items:center;gap:8px;margin-right:4px}
+    .wai-header-icon{font-size:1.2rem}
+    .wai-header-title{font-size:.95rem;font-weight:700;color:#e6edf3;white-space:nowrap}
+    /* service tabs */
+    .wai-tabs{display:flex;gap:6px;flex:1}
+    .wai-tab{display:flex;align-items:center;gap:6px;background:#0d1117;border:1.5px solid rgba(255,255,255,.08);border-radius:10px;color:#8b949e;font-size:.8rem;font-weight:600;padding:7px 14px;cursor:pointer;transition:all .22s var(--spring)}
+    .wai-tab-active{background:var(--tab-color,#388bfd)18;border-color:var(--tab-color,#388bfd)!important;color:var(--tab-color,#388bfd)}
+    .wai-tab:hover:not(.wai-tab-active){border-color:rgba(255,255,255,.18);color:#e6edf3}
+    .wai-tab-hint{font-size:.68rem;opacity:.5;font-weight:400}
+    /* clear button */
+    .wai-clear-btn{background:transparent;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;color:#4b5563;font-size:.76rem;padding:5px 10px;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+    .wai-clear-btn:hover{border-color:#f85149;color:#f85149}
+    /* messages zone */
+    .wai-messages{flex:1;overflow-y:auto;padding:20px 20px 8px;display:flex;flex-direction:column;gap:16px}
+    .wai-messages::-webkit-scrollbar{width:5px}
+    .wai-messages::-webkit-scrollbar-track{background:transparent}
+    .wai-messages::-webkit-scrollbar-thumb{background:#30363d;border-radius:99px}
+    /* welcome */
+    .wai-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:8px;padding:30px;text-align:center}
+    .wai-welcome-icon{font-size:3rem;margin-bottom:6px}
+    .wai-welcome-title{font-size:1.15rem;font-weight:800;color:#e6edf3}
+    .wai-welcome-sub{font-size:.87rem;color:#8b949e;margin-bottom:14px}
+    .wai-suggestions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .wai-sugg{background:#161b22;border:1.5px solid rgba(255,255,255,.1);border-radius:10px;color:#8b949e;font-size:.8rem;padding:8px 14px;cursor:pointer;transition:all .2s;text-align:left}
+    .wai-sugg:hover{border-color:rgba(255,255,255,.25);color:#e6edf3;transform:translateY(-1px)}
+    /* messages */
+    .wai-msg{display:flex;align-items:flex-start;gap:10px}
+    .wai-msg-user{flex-direction:row-reverse}
+    .wai-bubble-user{background:linear-gradient(135deg,#388bfd,#4f46e5);color:#fff;border-radius:18px 18px 4px 18px;padding:10px 14px;font-size:.87rem;line-height:1.55;max-width:75%;word-break:break-word;white-space:pre-wrap}
+    .wai-msg-ai{align-items:flex-start}
+    .wai-ai-avatar{width:30px;height:30px;border-radius:50%;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;margin-top:2px}
+    .wai-msg-ai-body{display:flex;flex-direction:column;gap:4px;min-width:0;max-width:90%}
+    .wai-bubble-ai{background:#161b22;border:1.5px solid rgba(255,255,255,.08);border-left:3px solid;border-radius:4px 18px 18px 18px;padding:12px 16px;font-size:.87rem;line-height:1.6;word-break:break-word}
+    .wai-ai-label{font-size:.72rem;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+    .wai-ai-content{color:#c9d1d9}
+    .wai-msg-time{font-size:.68rem;color:#4b5563;padding:0 4px}
+    .wai-msg-user .wai-msg-time{text-align:right}
+    /* markdown */
+    .wai-p{margin:.4em 0}
+    .wai-p:first-child{margin-top:0}
+    .wai-p:last-child{margin-bottom:0}
+    .wai-h{color:#e6edf3;font-weight:700;margin:.7em 0 .3em;font-size:.9rem}
+    .wai-ul{margin:.4em 0 .4em 1.2em;padding:0;list-style:disc}
+    .wai-ul li{margin:.2em 0}
+    .wai-code{background:#21262d;color:#e56b28;border-radius:4px;padding:1px 5px;font-size:.82em;font-family:monospace}
+    .wai-pre{background:#0d1117;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px;overflow-x:auto;margin:.6em 0}
+    .wai-pre code{color:#c9d1d9;font-size:.8em;font-family:monospace;background:none;padding:0}
+    .wai-hr{border:none;border-top:1px solid rgba(255,255,255,.1);margin:.8em 0}
+    /* loading dots */
+    .wai-loading-dots{display:flex;align-items:center;gap:5px;padding:14px 18px;background:#161b22;border:1.5px solid rgba(255,255,255,.08);border-left:3px solid #4b5563;border-radius:4px 18px 18px 18px}
+    .wai-loading-dots span{width:7px;height:7px;background:#4b5563;border-radius:50%;animation:waiDot 1.3s infinite ease-in-out}
+    .wai-loading-dots span:nth-child(2){animation-delay:.22s}
+    .wai-loading-dots span:nth-child(3){animation-delay:.44s}
+    @keyframes waiDot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+    /* error */
+    .wai-error{background:#2d0f0f;border:1.5px solid #f8514944;border-radius:10px;color:#f85149;font-size:.83rem;padding:10px 14px}
+    /* input bar */
+    .wai-input-bar{display:flex;align-items:flex-end;gap:10px;padding:10px 16px 4px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0}
+    .wai-input-service-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-bottom:13px;transition:background .3s}
+    .wai-input{flex:1;background:#21262d;border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#e6edf3;font-size:.87rem;line-height:1.5;padding:10px 14px;outline:none;resize:none;max-height:160px;transition:border-color .2s,box-shadow .2s;font-family:inherit}
+    .wai-input:focus{border-color:#388bfd;box-shadow:0 0 0 3px rgba(56,139,253,.12)}
+    .wai-input::placeholder{color:#4b5563}
+    .wai-input:disabled{opacity:.5;cursor:not-allowed}
+    .wai-send-btn{width:38px;height:38px;flex-shrink:0;border:none;border-radius:10px;color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:all .25s var(--spring);display:flex;align-items:center;justify-content:center}
+    .wai-send-btn:hover:not(:disabled){transform:translateY(-2px) scale(1.05);box-shadow:0 6px 16px rgba(56,139,253,.4)}
+    .wai-send-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .wai-input-footer{padding:4px 16px 12px;font-size:.72rem;color:#4b5563;flex-shrink:0}
+    @media(max-width:700px){.wai-header{gap:8px}.wai-tabs{gap:4px}.wai-tab{padding:6px 10px;font-size:.74rem}.wai-tab-hint{display:none}.wai-bubble-user,.wai-msg-ai-body{max-width:95%}}
+    /* ── Project AI buttons (prj- prefix extension) ── */
+    .prj-ai-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .prj-ai-btn{display:flex;align-items:center;gap:6px;border:1.5px solid rgba(255,255,255,.1);border-radius:9px;background:transparent;font-size:.8rem;font-weight:600;padding:7px 14px;cursor:pointer;transition:all .22s var(--spring)}
+    .prj-ai-claude{color:#e56b28;border-color:#e56b2844}
+    .prj-ai-claude:hover{background:#e56b2815;border-color:#e56b28;transform:translateY(-1px)}
+    .prj-ai-gpt{color:#10a37f;border-color:#10a37f44}
+    .prj-ai-gpt:hover{background:#10a37f15;border-color:#10a37f;transform:translateY(-1px)}
     /* ===== MODAL ===== */
     .modal-overlay{display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(10,15,30,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:20px}
     .modal-overlay.open{display:flex;animation:overlayIn .25s ease}
@@ -1197,5 +1276,6 @@
 <script src="/admin/workspace-projects.js?v=1"></script>
 <script src="/admin/workspace-tasks.js?v=1"></script>
 <script src="/admin/workspace-notes.js?v=1"></script>
+<script src="/admin/workspace-ai.js?v=1"></script>
 </body>
 </html>

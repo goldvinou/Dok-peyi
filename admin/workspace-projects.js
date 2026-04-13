@@ -387,6 +387,21 @@ function _prjDetailHTML(p) {
         </div>
       </div>
 
+      <!-- Assistants IA ───────────────────────────────────── -->
+      <div class="prj-detail-section">
+        <div class="prj-detail-label">Assistants IA</div>
+        <div class="prj-ai-btns">
+          <button class="prj-ai-btn prj-ai-claude"
+            onclick="waiOpenWithProject('claude',${JSON.stringify(p.title)},${JSON.stringify(p.desc||'')})">
+            🤖 Utiliser Claude
+          </button>
+          <button class="prj-ai-btn prj-ai-gpt"
+            onclick="waiOpenWithProject('gpt',${JSON.stringify(p.title)},${JSON.stringify(p.desc||'')})">
+            💬 Utiliser ChatGPT
+          </button>
+        </div>
+      </div>
+
       <!-- Commentaires ────────────────────────────────────── -->
       <div class="prj-detail-section" style="flex:1">
         <div class="prj-detail-label">Commentaires
