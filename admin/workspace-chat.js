@@ -196,18 +196,56 @@ function renderWSHome() {
   /* ── Lire les données ── */
   const projects = _wspReadLS('dok_ws_projects') || [];
   const tasks    = _wspReadLS('dok_ws_tasks')    || [];
+  const demandes = _wspReadLS('dok_demandes')    || [];
 
-  const prjActive = projects.filter(p => p.status !== 'done').length;
-  const tasksTodo = tasks.filter(t => t.status === 'todo').length;
-  const prjDone   = projects.filter(p => p.status === 'done').length;
+  const prjActive  = projects.filter(p => p.status !== 'done').length;
+  const tasksTodo  = tasks.filter(t => t.status === 'todo').length;
+  const prjDone    = projects.filter(p => p.status === 'done').length;
+  const demAttente = demandes.filter(d => d.statut === 'submitted' || d.statut === 'en_attente').length;
 
-  /* ── Projets pour la liste (tous par défaut) ── */
-  let homeFilter = 'all';
+  /* ── Dernières demandes (4 max) ── */
+  const SVC_ICO   = (typeof SERVICE_ICONS  !== 'undefined') ? SERVICE_ICONS  : { cv:'📄', lettre:'✉️', dossier:'📁', courrier:'📮', sejour:'🛂' };
+  const SVC_NAMES = (typeof SERVICE_NAMES  !== 'undefined') ? SERVICE_NAMES  : { cv:'CV', lettre:'Lettre', dossier:'Dossier', courrier:'Courrier', sejour:'Séjour' };
+  const ST_LABEL  = { submitted:'En attente', en_attente:'En attente', processing:'En cours', en_cours:'En cours', generated:'À réviser', needs_review:'À réviser', paid:'Terminé', delivered:'Terminé', terminé:'Terminé', failed:'Annulé', annulé:'Annulé' };
+
+  function _relTime(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    const diff = Math.floor((Date.now() - d) / 1000);
+    if (diff < 60)   return 'À l\'instant';
+    if (diff < 3600) return Math.floor(diff/60) + ' min';
+    if (diff < 86400) return Math.floor(diff/3600) + ' h';
+    return Math.floor(diff/86400) + ' j';
+  }
+
+  const lastDem = [...demandes].sort((a,b) => (b.id||0)-(a.id||0)).slice(0,4);
+  const demHTML = lastDem.length ? lastDem.map(d => {
+    const stClass = d.statut || 'submitted';
+    const stLabel = ST_LABEL[stClass] || d.statut || '—';
+    const nom     = [d.prenom, d.nom].filter(Boolean).join(' ') || d.email || '—';
+    const svcIco  = SVC_ICO[d.service]   || '📄';
+    const svcName = SVC_NAMES[d.service] || d.service || '—';
+    const time    = _relTime(d.date);
+    return `<div class="wsp-dem-row" onclick="typeof showSection==='function'&&showSection('demandes');typeof openModal==='function'&&setTimeout(()=>openModal(${d.id}),200)">
+      <span class="wsp-dem-svc">${svcIco}</span>
+      <div class="wsp-dem-info">
+        <div class="wsp-dem-name">${_wspEsc(nom)}</div>
+        <div class="wsp-dem-meta">
+          <span class="wsp-dem-type">${_wspEsc(svcName)}</span>
+          <span class="wsp-dem-dot"></span>
+          <span class="wsp-dem-time">${time}</span>
+        </div>
+      </div>
+      <span class="wsp-dem-st ${stClass}">${stLabel}</span>
+    </div>`;
+  }).join('') : `<div class="wsp-dem-empty">Aucune demande</div>`;
 
   pane.innerHTML = `
     <div class="wsp-home" id="wsp-home-scroll">
 
       <!-- Actions rapides -->
+      <div class="wsp-sec-lbl">Actions rapides</div>
       <div class="wsp-qa">
         <button class="wsp-qa-btn wsp-qa-primary"
           onclick="showWSTab('projects',document.getElementById('wst-projects'));setTimeout(()=>typeof prjToggleNewForm==='function'&&prjToggleNewForm(),120)">
@@ -222,7 +260,7 @@ function renderWSHome() {
         <button class="wsp-qa-btn wsp-qa-secondary"
           onclick="showWSTab('chat',document.getElementById('wst-chat'))">
           <span class="wsp-qa-icon">💬</span>
-          <span>Ouvrir chat</span>
+          <span>Chat équipe</span>
         </button>
         <button class="wsp-qa-btn wsp-qa-secondary"
           onclick="showWSTab('ai',document.getElementById('wst-ai'))">
@@ -231,31 +269,47 @@ function renderWSHome() {
         </button>
       </div>
 
-      <!-- Stats -->
+      <!-- Stats 2×2 -->
+      <div class="wsp-sec-lbl" style="margin-top:4px">Vue d'ensemble</div>
       <div class="wsp-stats">
         <div class="wsp-stat">
-          <div class="wsp-stat-icon">📁</div>
-          <div class="wsp-stat-val">${prjActive}</div>
-          <div class="wsp-stat-lbl">Projets<br>actifs</div>
+          <div class="wsp-stat-left">
+            <div class="wsp-stat-val">${prjActive}</div>
+            <div class="wsp-stat-lbl">Projets actifs</div>
+          </div>
+          <div class="wsp-stat-ico">📁</div>
         </div>
-        <div class="wsp-stat-sep"></div>
         <div class="wsp-stat">
-          <div class="wsp-stat-icon">⏳</div>
-          <div class="wsp-stat-val orange">${tasksTodo}</div>
-          <div class="wsp-stat-lbl">À faire<br>aujourd'hui</div>
+          <div class="wsp-stat-left">
+            <div class="wsp-stat-val orange">${tasksTodo}</div>
+            <div class="wsp-stat-lbl">Tâches à faire</div>
+          </div>
+          <div class="wsp-stat-ico">⏳</div>
         </div>
-        <div class="wsp-stat-sep"></div>
         <div class="wsp-stat">
-          <div class="wsp-stat-icon">✅</div>
-          <div class="wsp-stat-val green">${prjDone}</div>
-          <div class="wsp-stat-lbl">Projets<br>terminés</div>
+          <div class="wsp-stat-left">
+            <div class="wsp-stat-val green">${prjDone}</div>
+            <div class="wsp-stat-lbl">Projets terminés</div>
+          </div>
+          <div class="wsp-stat-ico">✅</div>
+        </div>
+        <div class="wsp-stat">
+          <div class="wsp-stat-left">
+            <div class="wsp-stat-val purple">${demAttente}</div>
+            <div class="wsp-stat-lbl">Demandes en attente</div>
+          </div>
+          <div class="wsp-stat-ico">🔔</div>
         </div>
       </div>
 
+      <!-- Dernières demandes -->
+      <div class="wsp-sec-lbl" style="margin-top:4px">Dernières demandes</div>
+      <div class="wsp-dem-list">${demHTML}</div>
+
       <!-- Projets récents -->
+      <div class="wsp-sec-lbl" style="margin-top:4px">Projets</div>
       <div>
-        <div class="wsp-prj-head">
-          <span class="wsp-prj-title">Projets</span>
+        <div class="wsp-prj-head" style="margin-bottom:6px">
           <div class="wsp-prj-filters" id="wsp-home-filters">
             <button class="wsp-prj-flt on"  onclick="wspHomeFilter('all',this)">Tous</button>
             <button class="wsp-prj-flt"     onclick="wspHomeFilter('todo',this)">À faire</button>
@@ -269,6 +323,10 @@ function renderWSHome() {
     </div>`;
 
   _wspRenderPrjList('all');
+}
+
+function _wspEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function wspHomeFilter(val, btn) {
