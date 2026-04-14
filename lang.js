@@ -11,7 +11,7 @@ const LANGS = [
   { code: 'nl', flag: '🇸🇷', name: 'Nederlands',       native: 'Surinam',            dir: 'ltr' },
   { code: 'ar',  flag: '🇸🇾', name: 'العربية',          native: 'سوريا · Syrie',      dir: 'rtl' },
   { code: 'en',  flag: '🇬🇾', name: 'English',          native: 'Guyana',              dir: 'ltr' },
-  { code: 'gcr', flag: '🇬🇾', name: 'Kréyòl Gwiyannè', native: 'Guyane · Kréyòl',    dir: 'ltr' },
+  { code: 'gcr', flag: '🇬🇫', name: 'Kréyòl Gwiyannè', native: 'Guyane · Kréyòl',    dir: 'ltr' },
 ];
 
 /* ===== TRADUCTIONS ===== */
