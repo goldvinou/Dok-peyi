@@ -108,6 +108,57 @@ const SVC = {
         { id: 'documents',   label: 'Documents dont vous disposez', type: 'textarea', placeholder: 'Passeport, visa, actes d\'état civil, attestation d\'hébergement, contrats de travail…', required: false }
       ];
     }
+  },
+
+  impot: {
+    name: 'Avis d\'impôt', icon: '🧾', color: '#0369a1', light: '#e0f2fe', price: 10,
+    reviewRequired: false,
+    choices: [
+      { id: 'comprendre', icon: '💡', label: 'Comprendre mon avis',  desc: 'Décoder mon avis d\'imposition ou de non-imposition' },
+      { id: 'aide',       icon: '🤝', label: 'Aide liée à l\'impôt', desc: 'Réductions, exonérations, aides CAF, délais de paiement…' },
+      { id: 'courrier',   icon: '📮', label: 'Écrire aux impôts',    desc: 'Contester, demander un délai, faire une réclamation' }
+    ],
+    questions: function(choice) {
+      if (choice === 'courrier') return [
+        { id: 'destinataire', label: 'Destinataire *',      type: 'text',     placeholder: 'Ex : Trésor Public de Guyane, DGFIP, Centre des impôts de Cayenne…', required: true },
+        { id: 'objet',        label: 'Objet du courrier *', type: 'text',     placeholder: 'Ex : Demande de délai de paiement, contestation d\'imposition…', required: true },
+        { id: 'description',  label: 'Votre situation *',   type: 'textarea', placeholder: 'Expliquez votre situation et ce que vous demandez…', required: true }
+      ];
+      return [
+        { id: 'type',        label: 'Type d\'avis *',              type: 'text',     placeholder: 'Ex : Avis d\'imposition, avis de non-imposition, taxe foncière…', required: true },
+        { id: 'revenus',     label: 'Revenus annuels',              type: 'text',     placeholder: 'Ex : 18 000€/an, RSA uniquement, sans revenus…', required: false },
+        { id: 'situation',   label: 'Situation familiale',          type: 'text',     placeholder: 'Ex : Célibataire, marié(e) avec 2 enfants, veuf(ve)…', required: false },
+        { id: 'description', label: 'Votre question / demande *',  type: 'textarea', placeholder: 'Qu\'est-ce que vous ne comprenez pas ? Quel type d\'aide cherchez-vous ?', required: true }
+      ];
+    }
+  },
+
+  naturalisation: {
+    name: 'Naturalisation', icon: '🇫🇷', color: '#1d4ed8', light: '#eff6ff', price: 20,
+    reviewRequired: true,
+    reviewMsg: 'Votre dossier a été transmis à notre équipe. Un conseiller spécialisé vous contactera sous 24 à 48h pour analyser votre éligibilité et vous accompagner dans la procédure.',
+    choices: [
+      { id: 'situation', icon: '🔍', label: 'Vérifier mon éligibilité', desc: 'Suis-je en mesure de faire une demande ?' },
+      { id: 'dossier',   icon: '📁', label: 'Préparer mon dossier',      desc: 'Liste complète des documents et étapes à suivre' },
+      { id: 'lettre',    icon: '✍️', label: 'Lettre d\'intégration',     desc: 'Rédiger ma lettre de motivation de vie en France' }
+    ],
+    questions: function(choice) {
+      if (choice === 'lettre') return [
+        { id: 'nationalite', label: 'Nationalité actuelle *',                 type: 'text',     placeholder: 'Ex : Haïtienne, Brésilienne, Camerounaise…', required: true },
+        { id: 'duree',       label: 'Durée de résidence en France *',         type: 'text',     placeholder: 'Ex : 5 ans, depuis 2018…', required: true },
+        { id: 'parcours',    label: 'Votre parcours en France *',             type: 'textarea', placeholder: 'Vie sociale, emploi, associations, liens avec la France…', required: true },
+        { id: 'famille',     label: 'Situation familiale',                    type: 'text',     placeholder: 'Ex : Marié(e) à un(e) Français(e), enfants nés en France…', required: false },
+        { id: 'motivation',  label: 'Pourquoi souhaitez-vous la nationalité ?', type: 'textarea', placeholder: 'Vos raisons personnelles, votre attachement aux valeurs françaises…', required: false }
+      ];
+      return [
+        { id: 'nationalite', label: 'Nationalité actuelle *',                 type: 'text',     placeholder: 'Ex : Haïtienne, Brésilienne, Camerounaise…', required: true },
+        { id: 'duree',       label: 'Durée de résidence en France *',         type: 'text',     placeholder: 'Ex : 5 ans, depuis 2018…', required: true },
+        { id: 'famille',     label: 'Situation familiale',                    type: 'text',     placeholder: 'Ex : Marié(e) à un(e) Français(e), enfants nés en France…', required: false },
+        { id: 'travail',     label: 'Situation professionnelle',              type: 'text',     placeholder: 'Ex : CDI, fonctionnaire, auto-entrepreneur, sans emploi…', required: false },
+        { id: 'situation',   label: 'Informations complémentaires',           type: 'textarea', placeholder: 'Casier judiciaire vierge ? Niveau de français ? Titre de séjour actuel ?', required: false },
+        { id: 'documents',   label: 'Documents dont vous disposez',           type: 'textarea', placeholder: 'Passeport, titre de séjour, actes d\'état civil, diplômes, bulletins de salaire…', required: false }
+      ];
+    }
   }
 };
 
@@ -374,7 +425,12 @@ function swBuildPrompt() {
     objet:        d.objet        || '',
     nationalite:  d.nationalite  || '',
     situation:    d.situation    || '',
-    choix:        SSW.choice     || ''
+    choix:        SSW.choice     || '',
+    revenus:      d.revenus      || '',
+    duree:        d.duree        || '',
+    famille:      d.famille      || '',
+    travail:      d.travail      || '',
+    parcours:     d.parcours     || ''
   };
 
   return tpl.replace(/\{\{(\w+)\}\}/g, (_, k) =>
@@ -448,7 +504,40 @@ Contenu :
 5. Délais habituels et points de vigilance
 6. Bandeau d'avertissement : "Ce document est une aide informatique. Il ne remplace pas un conseil juridique professionnel."
 
-Design : en-tête fond rouge #b91c1c, accents #ef4444, corps blanc, @media print marges 15mm.${FOOTER}`
+Design : en-tête fond rouge #b91c1c, accents #ef4444, corps blanc, @media print marges 15mm.${FOOTER}`,
+
+    impot: `${SYS}
+Tu es aussi expert en fiscalité française et en aides sociales (Guyane / France). Génère un document d'aide personnalisé en HTML (CSS inline, format A4).
+
+Client : {{nom}} | Email : {{email}} | Tél : {{tel}}
+Type de demande : {{choix}} | Type d'avis / Objet : {{type}} {{objet}}
+Revenus : {{revenus}} | Situation familiale : {{situation}}
+Description / Question : {{description}} | Destinataire : {{destinataire}}
+
+Contenu selon le choix :
+• "comprendre" → Explication pédagogique de l'avis, signification des montants, droits et recours possibles
+• "aide" → Aides et exonérations auxquelles le client peut prétendre, démarches pour les obtenir
+• "courrier" → Courrier officiel formel adressé aux services fiscaux (marges 25mm, structure réglementaire)
+
+Coordonnées utiles : DGFIP Guyane, Centre des impôts de Cayenne, 0809 401 401, impots.gouv.fr.
+Design : en-tête fond #0c4a6e, accents #0369a1, corps blanc, @media print marges 15mm.${FOOTER}`,
+
+    naturalisation: `${SYS}
+Tu es aussi spécialiste des procédures de naturalisation française (droit des étrangers, Guyane). Génère un document d'aide complet en HTML (CSS inline, format A4).
+
+Client : {{nom}} | Email : {{email}} | Tél : {{tel}} | Nationalité : {{nationalite}}
+Durée en France : {{duree}} | Famille : {{famille}} | Travail : {{travail}}
+Type de demande : {{choix}} | Infos complémentaires : {{situation}} | Documents : {{documents}}
+Parcours : {{parcours}} | Motivation : {{motivation}}
+
+Contenu selon le choix :
+• "situation" → Analyse des critères légaux (5 ans résidence, intégration, moralité, B1 français) + évaluation personnalisée + recommandations claires
+• "dossier" → Checklist complète ☐ des documents requis + étapes chronologiques numérotées + délais habituels (12-24 mois)
+• "lettre" → Lettre d'intégration officielle format épistolaire (HTML A4, 1-2 pages, ton personnel mais formel)
+
+Organismes : Préfecture de Guyane (Cayenne), sous-préfecture Saint-Laurent-du-Maroni, France Services, OFII Guyane.
+Bandeau d'avertissement obligatoire : "Ce document est une aide informatique. Il ne remplace pas une consultation à la préfecture ou un conseil juridique."
+Design : en-tête fond bleu marine #1e3a5f, accents #2563eb, corps blanc, @media print marges 15mm.${FOOTER}`
   };
 }
 

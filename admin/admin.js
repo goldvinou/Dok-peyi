@@ -15,9 +15,9 @@ const ROLE_SECTIONS = {
   manager: ['dashboard','demandes','stats','workspace']
 };
 
-const PRICES_DEFAULT = { cv: 8, lettre: 5, dossier: 12, courrier: 7, sejour: 15 };
-const SERVICE_NAMES  = { cv: 'CV Professionnel', lettre: 'Lettre de motivation', dossier: 'Dossier administratif', courrier: 'Courrier officiel', sejour: 'Titre de séjour' };
-const SERVICE_ICONS  = { cv: '📄', lettre: '✉️', dossier: '📁', courrier: '📮', sejour: '🛂' };
+const PRICES_DEFAULT = { cv: 8, lettre: 5, dossier: 12, courrier: 7, sejour: 15, impot: 10, naturalisation: 20 };
+const SERVICE_NAMES  = { cv: 'CV Professionnel', lettre: 'Lettre de motivation', dossier: 'Dossier administratif', courrier: 'Courrier officiel', sejour: 'Titre de séjour', impot: 'Avis d\'impôt', naturalisation: 'Naturalisation' };
+const SERVICE_ICONS  = { cv: '📄', lettre: '✉️', dossier: '📁', courrier: '📮', sejour: '🛂', impot: '🧾', naturalisation: '🇫🇷' };
 
 const STATUT_LABELS = {
   /* ── New pipeline statuses ── */
@@ -221,7 +221,61 @@ Documents disponibles : {{documents}}
 6. Bandeau d'avertissement visible : "Ce document est une aide informatique. Il ne remplace pas un conseil juridique professionnel."
 
 - En-tête fond rouge #b91c1c, accents #ef4444, corps blanc, @media print marges 15mm
-- Inclure un disclaimer légal en bas de page${FOOTER}`
+- Inclure un disclaimer légal en bas de page${FOOTER}`,
+
+    impot: `Tu es un assistant administratif professionnel spécialisé en fiscalité française et en aides sociales (Guyane / France).
+Génère un document d'aide personnalisé en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS DU CLIENT ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Type de demande : {{choix}}
+Type d'avis / Objet : {{type}} {{objet}}
+Revenus annuels : {{revenus}}
+Situation familiale : {{situation}}
+Demande / Description : {{description}}
+Destinataire : {{destinataire}}
+
+=== CONTENU SELON LE TYPE DE DEMANDE ===
+• "comprendre" → Explication pédagogique de l'avis d'imposition, signification des montants, droits et recours possibles
+• "aide" → Analyse des aides et exonérations auxquelles le client peut prétendre (CAF, réductions fiscales, délais), démarches pour les obtenir
+• "courrier" → Courrier officiel formel adressé aux services fiscaux (structure réglementaire française complète, marges 25mm)
+
+Pour tous les cas : inclure les coordonnées utiles (DGFIP Guyane, Centre des impôts de Cayenne, numéro 0809 401 401, impots.gouv.fr).
+
+- En-tête fond bleu #0c4a6e, accents #0369a1, corps blanc, @media print marges 15mm${FOOTER}`,
+
+    naturalisation: `Tu es un assistant administratif professionnel spécialisé en procédures de naturalisation française (droit des étrangers, Guyane).
+Génère un document d'aide complet et personnalisé en HTML (CSS inline, sans JS, format A4).
+
+=== INFORMATIONS DU CLIENT ===
+Nom complet : {{nom}}
+Email : {{email}}
+Téléphone : {{tel}}
+Nationalité actuelle : {{nationalite}}
+Durée de résidence en France : {{duree}}
+Situation familiale : {{famille}}
+Situation professionnelle : {{travail}}
+Type de demande : {{choix}}
+Informations complémentaires : {{situation}}
+Documents disponibles : {{documents}}
+Parcours en France : {{parcours}}
+Motivation / Valeurs : {{motivation}}
+
+=== CONTENU SELON LE TYPE DE DEMANDE ===
+• "situation" (vérification éligibilité) → Analyse des critères légaux + évaluation personnalisée + recommandations claires (éligible / non éligible / à vérifier)
+• "dossier" (préparation) → Checklist complète ☐ des documents requis + étapes chronologiques numérotées + délais habituels
+• "lettre" (lettre d'intégration) → Lettre de motivation officielle au format épistolaire (HTML A4, 1-2 pages)
+
+Points importants pour tous les cas :
+1. Critères légaux de naturalisation (5 ans de résidence, intégration, moralité, niveau de français B1)
+2. Spécificités Guyane (Préfecture de Guyane à Cayenne, sous-préfecture Saint-Laurent-du-Maroni)
+3. Coordonnées : Préfecture de Guyane, France Services, OFII Guyane
+4. Délais habituels (12 à 24 mois après dépôt)
+5. Bandeau d'avertissement visible : "Ce document est une aide informatique. Il ne remplace pas un conseil juridique ou une consultation officielle à la préfecture."
+
+- En-tête fond bleu marine #1e3a5f avec bandeau tricolore subtil, accents #2563eb, corps blanc, @media print marges 15mm${FOOTER}`
   };
 }
 
@@ -252,7 +306,12 @@ function buildPromptFromTemplate(template, demande) {
     objet:         d['c-objet']           || 'Non précisé',
     nationalite:   d['nationalite']       || 'Non précisée',
     situation:     d['situation']         || 'Non précisée',
-    choix:         d['sw-choice']         || ''
+    choix:         d['sw-choice']         || '',
+    revenus:       d['revenus']           || 'Non précisés',
+    duree:         d['duree']             || 'Non précisée',
+    famille:       d['famille']           || 'Non précisée',
+    travail:       d['travail']           || 'Non précisé',
+    parcours:      d['parcours']          || 'Non précisé'
   };
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : '');
 }
@@ -337,7 +396,9 @@ function buildDefaultServices() {
     lettre:  { name: 'Lettre de motivation',  icon: '✉️', price: 5,  active: true,  desc: 'Une lettre personnalisée et convaincante pour ta candidature.' },
     dossier: { name: 'Dossier administratif', icon: '📁', price: 12, active: true,  desc: 'Accompagnement complet pour monter ton dossier CAF, logement, emploi…' },
     courrier:{ name: 'Courrier officiel',      icon: '📮', price: 7,  active: true,  desc: 'Rédaction de courriers pour mairies, préfectures et administrations.' },
-    sejour:  { name: 'Titre de séjour',        icon: '🛂', price: 15, active: true,  desc: 'Accompagnement pour les démarches de titre de séjour en Guyane.' }
+    sejour:        { name: 'Titre de séjour',  icon: '🛂', price: 15, active: true, desc: 'Accompagnement pour les démarches de titre de séjour en Guyane.' },
+    impot:         { name: 'Avis d\'impôt',    icon: '🧾', price: 10, active: true, desc: 'Aide à la compréhension de l\'avis d\'imposition, démarches liées et courrier fiscal.' },
+    naturalisation:{ name: 'Naturalisation',  icon: '🇫🇷', price: 20, active: true, desc: 'Vérification éligibilité, préparation du dossier et lettre d\'intégration.' }
   };
 }
 
@@ -1276,7 +1337,17 @@ function openModal(id) {
     'cv-formation': 'Formation', 'cv-competences': 'Compétences', 'cv-infos': 'Infos supplémentaires',
     'l-poste': 'Poste visé', 'l-entreprise': 'Entreprise', 'l-experience': 'Expérience', 'l-motivation': 'Motivation',
     'd-type': 'Type de dossier', 'd-description': 'Besoin', 'd-documents': 'Documents disponibles',
-    'c-destinataire': 'Destinataire', 'c-objet': 'Objet', 'c-description': 'Description'
+    'c-destinataire': 'Destinataire', 'c-objet': 'Objet', 'c-description': 'Description',
+    /* Nouveaux champs communs */
+    poste: 'Poste', experience: 'Expérience', formation: 'Formation', competences: 'Compétences',
+    infos: 'Informations', note: 'Souhaits', entreprise: 'Entreprise', motivation: 'Motivation',
+    type: 'Type', description: 'Description', documents: 'Documents', destinataire: 'Destinataire',
+    objet: 'Objet', nationalite: 'Nationalité', situation: 'Situation',
+    /* Avis d'impôt */
+    revenus: 'Revenus annuels',
+    /* Naturalisation */
+    duree: 'Durée en France', famille: 'Situation familiale', travail: 'Situation professionnelle',
+    parcours: 'Parcours en France'
   };
   const detailsHtml = Object.entries(d.details || {})
     .filter(([k]) => !SKIP_KEYS.has(k))
@@ -1379,11 +1450,13 @@ function openModal(id) {
 
     <div class="modal-section cv-ai-section">
       <div class="modal-section-title">${{
-        cv:       'Générer le CV',
-        lettre:   'Rédiger la lettre de motivation',
-        dossier:  'Générer le document d\'aide',
-        courrier: 'Rédiger le courrier',
-        sejour:   'Générer le guide titre de séjour'
+        cv:             'Générer le CV',
+        lettre:         'Rédiger la lettre de motivation',
+        dossier:        'Générer le document d\'aide',
+        courrier:       'Rédiger le courrier',
+        sejour:         'Générer le guide titre de séjour',
+        impot:          'Générer le document fiscal',
+        naturalisation: 'Préparer le dossier naturalisation'
       }[d.service] || 'Générer le document'} avec IA ✨</div>
 
       ${d.service === 'cv' ? `
@@ -1404,11 +1477,13 @@ function openModal(id) {
 
       <button class="btn-ai-gen" id="btn-gen-cv" onclick="generateCV(${d.id})">
         ✨ ${{
-          cv:       isImprove ? 'Moderniser le CV' : 'Générer le CV',
-          lettre:   'Rédiger la lettre',
-          dossier:  'Générer le document',
-          courrier: 'Rédiger le courrier',
-          sejour:   'Générer le guide séjour'
+          cv:             isImprove ? 'Moderniser le CV' : 'Générer le CV',
+          lettre:         'Rédiger la lettre',
+          dossier:        'Générer le document',
+          courrier:       'Rédiger le courrier',
+          sejour:         'Générer le guide séjour',
+          impot:          'Générer le document fiscal',
+          naturalisation: 'Préparer le dossier'
         }[d.service] || 'Générer'}
       </button>
 
@@ -1802,7 +1877,13 @@ function renderAIConfig() {
       vars: ['nom','email','tel','destinataire','objet','description'] },
     { key: 'sejour', icon: '🛂', title: 'Titre de séjour',
       desc: 'Guide personnalisé pour les démarches de titre de séjour (review obligatoire)',
-      vars: ['nom','email','tel','nationalite','situation','choix','documents'] }
+      vars: ['nom','email','tel','nationalite','situation','choix','documents'] },
+    { key: 'impot', icon: '🧾', title: 'Avis d\'impôt',
+      desc: 'Aide à la compréhension, démarches liées ou courrier fiscal',
+      vars: ['nom','email','tel','choix','type','revenus','situation','description','objet','destinataire'] },
+    { key: 'naturalisation', icon: '🇫🇷', title: 'Naturalisation',
+      desc: 'Vérification éligibilité, préparation dossier ou lettre d\'intégration (review obligatoire)',
+      vars: ['nom','email','tel','nationalite','duree','famille','travail','choix','situation','documents','parcours','motivation'] }
   ];
 
   grid.innerHTML = CONFIGS.map(c => `
@@ -1832,7 +1913,7 @@ function renderAIConfig() {
 }
 
 function saveAIPrompts() {
-  ['cv_scratch','cv_improve','lettre','dossier','courrier','sejour'].forEach(k => {
+  ['cv_scratch','cv_improve','lettre','dossier','courrier','sejour','impot','naturalisation'].forEach(k => {
     const el = document.getElementById('ia-' + k);
     if (el) aiPrompts[k] = el.value;
   });
