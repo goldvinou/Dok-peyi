@@ -858,8 +858,12 @@ function showSection(name, navEl) {
    SIDEBAR MOBILE
    ============================================================ */
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sbOverlay').classList.toggle('visible');
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sbOverlay').classList.toggle('visible');
+  } else {
+    document.getElementById('admin-app').classList.toggle('sb-collapsed');
+  }
 }
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
