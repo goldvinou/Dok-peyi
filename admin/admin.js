@@ -763,6 +763,9 @@ function init() {
   // Firebase sync temps réel
   initFirebase();
 
+  // Floating chat — accessible partout dans l'admin
+  if (typeof fchatInit === 'function') fchatInit();
+
   // Fallback onglets localStorage
   if (!db) {
     window.addEventListener('storage', function(e) {

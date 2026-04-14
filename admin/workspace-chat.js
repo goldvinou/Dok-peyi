@@ -179,7 +179,7 @@ function showWSTab(tab, el) {
 
   // Rendu à la demande
   if      (tab === 'home') renderWSHome();
-  else if (tab === 'chat') _renderChat();
+  else if (tab === 'chat') { _renderChat(); if (typeof _fchatMarkRead !== 'undefined') _fchatMarkRead(); }
   else                     _renderComingSoon(tab);
 
   return false; // prevent <a> default navigation
@@ -613,6 +613,8 @@ function chatSend() {
 
   // Mettre à jour l'affichage
   _renderChatMessages();
+  if (typeof _fchatRenderMessages !== 'undefined' && _fchatOpen) _fchatRenderMessages();
+  if (typeof _fchatUpdateBadge   !== 'undefined') _fchatUpdateBadge();
 }
 
 function chatKeyDown(e) {
@@ -751,12 +753,17 @@ function _chatFirebaseListen() {
 
       // Fusionner sans doublons (par id)
       const ids = new Set(wsMessages.map(m => m.id));
-      remote.forEach(m => { if (!ids.has(m.id)) wsMessages.push(m); });
+      const newIds = new Set();
+      remote.forEach(m => { if (!ids.has(m.id)) { wsMessages.push(m); newIds.add(m.id); } });
       wsMessages.sort((a, b) => new Date(a.ts) - new Date(b.ts));
       _wsSave('dok_ws_chat', wsMessages);
 
       // Re-rendre uniquement si on est dans le chat
       if (wsCurrentTab === 'chat') _renderChatMessages();
+
+      // Notifier le tiroir flottant
+      const _fbMyId = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.user : null;
+      if (typeof _fchatOnFirebaseNew !== 'undefined') _fchatOnFirebaseNew(newIds, _fbMyId);
     });
   } catch (e) { /* Firebase non configuré */ }
 }
@@ -768,6 +775,241 @@ function _chatFirebasePush(msg) {
   } catch (e) { /* silencieux */ }
 }
 
+
+/* ============================================================
+   FLOATING CHAT — tiroir accessible partout dans l'admin
+   ============================================================ */
+let _fchatOpen        = false;
+let _fchatLastRead    = 0;
+let _fchatPollTimer   = null;
+let _fchatPollLast    = 0;
+let _fchatAttachments = [];
+let _fchatAudioCtx    = null;
+let _fchatNotifiedIds = new Set();
+
+/* ── Init (appelé une fois après login) ─────────────────────── */
+function fchatInit() {
+  _fchatLastRead = parseInt(localStorage.getItem('dok_chat_last_read') || '0', 10);
+  const fab = document.getElementById('fchat-fab');
+  if (fab) fab.classList.add('visible');
+  _fchatRenderAvatars();
+  _fchatUpdateBadge();
+  _fchatRenderMessages();   // pré-remplir le tiroir même fermé
+  _fchatStartPolling();
+  const backdrop = document.getElementById('fchat-backdrop');
+  if (backdrop) backdrop.addEventListener('click', fchatClose);
+}
+
+/* ── Ouvrir / fermer ─────────────────────────────────────────── */
+function fchatToggle() { _fchatOpen ? fchatClose() : fchatOpen(); }
+
+function fchatOpen() {
+  _fchatOpen = true;
+  wsMessages = _wsLoad('dok_ws_chat') || wsMessages;
+  _fchatRenderMessages();
+  document.getElementById('fchat-drawer')?.classList.add('open');
+  document.getElementById('fchat-fab')?.classList.add('open');
+  if (window.innerWidth <= 640)
+    document.getElementById('fchat-backdrop')?.classList.add('open');
+  _fchatMarkRead();
+  setTimeout(() => { document.getElementById('fchat-input')?.focus(); }, 260);
+}
+
+function fchatClose() {
+  _fchatOpen = false;
+  document.getElementById('fchat-drawer')?.classList.remove('open');
+  document.getElementById('fchat-fab')?.classList.remove('open');
+  document.getElementById('fchat-backdrop')?.classList.remove('open');
+  _fchatMarkRead();
+}
+
+function _fchatMarkRead() {
+  const now = Date.now();
+  _fchatLastRead = now;
+  try { localStorage.setItem('dok_chat_last_read', String(now)); } catch(e) {}
+  _fchatUpdateBadge();
+}
+
+/* ── Badge non-lus ───────────────────────────────────────────── */
+function _fchatUpdateBadge() {
+  const myId = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.user : null;
+  const unread = wsMessages.filter(m =>
+    m.userId !== myId && new Date(m.ts).getTime() > _fchatLastRead
+  ).length;
+  const badge   = document.getElementById('fchat-badge');
+  const wsBadge = document.getElementById('ws-notif-badge');
+  [badge, wsBadge].forEach(el => {
+    if (!el) return;
+    if (unread > 0) {
+      el.textContent  = unread > 99 ? '99+' : String(unread);
+      el.style.display = 'flex';
+    } else {
+      el.style.display = 'none';
+    }
+  });
+}
+
+/* ── Rendu des messages dans le tiroir ───────────────────────── */
+function _fchatRenderMessages() {
+  const el = document.getElementById('fchat-messages');
+  if (!el) return;
+  if (!wsMessages.length) {
+    el.innerHTML = `<div class="chat-empty"><div class="chat-empty-icon">💬</div><p>Pas encore de messages.<br>Commencez la conversation&nbsp;!</p></div>`;
+    return;
+  }
+  let html = '';
+  let lastDay = null;
+  wsMessages.forEach(msg => {
+    const day = _wsDay(msg.ts);
+    if (day !== lastDay) {
+      html += `<div class="chat-date-sep">${day}</div>`;
+      lastDay = day;
+    }
+    html += _renderOneMessage(msg);
+  });
+  el.innerHTML = html;
+  _scrollToBottom(el);
+  el.querySelectorAll('.chat-img').forEach(img => {
+    img.onclick = () => _openImageLightbox && _openImageLightbox(img.src, img.title);
+  });
+}
+
+/* ── Avatars dans le header du tiroir ────────────────────────── */
+function _fchatRenderAvatars() {
+  const el = document.getElementById('fchat-avatars');
+  if (!el || typeof USERS === 'undefined') return;
+  el.innerHTML = USERS.map(u =>
+    `<div class="fchat-av" style="background:${u.color||'#3b82f6'}" title="${u.nom}">${u.nom.charAt(0)}</div>`
+  ).join('');
+}
+
+/* ── Envoi depuis le tiroir ──────────────────────────────────── */
+function fchatSend() {
+  const input = document.getElementById('fchat-input');
+  const text  = (input?.value || '').trim();
+  if (!text && _fchatAttachments.length === 0) return;
+  if (typeof currentUser === 'undefined' || !currentUser) return;
+
+  const msg = {
+    id:       _wsId(),
+    userId:   currentUser.user,
+    userName: currentUser.nom,
+    ts:       _wsNow(),
+    text:     text,
+    files:    [..._fchatAttachments]
+  };
+  wsMessages.push(msg);
+  _wsSave('dok_ws_chat', wsMessages);
+  _chatFirebasePush(msg);
+  _fchatAttachments = [];
+  if (input) { input.value = ''; input.style.height = 'auto'; }
+  document.getElementById('fchat-attach-preview').innerHTML = '';
+  _fchatRenderMessages();
+  _fchatMarkRead();
+  if (wsCurrentTab === 'chat') _renderChatMessages();
+}
+
+function fchatKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); fchatSend(); }
+}
+function fchatAutoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+}
+
+/* ── Pièces jointes dans le tiroir ───────────────────────────── */
+function fchatHandleFiles(input) {
+  const MAX = typeof CHAT_MAX_SIZE !== 'undefined' ? CHAT_MAX_SIZE : 3 * 1024 * 1024;
+  Array.from(input.files).forEach(file => {
+    if (file.size > MAX) {
+      if (typeof showToast !== 'undefined')
+        showToast(`"${file.name}" dépasse 3 Mo — ignoré`, 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      _fchatAttachments.push({ name: file.name, type: file.type, size: file.size, data: ev.target.result });
+      _fchatRenderAttachPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+function _fchatRenderAttachPreview() {
+  const el = document.getElementById('fchat-attach-preview');
+  if (!el) return;
+  el.innerHTML = _fchatAttachments.map((f, i) => {
+    const icon = f.type.startsWith('image/') ? '🖼' : '📎';
+    const kb   = (f.size / 1024).toFixed(0);
+    return `<div class="chat-attach-chip">${icon} <span>${_esc(f.name)}</span> <span style="opacity:.55">(${kb} Ko)</span><button onclick="fchatRemoveAttach(${i})">✕</button></div>`;
+  }).join('');
+}
+function fchatRemoveAttach(i) {
+  _fchatAttachments.splice(i, 1);
+  _fchatRenderAttachPreview();
+}
+
+/* ── Polling localStorage (toutes les 3s) ───────────────────── */
+function _fchatStartPolling() {
+  if (_fchatPollTimer) return;
+  _fchatPollLast = wsMessages.length;
+  _fchatPollTimer = setInterval(() => {
+    const fresh = _wsLoad('dok_ws_chat') || [];
+    if (fresh.length <= _fchatPollLast) return;
+    const myId    = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.user : null;
+    const knownIds = new Set(wsMessages.map(m => m.id));
+    let hasOtherNew = false;
+    fresh.slice(_fchatPollLast).forEach(m => {
+      if (!knownIds.has(m.id)) {
+        wsMessages.push(m);
+        if (m.userId !== myId && !_fchatNotifiedIds.has(m.id)) {
+          _fchatNotifiedIds.add(m.id);
+          hasOtherNew = true;
+        }
+      }
+    });
+    wsMessages.sort((a, b) => new Date(a.ts) - new Date(b.ts));
+    _fchatPollLast = fresh.length;
+    _fchatUpdateBadge();
+    if (_fchatOpen) _fchatRenderMessages();
+    if (wsCurrentTab === 'chat') _renderChatMessages();
+    if (hasOtherNew) _fchatPing();
+  }, 3000);
+}
+
+/* ── Notification sonore Firebase ───────────────────────────── */
+function _fchatOnFirebaseNew(newIds, myId) {
+  if (!newIds || newIds.size === 0) return;
+  const trulyNew = [...newIds].filter(id => {
+    const m = wsMessages.find(m => m.id === id);
+    return m && m.userId !== myId && !_fchatNotifiedIds.has(id);
+  });
+  trulyNew.forEach(id => _fchatNotifiedIds.add(id));
+  _fchatUpdateBadge();
+  if (_fchatOpen) _fchatRenderMessages();
+  if (trulyNew.length > 0) _fchatPing();
+}
+
+/* ── Son de notification (Web Audio API) ─────────────────────── */
+function _fchatPing() {
+  try {
+    if (!_fchatAudioCtx)
+      _fchatAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = _fchatAudioCtx;
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.36);
+  } catch(e) {}
+}
 
 /* ============================================================
    UTILITAIRE INTERNE
