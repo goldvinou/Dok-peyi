@@ -861,7 +861,7 @@ function showSection(name, navEl) {
    SIDEBAR MOBILE
    ============================================================ */
 function toggleSidebar() {
-  if (window.innerWidth <= 768) {
+  if (window.innerWidth <= 1024) {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sbOverlay').classList.toggle('visible');
   } else {

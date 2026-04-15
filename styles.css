@@ -43,6 +43,7 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--gray-800);
   background: var(--white);
+  overflow-x: hidden;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1234,6 +1235,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   .hero-btns  { justify-content: center; }
   .hero-stats { justify-content: center; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+  .steps { flex-wrap: wrap; justify-content: center; gap: 16px; }
+  .step  { flex: 0 1 220px; }
+  .step-arrow { display: none; }
 }
 
 @media (max-width: 768px) {

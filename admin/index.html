@@ -1035,10 +1035,13 @@
     /* ===== RESPONSIVE ===== */
     @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:900px){.row-2{grid-template-columns:1fr}.svc-grid{grid-template-columns:1fr}}
-    @media(max-width:768px){
+    /* Sidebar en overlay sur tablette ET mobile (≤1024px) */
+    @media(max-width:1024px){
       .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sb-w)!important;transform:translateX(-100%);z-index:100}
       .sidebar.open{transform:translateX(0)}
       .sb-overlay.visible{display:block}
+    }
+    @media(max-width:768px){
       .content{padding:16px 14px 40px}
       .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
       .kpi-card{padding:14px 13px}
