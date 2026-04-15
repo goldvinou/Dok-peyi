@@ -5,7 +5,7 @@
 
 /* ── État du module ── */
 let qcSelected     = null;   // id de la demande sélectionnée
-let qcFilter       = 'a_verifier'; // filtre actif
+let qcFilter       = 'all';  // filtre actif — 'all' par défaut pour voir toutes les demandes
 let qcCommentDraft = '';
 
 /* ── Filtre tabs config ── */
@@ -24,6 +24,10 @@ const QC_FILTERS = [
 function renderQualiteControl() {
   const root = document.getElementById('qc-root');
   if (!root) return;
+
+  // Réinitialise le filtre à "Toutes" à chaque ouverture
+  qcFilter   = 'all';
+  qcSelected = null;
 
   root.innerHTML = `
     <div class="qc-shell">
@@ -112,9 +116,21 @@ function _qcRenderList() {
   });
 
   if (!pool.length) {
+    const totalDemandes = (demandes || []).length;
+    const msg = totalDemandes === 0
+      ? 'Aucune demande dans le système'
+      : qcFilter !== 'all'
+        ? `Aucune demande dans ce filtre`
+        : 'Aucune demande assignée';
+    const hint = totalDemandes === 0
+      ? 'Les nouvelles commandes apparaîtront ici automatiquement'
+      : qcFilter !== 'all'
+        ? 'Essaie le filtre "Toutes" pour voir toutes les demandes'
+        : '';
     el.innerHTML = `<div class="qc-empty">
       <div style="font-size:1.8rem;opacity:.3">📭</div>
-      <div>Aucune demande${qcFilter !== 'all' ? ' dans ce filtre' : ''}</div>
+      <div style="font-weight:600">${msg}</div>
+      ${hint ? `<div style="font-size:.72rem;color:#334155;text-align:center;max-width:200px">${hint}</div>` : ''}
     </div>`;
     return;
   }
