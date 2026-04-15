@@ -951,27 +951,35 @@ function _fchatApplyPos(x, y) {
 function _fchatUpdateDrawerPos() {
   const fab    = document.getElementById('fchat-fab');
   const drawer = document.getElementById('fchat-drawer');
-  if (!fab || !drawer || window.innerWidth <= 640) return;
+  if (!fab || !drawer || window.innerWidth <= 600) return;
 
   const rect = fab.getBoundingClientRect();
   const W = window.innerWidth, H = window.innerHeight;
-  const DW = 360, DH = 520, GAP = 12, S = 56;
+  const DW = 380, DH = Math.min(580, H - 120), GAP = 12, S = 60;
 
   // Vertical : au-dessus si assez de place, sinon en-dessous
+  const openAbove = rect.top > DH + GAP;
   let top, bottom;
-  if (rect.top > DH + GAP) {
+  if (openAbove) {
     bottom = (H - rect.top + GAP) + 'px'; top = 'auto';
   } else {
-    top    = (rect.bottom + GAP) + 'px';  bottom = 'auto';
+    top = (rect.bottom + GAP) + 'px'; bottom = 'auto';
   }
 
-  // Horizontal : centré sur le FAB, clampé dans la fenêtre
-  let left = Math.max(8, Math.min(W - DW - 8, rect.left + S / 2 - DW / 2));
+  // Horizontal : aligné à droite du FAB, clampé
+  let left = Math.max(8, Math.min(W - DW - 8, rect.right - DW));
 
   drawer.style.top    = top;
   drawer.style.bottom = bottom;
   drawer.style.right  = 'auto';
   drawer.style.left   = left + 'px';
+
+  // transform-origin pointe vers le coin le plus proche du FAB
+  const fabCX   = rect.left + S / 2;
+  const drawerCX = left + DW / 2;
+  const ox = fabCX >= drawerCX ? 'right' : 'left';
+  const oy = openAbove ? 'bottom' : 'top';
+  drawer.style.transformOrigin = `${oy} ${ox}`;
 }
 
 /* ── Ouvrir / fermer ─────────────────────────────────────────── */
@@ -981,34 +989,18 @@ function fchatOpen() {
   _fchatOpen = true;
   wsMessages = _wsLoad('dok_ws_chat') || wsMessages;
   _fchatRenderMessages();
+  _fchatUpdateDrawerPos();
 
-  const drawer = document.getElementById('fchat-drawer');
-  const fab    = document.getElementById('fchat-fab');
+  document.getElementById('fchat-drawer')?.classList.add('open');
+  document.getElementById('fchat-fab')?.classList.add('open');
+  // Changer l'icône en ✕
+  const ico = document.getElementById('fchat-fab-icon');
+  if (ico) ico.textContent = '✕';
 
-  // Ancrer le transform-origin sur le coin du tiroir le plus proche du FAB
-  // → le tiroir "sort" visuellement depuis le bouton, comme le calendrier depuis l'horloge
-  if (drawer && fab && window.innerWidth > 640) {
-    const fr = fab.getBoundingClientRect();
-    const fabCX = fr.left + fr.width  / 2;
-    const fabCY = fr.top  + fr.height / 2;
-
-    // Position du tiroir (calculée par _fchatUpdateDrawerPos ou valeur par défaut)
-    const dl = parseFloat(drawer.style.left)   || (window.innerWidth  - 360 - 28);
-    const dt = parseFloat(drawer.style.top)    || NaN;
-    const db = parseFloat(drawer.style.bottom) || NaN;
-    const drawerTop = isNaN(dt) ? (window.innerHeight - (isNaN(db) ? 164 : db) - 520) : dt;
-
-    const ox = fabCX < dl + 180 ? 'left' : 'right';
-    const oy = fabCY < drawerTop + 260  ? 'top'  : 'bottom';
-    drawer.style.transformOrigin = `${oy} ${ox}`;
-  }
-
-  drawer?.classList.add('open');
-  fab?.classList.add('open');
-  if (window.innerWidth <= 640)
+  if (window.innerWidth <= 600)
     document.getElementById('fchat-backdrop')?.classList.add('open');
   _fchatMarkRead();
-  setTimeout(() => { document.getElementById('fchat-input')?.focus(); }, 230);
+  setTimeout(() => { document.getElementById('fchat-input')?.focus(); }, 300);
 }
 
 function fchatClose() {
@@ -1016,6 +1008,9 @@ function fchatClose() {
   document.getElementById('fchat-drawer')?.classList.remove('open');
   document.getElementById('fchat-fab')?.classList.remove('open');
   document.getElementById('fchat-backdrop')?.classList.remove('open');
+  // Restaurer l'icône 💬
+  const ico = document.getElementById('fchat-fab-icon');
+  if (ico) ico.textContent = '💬';
   _fchatMarkRead();
 }
 
