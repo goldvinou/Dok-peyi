@@ -786,18 +786,125 @@ let _fchatPollLast    = 0;
 let _fchatAttachments = [];
 let _fchatAudioCtx    = null;
 let _fchatNotifiedIds = new Set();
+let _fchatDrag        = null;   // état du drag en cours
 
 /* ── Init (appelé une fois après login) ─────────────────────── */
 function fchatInit() {
   _fchatLastRead = parseInt(localStorage.getItem('dok_chat_last_read') || '0', 10);
   const fab = document.getElementById('fchat-fab');
-  if (fab) fab.classList.add('visible');
+  if (fab) { fab.classList.add('visible'); _fchatInitDrag(fab); }
   _fchatRenderAvatars();
   _fchatUpdateBadge();
-  _fchatRenderMessages();   // pré-remplir le tiroir même fermé
+  _fchatRenderMessages();
   _fchatStartPolling();
   const backdrop = document.getElementById('fchat-backdrop');
   if (backdrop) backdrop.addEventListener('click', fchatClose);
+}
+
+/* ── Drag & drop du FAB ──────────────────────────────────────── */
+function _fchatInitDrag(fab) {
+  // Restaurer la position sauvegardée
+  try {
+    const saved = JSON.parse(localStorage.getItem('dok_fchat_pos') || 'null');
+    if (saved) _fchatApplyPos(saved.x, saved.y);
+  } catch(e) {}
+
+  fab.addEventListener('mousedown',  _fchatDragStart, { passive: false });
+  fab.addEventListener('touchstart', _fchatDragStart, { passive: false });
+}
+
+function _fchatDragStart(e) {
+  // Ignorer clic droit
+  if (e.button === 2) return;
+  const fab  = document.getElementById('fchat-fab');
+  const rect = fab.getBoundingClientRect();
+  const cx   = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy   = e.touches ? e.touches[0].clientY : e.clientY;
+
+  _fchatDrag = { startCX: cx, startCY: cy, startLeft: rect.left, startTop: rect.top, moved: false };
+
+  document.addEventListener('mousemove',  _fchatDragMove, { passive: false });
+  document.addEventListener('mouseup',    _fchatDragEnd);
+  document.addEventListener('touchmove',  _fchatDragMove, { passive: false });
+  document.addEventListener('touchend',   _fchatDragEnd);
+}
+
+function _fchatDragMove(e) {
+  if (!_fchatDrag) return;
+  e.preventDefault();
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy = e.touches ? e.touches[0].clientY : e.clientY;
+  const dx = cx - _fchatDrag.startCX;
+  const dy = cy - _fchatDrag.startCY;
+
+  if (!_fchatDrag.moved && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+    _fchatDrag.moved = true;
+    document.getElementById('fchat-fab')?.classList.add('dragging');
+  }
+  if (!_fchatDrag.moved) return;
+
+  const W = window.innerWidth, H = window.innerHeight, S = 56;
+  const x = Math.max(8, Math.min(W - S - 8, _fchatDrag.startLeft + dx));
+  const y = Math.max(8, Math.min(H - S - 8, _fchatDrag.startTop  + dy));
+  _fchatApplyPos(x, y);
+}
+
+function _fchatDragEnd() {
+  document.removeEventListener('mousemove',  _fchatDragMove);
+  document.removeEventListener('mouseup',    _fchatDragEnd);
+  document.removeEventListener('touchmove',  _fchatDragMove);
+  document.removeEventListener('touchend',   _fchatDragEnd);
+
+  const fab = document.getElementById('fchat-fab');
+  fab?.classList.remove('dragging');
+
+  if (_fchatDrag?.moved) {
+    // Sauvegarder la nouvelle position
+    const rect = fab.getBoundingClientRect();
+    try { localStorage.setItem('dok_fchat_pos', JSON.stringify({ x: rect.left, y: rect.top })); } catch(e) {}
+    _fchatUpdateDrawerPos();
+    _fchatDrag = null;
+    return;  // ne pas déclencher toggle
+  }
+  _fchatDrag = null;
+  // Pas de déplacement → c'est un clic → ouvrir/fermer
+  fchatToggle();
+}
+
+function _fchatApplyPos(x, y) {
+  const fab = document.getElementById('fchat-fab');
+  if (!fab) return;
+  fab.style.bottom = 'auto';
+  fab.style.right  = 'auto';
+  fab.style.left   = x + 'px';
+  fab.style.top    = y + 'px';
+  _fchatUpdateDrawerPos();
+}
+
+function _fchatUpdateDrawerPos() {
+  const fab    = document.getElementById('fchat-fab');
+  const drawer = document.getElementById('fchat-drawer');
+  if (!fab || !drawer || window.innerWidth <= 640) return;
+
+  const rect = fab.getBoundingClientRect();
+  const W = window.innerWidth, H = window.innerHeight;
+  const DW = 360, DH = 520, GAP = 12, S = 56;
+
+  // Vertical : au-dessus si assez de place, sinon en-dessous
+  let top, bottom;
+  if (rect.top > DH + GAP) {
+    bottom = (H - rect.top + GAP) + 'px'; top = 'auto';
+  } else {
+    top    = (rect.bottom + GAP) + 'px';  bottom = 'auto';
+  }
+
+  // Horizontal : centré sur le FAB, clampé dans la fenêtre
+  let left = Math.max(8, Math.min(W - DW - 8, rect.left + S / 2 - DW / 2));
+
+  drawer.style.top    = top;
+  drawer.style.bottom = bottom;
+  drawer.style.right  = 'auto';
+  drawer.style.left   = left + 'px';
 }
 
 /* ── Ouvrir / fermer ─────────────────────────────────────────── */
