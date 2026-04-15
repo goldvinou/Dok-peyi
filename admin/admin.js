@@ -2167,10 +2167,8 @@ function initFirebase() {
       if (APP.section === 'dashboard') renderDashboard();
       if (APP.section === 'demandes')  applyFilters();
       if (APP.section === 'stats')     renderStats();
+      if (APP.section === 'controle')  _qcRenderList();
 
-      if (!firstLoad) {
-        showToast('🔄 Données synchronisées en temps réel', 'success');
-      }
       firstLoad = false;
     }, err => {
       console.warn('Firebase sync error:', err.message);
