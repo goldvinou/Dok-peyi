@@ -1224,6 +1224,27 @@
     .ia-feed-dem{font-size:.68rem;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .ia-feed-time{font-size:.62rem;color:#1e293b}
     @media(max-width:768px){.ia-dash-pipeline{min-width:0}.ia-lane{min-width:140px}.ia-dash-feed-col{width:200px}.ia-stat-card{padding:10px 10px}.ia-stat-value{font-size:1.1rem}}
+    /* Bouton activité mobile */
+    .ia-feed-mob-btn{display:none;position:fixed;bottom:20px;right:16px;z-index:50;align-items:center;gap:6px;padding:9px 16px;background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:99px;color:#94a3b8;font-size:.76rem;font-weight:700;cursor:pointer}
+    /* Mobile : cacher le feed, stats en grille 3×2, pipeline pleine largeur */
+    @media(max-width:600px){
+      .ia-feed-mob-btn{display:flex}
+      .ia-dash-feed-col{display:none}
+      .ia-dash-stats{flex-wrap:wrap}
+      .ia-stat-card{flex:0 0 33.333%;min-width:0;border-right:none;border-bottom:1px solid rgba(255,255,255,.05);padding:10px 8px}
+      .ia-stat-card:nth-child(-n+3){border-bottom:1px solid rgba(255,255,255,.05)}
+      .ia-stat-card:nth-child(n+4){border-bottom:none}
+      .ia-stat-value{font-size:1.1rem}
+      .ia-stat-label{font-size:.58rem}
+      .ia-lane{min-width:120px}
+      .ia-lane-head{padding:10px 8px 8px}
+      .ia-lane-name{font-size:.78rem}
+      .ia-lane-role{font-size:.62rem}
+      .ia-lane-status{font-size:.65rem;margin-top:6px}
+      .ia-lane-avatar{width:28px;height:28px;font-size:.85rem}
+      .ia-lcard-name{font-size:.72rem}
+      .ia-lcard-svc{font-size:.65rem}
+    }
     /* Sidebar en overlay sur tablette ET mobile (≤1024px) */
     @media(max-width:1024px){
       .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sb-w)!important;transform:translateX(-100%);z-index:100}

@@ -75,6 +75,10 @@ function _iaDashBuild() {
     + '<div class="ia-dash-pipeline">' + _iaDashPipeline() + '</div>'
     + '<div class="ia-dash-feed-col">'  + _iaDashFeed()    + '</div>'
     + '</div>'
+    /* ── Bouton flottant activité (mobile uniquement) ── */
+    + '<button class="ia-feed-mob-btn" onclick="_iaToggleMobFeed(this)" aria-label="Activité en direct">'
+    + '<span class="ia-feed-live-dot" style="width:6px;height:6px;margin:0"></span> Activité'
+    + '</button>'
     + '</div>';
 }
 
@@ -229,6 +233,15 @@ function _iaFeedItem(ev) {
     + '<div class="ia-feed-dem">' + svcIcon + ' ' + _iaEsc(_iaClientName(d)) + '</div>'
     + '</div>'
     + '</div>';
+}
+
+/* ── Toggle activité mobile ── */
+function _iaToggleMobFeed(btn) {
+  var feed = document.querySelector('.ia-dash-feed-col');
+  if (!feed) return;
+  var visible = feed.style.display === 'flex';
+  feed.style.display = visible ? 'none' : 'flex';
+  btn.style.background = visible ? 'rgba(34,197,94,.15)' : 'rgba(255,255,255,.06)';
 }
 
 /* ── Helpers ── */
