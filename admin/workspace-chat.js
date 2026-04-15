@@ -488,10 +488,14 @@ function _renderChatMembers() {
   const el = document.getElementById('chat-members');
   if (!el || typeof USERS === 'undefined') return;
 
-  const colors = USERS.map(u => u.color || '#3b82f6');
-  el.innerHTML = USERS.map((u, i) =>
-    `<div class="chat-member-dot" style="background:${colors[i]}" title="${u.nom}">${u.nom.charAt(0)}</div>`
-  ).join('') + `<span class="chat-online-label">● En ligne</span>`;
+  const onlineCount = USERS.filter(u => _fchatIsOnline(u.user)).length;
+  el.innerHTML = USERS.map(u => {
+    const online = _fchatIsOnline(u.user);
+    return `<div class="chat-member-wrap" title="${u.nom}${online ? ' · En ligne' : ' · Hors ligne'}">
+      <div class="chat-member-dot" style="background:${u.color||'#3b82f6'}">${u.nom.charAt(0)}</div>
+      <div class="chat-av-dot ${online ? 'online' : 'offline'}"></div>
+    </div>`;
+  }).join('') + `<span class="chat-online-label">${onlineCount > 0 ? '● ' + onlineCount + ' en ligne' : '○ Hors ligne'}</span>`;
 }
 
 /* ── Liste de messages ── */
@@ -794,6 +798,8 @@ function fchatInit() {
   const fab = document.getElementById('fchat-fab');
   if (fab) { fab.classList.add('visible'); _fchatInitDrag(fab); }
   _fchatRenderAvatars();
+  _fchatStartPresenceHeartbeat();
+  _fchatRefreshPresence();
   _fchatUpdateBadge();
   _fchatRenderMessages();
   _fchatStartPolling();
@@ -1069,9 +1075,13 @@ function _fchatRenderMessages() {
 function _fchatRenderAvatars() {
   const el = document.getElementById('fchat-avatars');
   if (!el || typeof USERS === 'undefined') return;
-  el.innerHTML = USERS.map(u =>
-    `<div class="fchat-av" style="background:${u.color||'#3b82f6'}" title="${u.nom}">${u.nom.charAt(0)}</div>`
-  ).join('');
+  el.innerHTML = USERS.map(u => {
+    const online = _fchatIsOnline(u.user);
+    return `<div class="fchat-av-wrap" title="${u.nom}${online ? ' · En ligne' : ' · Hors ligne'}">
+      <div class="fchat-av" style="background:${u.color||'#3b82f6'}">${u.nom.charAt(0)}</div>
+      <div class="fchat-av-dot ${online ? 'online' : 'offline'}"></div>
+    </div>`;
+  }).join('');
 }
 
 /* ── Envoi depuis le tiroir ──────────────────────────────────── */
@@ -1140,6 +1150,35 @@ function fchatRemoveAttach(i) {
   _fchatRenderAttachPreview();
 }
 
+/* ── Présence en ligne ───────────────────────────────────────── */
+function _fchatIsOnline(userId) {
+  const ts = parseInt(localStorage.getItem('dok_presence_' + userId) || '0', 10);
+  return Date.now() - ts < 120000; // 2 minutes
+}
+
+function _fchatStartPresenceHeartbeat() {
+  if (typeof currentUser === 'undefined' || !currentUser) return;
+  const key = 'dok_presence_' + currentUser.user;
+  localStorage.setItem(key, String(Date.now()));
+  setInterval(() => {
+    localStorage.setItem(key, String(Date.now()));
+    _fchatRefreshPresence();
+  }, 30000);
+}
+
+function _fchatRefreshPresence() {
+  if (typeof USERS === 'undefined') return;
+  const onlineCount = USERS.filter(u => _fchatIsOnline(u.user)).length;
+  const sub = document.getElementById('fchat-members-sub');
+  if (sub) {
+    if (onlineCount === 0)      sub.textContent = 'Aucun membre en ligne';
+    else if (onlineCount === 1) sub.textContent = '1 membre en ligne';
+    else                        sub.textContent = `${onlineCount} membres en ligne`;
+  }
+  _fchatRenderAvatars();
+  _renderChatMembers();
+}
+
 /* ── Polling localStorage (toutes les 3s) ───────────────────── */
 function _fchatStartPolling() {
   if (_fchatPollTimer) return;
@@ -1165,6 +1204,7 @@ function _fchatStartPolling() {
     if (_fchatOpen) _fchatRenderMessages();
     if (wsCurrentTab === 'chat') _renderChatMessages();
     if (hasOtherNew) _fchatPing();
+    _fchatRefreshPresence();
   }, 3000);
 }
 
