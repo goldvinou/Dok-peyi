@@ -12,18 +12,66 @@ const USERS = [
 ];
 // ── Rôles ────────────────────────────────────────────────────────────────
 const ROLE_SECTIONS = {
-  admin:     ['dashboard','demandes','services','ia','stats','workspace','controle'],
+  admin:     ['dashboard','demandes','services','ia','stats','workspace','controle','agents'],
   manager:   ['dashboard','demandes','stats','workspace','controle'],
   redacteur: ['dashboard','controle']
 };
 
-// ── Équipe IA interne ─────────────────────────────────────────────────────
-const AI_TEAM = [
-  { id: 'lucas',  nom: 'Lucas',  role: 'IA Accueil',      specialite: 'Accueil & collecte',        color: '#3b82f6', icon: '🤝' },
-  { id: 'emma',   nom: 'Emma',   role: 'IA Rédaction',    specialite: 'Rédaction & génération',    color: '#10b981', icon: '✍️' },
-  { id: 'viktor', nom: 'Viktor', role: 'IA Vérification', specialite: 'Contrôle qualité',          color: '#f59e0b', icon: '🔍' },
-  { id: 'sofia',  nom: 'Sofia',  role: 'IA Optimisation', specialite: 'Optimisation & adaptation', color: '#8b5cf6', icon: '⚡' }
-];
+// ── Équipe IA interne — configurable par l'admin ─────────────────────────
+function buildDefaultAgents() {
+  return [
+    {
+      id: 'lucas', nom: 'Lucas', role: 'IA Accueil', icon: '🤝', color: '#3b82f6',
+      specialite: 'Accueil & collecte client', enabled: true,
+      tone: 'friendly', qualityFocus: 'accuracy',
+      systemPrompt: "Tu es Lucas, assistant IA de Dok'péyi spécialisé dans l'accueil des clients. Tu collectes toutes les informations nécessaires avec bienveillance et précision. Tu t'assures qu'aucune donnée client n'est manquante avant de transmettre la demande. Tu communiques de façon chaleureuse, claire et rassurante.",
+      instructions: ''
+    },
+    {
+      id: 'emma', nom: 'Emma', role: 'IA Rédaction', icon: '✍️', color: '#10b981',
+      specialite: 'Rédaction & génération documents', enabled: true,
+      tone: 'professional', qualityFocus: 'completeness',
+      systemPrompt: "Tu es Emma, experte en rédaction professionnelle chez Dok'péyi. Tu génères des documents de haute qualité : CV percutants, lettres de motivation convaincantes, dossiers administratifs rigoureux. Ton travail est soigné, sans fautes, riche en contenu et parfaitement adapté au profil de chaque client. Tu vises l'excellence à chaque document.",
+      instructions: ''
+    },
+    {
+      id: 'viktor', nom: 'Viktor', role: 'IA Vérification', icon: '🔍', color: '#f59e0b',
+      specialite: 'Contrôle qualité & validation', enabled: true,
+      tone: 'formal', qualityFocus: 'clarity',
+      systemPrompt: "Tu es Viktor, responsable qualité IA chez Dok'péyi. Tu analyses chaque document avec un œil critique et méthodique : cohérence des informations, orthographe, grammaire, pertinence du contenu par rapport à la demande client, conformité au format attendu. Tu signales toute anomalie avec précision.",
+      instructions: ''
+    },
+    {
+      id: 'sofia', nom: 'Sofia', role: 'IA Optimisation', icon: '⚡', color: '#8b5cf6',
+      specialite: 'Optimisation & finalisation', enabled: true,
+      tone: 'concise', qualityFocus: 'clarity',
+      systemPrompt: "Tu es Sofia, spécialiste en optimisation chez Dok'péyi. Tu améliores les documents finaux sans trahir le contenu original : fluidité du texte, impact des formulations, vocabulaire adapté au secteur professionnel du client, finition impeccable. Tu apportes la touche finale qui fait la différence.",
+      instructions: ''
+    }
+  ];
+}
+
+function loadAIAgents() {
+  try {
+    const saved = localStorage.getItem('dok_ai_agents');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Fusion avec les défauts pour garantir tous les champs
+      const defaults = buildDefaultAgents();
+      return defaults.map(def => ({ ...def, ...(parsed.find(a => a.id === def.id) || {}) }));
+    }
+  } catch(_) {}
+  return buildDefaultAgents();
+}
+
+function saveAIAgents() {
+  try { localStorage.setItem('dok_ai_agents', JSON.stringify(AI_TEAM)); } catch(_) {}
+  if (typeof db !== 'undefined' && db)
+    db.ref('dok-peyi/ai_agents').set(AI_TEAM).catch(console.error);
+  showToast('✅ Configuration équipe IA enregistrée', 'success');
+}
+
+let AI_TEAM = loadAIAgents();
 
 // Attribue automatiquement les agents IA selon le statut de la demande
 function _assignAI(d, newStatus) {
@@ -860,7 +908,8 @@ const SECTION_TITLES = {
   ia:        'Configuration IA',
   stats:     'Statistiques',
   workspace: 'Workspace',
-  controle:  'Contrôle qualité'
+  controle:  'Contrôle qualité',
+  agents:    'Équipe IA'
 };
 
 function showSection(name, navEl) {
@@ -899,6 +948,7 @@ function showSection(name, navEl) {
   if (name === 'stats')     renderStats();
   if (name === 'workspace') renderWorkspace();
   if (name === 'controle')  renderQualiteControl();
+  if (name === 'agents')    renderAgentsPanel();
 
   // Fermer la sidebar sur mobile
   closeSidebar();
@@ -1733,9 +1783,18 @@ async function generateCV(id) {
     const template = aiPrompts[promptKey] || buildDefaultPrompts()[promptKey] || '';
     const prompt   = buildPromptFromTemplate(template, d);
 
+    // Préfixe Emma (IA Rédaction) — instructions personnalisées de l'agent
+    const emmaAgent  = AI_TEAM.find(a => a.id === 'emma');
+    const emmaPrefix = (emmaAgent?.enabled && emmaAgent?.systemPrompt)
+      ? emmaAgent.systemPrompt
+        + (emmaAgent.instructions ? '\n\n' + emmaAgent.instructions : '')
+        + '\n\n---\n\n'
+      : '';
+    const finalPrompt = emmaPrefix + prompt;
+
     const _res  = await fetch('/api/generate-cv', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt: finalPrompt })
     });
     const _json = await _res.json();
     if (!_res.ok || _json.error) throw new Error(_json.error || `Erreur ${_res.status}`);
