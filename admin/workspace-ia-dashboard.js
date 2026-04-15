@@ -15,14 +15,14 @@ var IA_LANES = [
     stepLabel: 'Rédaction & génération'
   },
   {
-    agentId:  'viktor',
-    statuses: { needs_review: 1, a_verifier: 1, correction_demandee: 1 },
-    stepLabel: 'Contrôle qualité'
+    agentId:  'sofia',
+    statuses: { pending_payment: 1, pret_paiement: 1 },
+    stepLabel: 'Optimisation'
   },
   {
-    agentId:  'sofia',
-    statuses: { pending_payment: 1, pret_paiement: 1, valide_manager: 1, paid: 1, delivered: 1 },
-    stepLabel: 'Finalisation & paiement'
+    agentId:  'viktor',
+    statuses: { needs_review: 1, a_verifier: 1, correction_demandee: 1, valide_manager: 1, paid: 1, delivered: 1 },
+    stepLabel: 'Validation finale'
   }
 ];
 
@@ -164,8 +164,8 @@ function _iaDashFeed() {
   var AI_STEPS = [
     { key: 'accueil',      agentId: 'lucas'  },
     { key: 'generation',   agentId: 'emma'   },
-    { key: 'verification', agentId: 'viktor' },
-    { key: 'optimisation', agentId: 'sofia'  }
+    { key: 'optimisation', agentId: 'sofia'  },
+    { key: 'verification', agentId: 'viktor' }
   ];
 
   var events = [];

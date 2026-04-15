@@ -407,25 +407,25 @@ async function swGenerate() {
     var emmaResult = await swCallAgent(swGetAgentPrompt('emma'), swBuildPrompt());
     swPipelineUpdate('generated', 'generation', 'emma', 'Document rédigé');
 
-    /* ── VIKTOR — contrôle qualité ── */
+    /* ── SOFIA — optimisation du brouillon ── */
     updateMsg('En cours de vérification…');
-    swPipelineUpdate('a_verifier', 'verification', 'viktor', 'Contrôle qualité en cours');
-    var viktorPrompt = 'Voici un document HTML à corriger et améliorer. '
-      + 'Corrige les erreurs, améliore la cohérence et la qualité rédactionnelle. '
-      + 'Retourne uniquement le HTML complet corrigé, sans aucun commentaire :\n\n' + emmaResult;
-    var viktorResult = await swCallAgent(swGetAgentPrompt('viktor'), viktorPrompt);
-    swPipelineUpdate('a_verifier', 'verification', 'viktor', 'Contrôle qualité terminé');
-
-    /* ── SOFIA — optimisation finale ── */
-    updateMsg('Prêt — finalisation…');
     swPipelineUpdate('pret_paiement', 'optimisation', 'sofia', 'Optimisation en cours');
     var sofiaPrompt = 'Optimise ce document HTML pour un impact maximal et une présentation impeccable. '
       + 'Améliore la fluidité du texte, l\'impact des formulations, la mise en forme. '
-      + 'Retourne uniquement le HTML complet finalisé, sans aucun commentaire :\n\n' + viktorResult;
+      + 'Retourne uniquement le HTML complet optimisé, sans aucun commentaire :\n\n' + emmaResult;
     var sofiaResult = await swCallAgent(swGetAgentPrompt('sofia'), sofiaPrompt);
-    swPipelineUpdate('valide_manager', 'optimisation', 'sofia', 'Document finalisé et optimisé');
+    swPipelineUpdate('pret_paiement', 'optimisation', 'sofia', 'Optimisation terminée');
 
-    SSW.html        = sofiaResult;
+    /* ── VIKTOR — validation finale ── */
+    updateMsg('Prêt — finalisation…');
+    swPipelineUpdate('a_verifier', 'verification', 'viktor', 'Validation finale en cours');
+    var viktorPrompt = 'Voici un document HTML à valider. '
+      + 'Corrige les éventuelles erreurs restantes (orthographe, grammaire, cohérence) et assure-toi de la qualité finale. '
+      + 'Retourne uniquement le HTML complet validé, sans aucun commentaire :\n\n' + sofiaResult;
+    var viktorResult = await swCallAgent(swGetAgentPrompt('viktor'), viktorPrompt);
+    swPipelineUpdate('valide_manager', 'verification', 'viktor', 'Document validé et approuvé');
+
+    SSW.html        = viktorResult;
     SSW.generatedAt = new Date().toISOString();
 
     /* ── Afficher le document final ── */
