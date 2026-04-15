@@ -908,7 +908,7 @@ const SECTION_TITLES = {
   ia:        'Configuration IA',
   stats:     'Statistiques',
   workspace: 'Workspace',
-  controle:  'Contrôle qualité',
+  controle:  'Supervision IA',
   agents:    'Équipe IA'
 };
 
@@ -947,7 +947,7 @@ function showSection(name, navEl) {
   if (name === 'ia')        renderAIConfig();
   if (name === 'stats')     renderStats();
   if (name === 'workspace') renderWorkspace();
-  if (name === 'controle')  renderQualiteControl();
+  if (name === 'controle')  renderIaDashboard();
   if (name === 'agents')    renderAgentsPanel();
 
   // Fermer la sidebar sur mobile
@@ -989,10 +989,11 @@ function refreshBadge() {
     badge.style.display = 'none';
     dot.style.display = 'none';
   }
-  // Badge contrôle qualité
-  const nbQC = demandes.filter(d => d.statut === 'a_verifier' || d.statut === 'correction_demandee').length;
+  // Badge Supervision IA — demandes actives dans le pipeline
+  const IA_ACTIVE = new Set(['submitted','en_attente','processing','generated','en_cours','en_redaction','assignee','needs_review','a_verifier','correction_demandee','pending_payment','pret_paiement','valide_manager']);
+  const nbIA = demandes.filter(d => IA_ACTIVE.has(d.statut)).length;
   const elQC = document.getElementById('nb-controle');
-  if (elQC) { elQC.textContent = nbQC; elQC.style.display = nbQC ? 'flex' : 'none'; }
+  if (elQC) { elQC.textContent = nbIA; elQC.style.display = nbIA ? 'flex' : 'none'; }
 }
 
 /* ============================================================
@@ -2226,7 +2227,7 @@ function initFirebase() {
       if (APP.section === 'dashboard') renderDashboard();
       if (APP.section === 'demandes')  applyFilters();
       if (APP.section === 'stats')     renderStats();
-      if (APP.section === 'controle')  _qcRenderList();
+      if (APP.section === 'controle')  renderIaDashboard();
 
       firstLoad = false;
     }, err => {

@@ -1163,6 +1163,52 @@
     @media(max-width:768px){.agents-grid{grid-template-columns:1fr}}
     @media(max-width:900px){.qc-action-pane{width:240px}.qc-list-panel{width:280px}}
     @media(max-width:700px){.qc-shell{flex-direction:column}.qc-list-panel{width:100%;height:220px;border-right:none;border-bottom:1px solid rgba(255,255,255,.06)}.qc-detail-body{flex-direction:column}.qc-doc-pane{border-right:none;border-bottom:1px solid rgba(255,255,255,.06);max-height:300px}.qc-action-pane{width:100%}}
+    /* ── Mission Control IA ── */
+    #s-controle.active{margin:-28px -28px -48px;padding:0;animation:none;overflow:hidden}
+    .ia-dash-shell{display:flex;flex-direction:column;height:calc(100vh - var(--topbar-h));background:#030812;overflow:hidden}
+    .ia-dash-stats{display:flex;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+    .ia-stat-card{flex:1;padding:14px 18px;border-right:1px solid rgba(255,255,255,.05)}
+    .ia-stat-card:last-child{border-right:none}
+    .ia-stat-icon{font-size:1rem;margin-bottom:3px}
+    .ia-stat-value{font-size:1.5rem;font-weight:900;line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums}
+    .ia-stat-label{font-size:.65rem;color:#334155;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+    .ia-dash-body{display:flex;flex:1;overflow:hidden}
+    .ia-dash-pipeline{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;gap:0}
+    .ia-dash-feed-col{width:270px;flex-shrink:0;border-left:1px solid rgba(255,255,255,.06);overflow:hidden;display:flex;flex-direction:column}
+    .ia-lane{flex:1;min-width:170px;max-width:320px;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.05)}
+    .ia-lane:last-child{border-right:none}
+    .ia-lane-head{padding:14px 12px 10px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
+    .ia-lane-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+    .ia-lane-name{font-size:.83rem;font-weight:800;color:#f1f5f9;line-height:1.2}
+    .ia-lane-role{font-size:.67rem;color:#475569;margin-bottom:0}
+    .ia-lane-status{display:flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;margin-top:8px}
+    .ia-lane-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .3s}
+    .ia-lane-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+    .ia-lane-body::-webkit-scrollbar{width:3px}
+    .ia-lane-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:3px}
+    .ia-lane-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:16px}
+    .ia-lane-card{background:#0a0f1e;border-radius:10px;border:1px solid rgba(255,255,255,.05);padding:9px 11px;cursor:pointer;transition:background .15s}
+    .ia-lane-card:hover{background:#0f1629;border-color:rgba(255,255,255,.1)}
+    .ia-lcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:3px}
+    .ia-lcard-name{font-size:.77rem;font-weight:700;color:#e2e8f0;line-height:1.3;flex:1}
+    .ia-lcard-time{font-size:.63rem;color:#334155;white-space:nowrap;flex-shrink:0}
+    .ia-lcard-svc{font-size:.68rem;color:#475569}
+    .ia-feed{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:0}
+    .ia-feed::-webkit-scrollbar{width:3px}
+    .ia-feed::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:3px}
+    .ia-feed-title{font-size:.7rem;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:7px;flex-shrink:0}
+    .ia-feed-live-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:ia-pulse 2s infinite;flex-shrink:0}
+    @keyframes ia-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+    .ia-feed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px}
+    .ia-feed-item{display:flex;gap:8px;padding:9px 3px;border-bottom:1px solid rgba(255,255,255,.03)}
+    .ia-feed-item:last-child{border-bottom:none}
+    .ia-feed-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;margin-top:1px}
+    .ia-feed-content{flex:1;min-width:0}
+    .ia-feed-agent{font-size:.7rem;font-weight:800}
+    .ia-feed-action{font-size:.7rem;color:#64748b;line-height:1.35;margin:1px 0 2px}
+    .ia-feed-dem{font-size:.68rem;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ia-feed-time{font-size:.62rem;color:#1e293b}
+    @media(max-width:768px){.ia-dash-pipeline{min-width:0}.ia-lane{min-width:140px}.ia-dash-feed-col{width:200px}.ia-stat-card{padding:10px 10px}.ia-stat-value{font-size:1.1rem}}
     /* Sidebar en overlay sur tablette ET mobile (≤1024px) */
     @media(max-width:1024px){
       .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sb-w)!important;transform:translateX(-100%);z-index:100}
@@ -1539,8 +1585,8 @@
         <span class="nb" id="ws-notif-badge" style="display:none">0</span>
       </a>
       <a href="#" class="nav-item nav-qc" onclick="return showSection('controle', this)">
-        <span class="ni">✅</span>
-        <span class="nt">Contrôle qualité</span>
+        <span class="ni">📡</span>
+        <span class="nt">Supervision IA</span>
         <span class="nb" id="nb-controle" style="display:none">0</span>
       </a>
       <a href="#" class="nav-item" onclick="return showSection('agents', this)">
@@ -1881,5 +1927,6 @@
 <script src="/admin/workspace-ai.js?v=1"></script>
 <script src="/admin/workspace-qc.js?v=1"></script>
 <script src="/admin/workspace-agents.js?v=1"></script>
+<script src="/admin/workspace-ia-dashboard.js?v=1"></script>
 </body>
 </html>
