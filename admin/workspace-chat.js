@@ -1006,6 +1006,7 @@ function _fchatUpdateDrawerPos() {
 function fchatToggle() { _fchatOpen ? fchatClose() : fchatOpen(); }
 
 function fchatOpen() {
+  _fchatRequestNotifPermission();
   _fchatOpen = true;
   wsMessages = _wsLoad('dok_ws_chat') || wsMessages;
   _fchatRenderMessages();
@@ -1183,7 +1184,13 @@ function _fchatOnStorageChange(e) {
     if (wsCurrentTab === 'chat') _renderChatMessages();
     if (_fchatOpen) _fchatRenderMessages();
     _fchatUpdateBadge();
-    if (newIds.size) _fchatOnFirebaseNew(newIds, myId);
+    if (newIds.size) {
+      _fchatOnFirebaseNew(newIds, myId);
+      [...newIds].forEach(id => {
+        const m = wsMessages.find(x => x.id === id);
+        if (m) _fchatShowBrowserNotif(m);
+      });
+    }
   } catch(_) {}
 }
 
@@ -1252,13 +1259,13 @@ function _fchatStartPolling() {
     if (fresh.length <= _fchatPollLast) return;
     const myId    = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.user : null;
     const knownIds = new Set(wsMessages.map(m => m.id));
-    let hasOtherNew = false;
+    const newOtherMsgs = [];
     fresh.slice(_fchatPollLast).forEach(m => {
       if (!knownIds.has(m.id)) {
         wsMessages.push(m);
         if (m.userId !== myId && !_fchatNotifiedIds.has(m.id)) {
           _fchatNotifiedIds.add(m.id);
-          hasOtherNew = true;
+          newOtherMsgs.push(m);
         }
       }
     });
@@ -1267,7 +1274,10 @@ function _fchatStartPolling() {
     _fchatUpdateBadge();
     if (_fchatOpen) _fchatRenderMessages();
     if (wsCurrentTab === 'chat') _renderChatMessages();
-    if (hasOtherNew) _fchatPing();
+    if (newOtherMsgs.length) {
+      _fchatPing();
+      newOtherMsgs.forEach(m => _fchatShowBrowserNotif(m));
+    }
     _fchatRefreshPresence();
   }, 3000);
 }
@@ -1282,7 +1292,43 @@ function _fchatOnFirebaseNew(newIds, myId) {
   trulyNew.forEach(id => _fchatNotifiedIds.add(id));
   _fchatUpdateBadge();
   if (_fchatOpen) _fchatRenderMessages();
-  if (trulyNew.length > 0) _fchatPing();
+  if (trulyNew.length > 0) {
+    _fchatPing();
+    trulyNew.forEach(id => {
+      const m = wsMessages.find(x => x.id === id);
+      if (m) _fchatShowBrowserNotif(m);
+    });
+  }
+}
+
+/* ── Notifications navigateur (arrière-plan) ────────────────── */
+function _fchatRequestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') Notification.requestPermission();
+}
+
+function _fchatShowBrowserNotif(msg) {
+  if (!document.hidden) return;              // onglet actif → ping audio suffit
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  const myId = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.user : null;
+  if (!msg || msg.userId === myId) return;
+
+  const name = msg.userName || "Équipe Dok'péyi";
+  const body = msg.text
+    ? (msg.text.length > 80 ? msg.text.slice(0, 80) + '…' : msg.text)
+    : (msg.files?.length ? '📎 Pièce jointe' : '…');
+
+  try {
+    const n = new Notification('💬 ' + name, {
+      body,
+      tag:      'dok-chat',
+      renotify: true,
+      silent:   false,
+    });
+    n.onclick = () => { window.focus(); if (!_fchatOpen) fchatOpen(); n.close(); };
+    setTimeout(() => n.close(), 8000);
+  } catch(_) {}
 }
 
 /* ── Son de notification (Web Audio API) ─────────────────────── */
