@@ -44,10 +44,14 @@ export default async function handler(req) {
   try { body = await req.json(); } catch(e) {
     return new Response(JSON.stringify({ error: 'Body invalide' }), { status: 400, headers: jsonH });
   }
-  const { prompt } = body || {};
+  const { prompt, systemPrompt: systemPromptOverride } = body || {};
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
     return new Response(JSON.stringify({ error: 'Prompt manquant' }), { status: 400, headers: jsonH });
   }
+  // Utiliser le system prompt fourni par l'agent (Viktor, Sofia…) ou le prompt global par défaut
+  const effectiveSystem = (systemPromptOverride && typeof systemPromptOverride === 'string' && systemPromptOverride.trim())
+    ? systemPromptOverride.trim()
+    : SYSTEM_PROMPT;
 
   try {
     // Anthropic streaming — les tokens arrivent en continu → pas d'idle timeout
@@ -62,7 +66,7 @@ export default async function handler(req) {
         model:      'claude-haiku-4-5-20251001',
         max_tokens: 4096,
         stream:     true,
-        system:     SYSTEM_PROMPT,
+        system:     effectiveSystem,
         messages:   [{ role: 'user', content: prompt }]
       })
     });

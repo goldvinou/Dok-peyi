@@ -316,44 +316,123 @@ function swBuildForm() {
   });
 }
 
-/* ── GENERATE (step 3) ────────────────────────────────────── */
+/* ── PIPELINE HELPERS ─────────────────────────────────────── */
+
+/** Lit le system prompt d'un agent depuis localStorage (configurable par admin). */
+function swGetAgentPrompt(agentId) {
+  try {
+    const agents = JSON.parse(localStorage.getItem('dok_ai_agents') || '[]');
+    const agent  = agents.find(function(a) { return a.id === agentId; });
+    if (agent && agent.systemPrompt) return agent.systemPrompt;
+  } catch(_) {}
+  const defaults = {
+    emma:   "Tu es un expert en rédaction de documents professionnels. Tu génères des documents HTML complets, clairs, sans fautes, richement structurés et adaptés au profil exact du client. Tu ne produis que du HTML autonome, jamais de texte seul.",
+    viktor: "Tu es un correcteur expert. Analyse ce document HTML et corrige toutes les erreurs (orthographe, grammaire, cohérence, structure). Améliore la qualité rédactionnelle. Retourne UNIQUEMENT le HTML complet corrigé, sans aucun commentaire, sans texte hors du HTML.",
+    sofia:  "Tu es un expert en optimisation de documents professionnels. Améliore ce document HTML pour un impact maximal : formulations percutantes, mise en valeur des points forts, présentation soignée. Retourne UNIQUEMENT le HTML complet optimisé, sans aucun commentaire."
+  };
+  return defaults[agentId] || '';
+}
+
+/** Crée une demande vide dans Firebase dès le début de la génération. */
+function swCreatePendingOrder() {
+  const now = new Date();
+  const id  = Date.now();
+  const pad = function(n) { return String(n).padStart(2, '0'); };
+  SSW.orderId   = id;
+  SSW.orderDate = now.toISOString();
+  var demande = {
+    id:      id,
+    service: SSW.svc,
+    date:    now.toISOString().split('T')[0],
+    heure:   pad(now.getHours()) + ':' + pad(now.getMinutes()),
+    statut:  'submitted',
+    note:    '',
+    details: Object.assign({}, SSW.details, { 'sw-choice': SSW.choice })
+  };
+  try {
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0)
+      firebase.database().ref('dok-peyi/demandes/' + id).set(demande);
+  } catch(_) {}
+}
+
+/** Met à jour statut + événement _aiTeam dans Firebase en temps réel. */
+function swPipelineUpdate(statut, aiKey, agentId, label) {
+  if (!SSW.orderId) return;
+  try {
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+      var ref = firebase.database().ref('dok-peyi/demandes/' + SSW.orderId);
+      var at  = new Date().toISOString();
+      if (statut) ref.child('statut').set(statut);
+      if (aiKey && agentId) ref.child('_aiTeam/' + aiKey).set({ aiId: agentId, at: at, label: label });
+    }
+  } catch(_) {}
+}
+
+/** Appel API vers un agent spécifique avec son system prompt. */
+async function swCallAgent(systemPrompt, userPrompt) {
+  var res  = await fetch('/api/generate-cv', {
+    method:  'POST',
+    headers: { 'content-type': 'application/json' },
+    body:    JSON.stringify({ prompt: userPrompt, systemPrompt: systemPrompt })
+  });
+  var data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return (data.cv || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+}
+
+/* ── GENERATE — pipeline 4 agents ────────────────────────── */
 async function swGenerate() {
-  const loading = document.getElementById('sw-loading');
-  const preview = document.getElementById('sw-preview');
+  var loading = document.getElementById('sw-loading');
+  var preview = document.getElementById('sw-preview');
   if (loading) { loading.style.display = 'flex'; loading.innerHTML = _loadingHTML(); }
   if (preview) preview.style.display = 'none';
 
-  const msgs = [
-    'On analyse vos informations…',
-    'Rédaction en cours…',
-    'Mise en forme du document…',
-    'Vérification des détails…',
-    'Finitions en cours…',
-    'Presque prêt\u00a0!'
-  ];
-  let mi = 0;
-  const msgEl = document.getElementById('sw-loading-msg');
-  const timer = setInterval(() => {
-    mi = (mi + 1) % msgs.length;
-    if (msgEl) msgEl.textContent = msgs[mi];
-  }, 3500);
+  var updateMsg = function(txt) {
+    var el = document.getElementById('sw-loading-msg');
+    if (el) el.textContent = txt;
+  };
 
   try {
-    const res  = await fetch('/api/generate-cv', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ prompt: swBuildPrompt() })
-    });
-    clearInterval(timer);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    /* ── Créer la demande dans Firebase avant de commencer ── */
+    swCreatePendingOrder();
 
-    SSW.html = (data.cv || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    /* ── LUCAS — accueil (instant, pas d'appel IA) ── */
+    updateMsg('Demande reçue');
+    swPipelineUpdate('submitted', 'accueil', 'lucas', 'Demande reçue et collectée');
+    await new Promise(function(r) { setTimeout(r, 600); });
 
+    /* ── EMMA — génération du document ── */
+    updateMsg('En préparation…');
+    swPipelineUpdate('processing', null, null, null);
+    var emmaResult = await swCallAgent(swGetAgentPrompt('emma'), swBuildPrompt());
+    swPipelineUpdate('generated', 'generation', 'emma', 'Document rédigé');
+
+    /* ── VIKTOR — contrôle qualité ── */
+    updateMsg('En cours de vérification…');
+    swPipelineUpdate('a_verifier', 'verification', 'viktor', 'Contrôle qualité en cours');
+    var viktorPrompt = 'Voici un document HTML à corriger et améliorer. '
+      + 'Corrige les erreurs, améliore la cohérence et la qualité rédactionnelle. '
+      + 'Retourne uniquement le HTML complet corrigé, sans aucun commentaire :\n\n' + emmaResult;
+    var viktorResult = await swCallAgent(swGetAgentPrompt('viktor'), viktorPrompt);
+    swPipelineUpdate('a_verifier', 'verification', 'viktor', 'Contrôle qualité terminé');
+
+    /* ── SOFIA — optimisation finale ── */
+    updateMsg('Prêt — finalisation…');
+    swPipelineUpdate('pret_paiement', 'optimisation', 'sofia', 'Optimisation en cours');
+    var sofiaPrompt = 'Optimise ce document HTML pour un impact maximal et une présentation impeccable. '
+      + 'Améliore la fluidité du texte, l\'impact des formulations, la mise en forme. '
+      + 'Retourne uniquement le HTML complet finalisé, sans aucun commentaire :\n\n' + viktorResult;
+    var sofiaResult = await swCallAgent(swGetAgentPrompt('sofia'), sofiaPrompt);
+    swPipelineUpdate('valide_manager', 'optimisation', 'sofia', 'Document finalisé et optimisé');
+
+    SSW.html        = sofiaResult;
+    SSW.generatedAt = new Date().toISOString();
+
+    /* ── Afficher le document final ── */
     if (loading) loading.style.display = 'none';
     if (preview) {
       preview.style.display = 'block';
-      const iframe = document.getElementById('sw-iframe');
+      var iframe = document.getElementById('sw-iframe');
       if (iframe) {
         iframe.srcdoc  = SSW.html;
         iframe.onload  = swScaleFrame;
@@ -361,22 +440,20 @@ async function swGenerate() {
       }
     }
   } catch(e) {
-    clearInterval(timer);
-    if (loading) loading.innerHTML = `
-      <div style="text-align:center;padding:24px 16px">
-        <div style="font-size:2.5rem;margin-bottom:12px">❌</div>
-        <div style="color:#ef4444;font-weight:700;margin-bottom:8px">Erreur de génération</div>
-        <div style="color:#64748b;font-size:.87rem;margin-bottom:20px">${escSw(e.message)}</div>
-        <button class="sw-btn-ghost" onclick="swGoStep(2)">← Retour et réessayer</button>
-      </div>`;
+    if (loading) loading.innerHTML =
+      '<div style="text-align:center;padding:24px 16px">'
+      + '<div style="font-size:2.5rem;margin-bottom:12px">❌</div>'
+      + '<div style="color:#ef4444;font-weight:700;margin-bottom:8px">Erreur lors de la préparation</div>'
+      + '<div style="color:#64748b;font-size:.87rem;margin-bottom:20px">' + escSw(e.message) + '</div>'
+      + '<button class="sw-btn-ghost" onclick="swGoStep(2)">← Retour et réessayer</button>'
+      + '</div>';
   }
 }
 
 function _loadingHTML() {
-  return `
-    <div class="sw-spinner"></div>
-    <div class="sw-loading-msg" id="sw-loading-msg">Génération en cours…</div>
-    <div class="sw-loading-sub">L'IA rédige votre document — cela prend 10 à 30 secondes.</div>`;
+  return '<div class="sw-spinner"></div>'
+    + '<div class="sw-loading-msg" id="sw-loading-msg">Demande reçue</div>'
+    + '<div class="sw-loading-sub">Nous préparons votre document — cela prend quelques instants.</div>';
 }
 
 /* ── A4 SCALE ─────────────────────────────────────────────── */
@@ -598,11 +675,38 @@ function swSaveOrder() {
   try {
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
-    const id  = Date.now();
     const cfg = SVC[SSW.svc];
 
-    // Default to 'submitted'. The wizard will call swUpdateOrderStatus() to
-    // advance through the pipeline as the user progresses.
+    if (SSW.orderId) {
+      /* ── Pipeline déjà lancé : enrichir la demande existante avec les infos personnelles ── */
+      const update = {
+        prenom:   SSW.personal.prenom  || '',
+        nom:      SSW.personal.nom     || '',
+        email:    SSW.personal.email   || '',
+        whatsapp: SSW.personal.phone   || '',
+        ville:    '',
+        montant:  cfg ? cfg.price : 0,
+        paid:     true
+      };
+      /* localStorage */
+      const list = JSON.parse(localStorage.getItem('dok_demandes') || '[]');
+      const idx  = list.findIndex(d => d.id === SSW.orderId);
+      if (idx !== -1) {
+        Object.assign(list[idx], update);
+      } else {
+        list.unshift(Object.assign({ id: SSW.orderId, service: SSW.svc, date: now.toISOString().split('T')[0], heure: pad(now.getHours())+':'+pad(now.getMinutes()), statut: 'valide_manager', note: '', details: Object.assign({}, SSW.details, {'sw-choice': SSW.choice}) }, update));
+      }
+      localStorage.setItem('dok_demandes', JSON.stringify(list));
+      /* Firebase */
+      try {
+        if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0)
+          firebase.database().ref('dok-peyi/demandes/' + SSW.orderId).update(update);
+      } catch(_) {}
+      return;
+    }
+
+    /* ── Fallback : pipeline non lancé, créer la demande complète ── */
+    const id = Date.now();
     const demande = {
       id,
       date:     now.toISOString().split('T')[0],
@@ -613,18 +717,15 @@ function swSaveOrder() {
       whatsapp: SSW.personal.phone || '',
       ville:    '',
       service:  SSW.svc,
-      montant:  cfg.price,
-      statut:   'submitted',
+      montant:  cfg ? cfg.price : 0,
+      statut:   'valide_manager',
       details:  Object.assign({}, SSW.details, { 'sw-choice': SSW.choice }),
       note:     ''
     };
-
     SSW.orderId = id;
-
     const existing = JSON.parse(localStorage.getItem('dok_demandes') || '[]');
     existing.unshift(demande);
     localStorage.setItem('dok_demandes', JSON.stringify(existing));
-
     try {
       if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0)
         firebase.database().ref('dok-peyi/demandes/' + id).set(demande);

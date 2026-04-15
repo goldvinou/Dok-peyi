@@ -21,7 +21,7 @@ var IA_LANES = [
   },
   {
     agentId:  'sofia',
-    statuses: { pending_payment: 1, pret_paiement: 1, valide_manager: 1 },
+    statuses: { pending_payment: 1, pret_paiement: 1, valide_manager: 1, paid: 1, delivered: 1 },
     stepLabel: 'Finalisation & paiement'
   }
 ];
