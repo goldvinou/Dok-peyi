@@ -327,8 +327,9 @@ function swGetAgentPrompt(agentId) {
   } catch(_) {}
   const defaults = {
     emma:   "Tu es un expert en rédaction de documents professionnels. Tu génères des documents HTML complets, clairs, sans fautes, richement structurés et adaptés au profil exact du client. Tu ne produis que du HTML autonome, jamais de texte seul.",
-    viktor: "Tu es un correcteur expert. Analyse ce document HTML et corrige toutes les erreurs (orthographe, grammaire, cohérence, structure). Améliore la qualité rédactionnelle. Retourne UNIQUEMENT le HTML complet corrigé, sans aucun commentaire, sans texte hors du HTML.",
-    sofia:  "Tu es un expert en optimisation de documents professionnels. Améliore ce document HTML pour un impact maximal : formulations percutantes, mise en valeur des points forts, présentation soignée. Retourne UNIQUEMENT le HTML complet optimisé, sans aucun commentaire."
+    sofia:  "Tu es un expert en optimisation de documents professionnels. Améliore ce document HTML pour un impact maximal : formulations percutantes, mise en valeur des points forts, contenu enrichi. Retourne UNIQUEMENT le HTML complet optimisé, sans aucun commentaire.",
+    lea:    "Tu es un expert en mise en page et design de documents professionnels. Améliore la présentation visuelle de ce document HTML : mise en page soignée, typographie cohérente, espacement harmonieux, lisibilité optimale, impact visuel professionnel. Ne modifie pas le contenu rédactionnel. Retourne UNIQUEMENT le HTML complet mis en forme, sans aucun commentaire.",
+    viktor: "Tu es un validateur expert. Vérifie ce document HTML, corrige les dernières erreurs (orthographe, cohérence, qualité finale). Retourne UNIQUEMENT le HTML complet validé, sans aucun commentaire, sans texte hors du HTML."
   };
   return defaults[agentId] || '';
 }
@@ -352,6 +353,21 @@ function swCreatePendingOrder() {
   try {
     if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0)
       firebase.database().ref('dok-peyi/demandes/' + id).set(demande);
+  } catch(_) {}
+}
+
+/** Stocke les versions avant/après du Pôle Qualité dans Firebase. */
+function swPipelineUpdatePQ(inputHtml, outputHtml) {
+  if (!SSW.orderId) return;
+  try {
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+      firebase.database().ref('dok-peyi/demandes/' + SSW.orderId + '/_pq').set({
+        statut:     'termine',
+        inputHtml:  inputHtml,
+        outputHtml: outputHtml,
+        comment:    ''
+      });
+    }
   } catch(_) {}
 }
 
@@ -416,12 +432,23 @@ async function swGenerate() {
     var sofiaResult = await swCallAgent(swGetAgentPrompt('sofia'), sofiaPrompt);
     swPipelineUpdate('pret_paiement', 'optimisation', 'sofia', 'Optimisation terminée');
 
+    /* ── LÉA — Pôle Qualité & Présentation ── */
+    updateMsg('Mise en forme professionnelle…');   // client ne voit pas "IA"
+    swPipelineUpdate('pole_qualite', 'presentation', 'lea', 'Mise en forme professionnelle en cours');
+    var leaPrompt = 'Améliore la mise en page, la lisibilité, la structure et l\'harmonie visuelle de ce document HTML. '
+      + 'Ne modifie pas le contenu rédactionnel. Améliore uniquement la présentation (espacement, typographie, hiérarchie visuelle, couleurs professionnelles, impact visuel). '
+      + 'Retourne uniquement le HTML complet mis en forme, sans aucun commentaire :\n\n' + sofiaResult;
+    var leaResult = await swCallAgent(swGetAgentPrompt('lea'), leaPrompt);
+    /* Stocker avant/après pour la comparaison admin */
+    swPipelineUpdatePQ(sofiaResult, leaResult);
+    swPipelineUpdate('pole_qualite', 'presentation', 'lea', 'Mise en forme terminée');
+
     /* ── VIKTOR — validation finale ── */
     updateMsg('Prêt — finalisation…');
     swPipelineUpdate('a_verifier', 'verification', 'viktor', 'Validation finale en cours');
     var viktorPrompt = 'Voici un document HTML à valider. '
       + 'Corrige les éventuelles erreurs restantes (orthographe, grammaire, cohérence) et assure-toi de la qualité finale. '
-      + 'Retourne uniquement le HTML complet validé, sans aucun commentaire :\n\n' + sofiaResult;
+      + 'Retourne uniquement le HTML complet validé, sans aucun commentaire :\n\n' + leaResult;
     var viktorResult = await swCallAgent(swGetAgentPrompt('viktor'), viktorPrompt);
     swPipelineUpdate('valide_manager', 'verification', 'viktor', 'Document validé et approuvé');
 

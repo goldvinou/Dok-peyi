@@ -47,6 +47,13 @@ function buildDefaultAgents() {
       tone: 'concise', qualityFocus: 'clarity',
       systemPrompt: "Tu es Sofia, spécialiste en optimisation chez Dok'péyi. Tu améliores les documents finaux sans trahir le contenu original : fluidité du texte, impact des formulations, vocabulaire adapté au secteur professionnel du client, finition impeccable. Tu apportes la touche finale qui fait la différence.",
       instructions: ''
+    },
+    {
+      id: 'lea', nom: 'Léa', role: 'Pôle Qualité & Présentation', icon: '🎨', color: '#ec4899',
+      specialite: 'Mise en forme premium & présentation visuelle', enabled: true,
+      tone: 'professional', qualityFocus: 'clarity',
+      systemPrompt: "Tu es Léa, responsable du Pôle Qualité & Présentation chez Dok'péyi. Tu transformes les documents en créations professionnelles premium. Tu améliores : la mise en page (marges, espacement, hiérarchie visuelle), la lisibilité (taille de police, contraste, alignements), la structure (titres clairs, sections bien délimitées), l'harmonie du style (cohérence typographique, palette de couleurs professionnelle), et l'impact visuel général. Tu ne modifies pas le contenu rédactionnel, tu améliores uniquement la présentation. Tu retournes UNIQUEMENT le HTML complet mis en forme, sans aucun commentaire.",
+      instructions: ''
     }
   ];
 }
@@ -89,9 +96,17 @@ function _assignAI(d, newStatus) {
   if ((newStatus === 'a_verifier' || newStatus === 'valide_manager' || newStatus === 'correction_demandee') && !d._aiTeam.verification) {
     d._aiTeam.verification = { aiId: 'viktor', at: now, label: 'Contrôle qualité en cours' };
   }
-  // Sofia — optimisation finale
-  if ((newStatus === 'pret_paiement' || newStatus === 'delivered') && !d._aiTeam.optimisation) {
-    d._aiTeam.optimisation = { aiId: 'sofia', at: now, label: 'Document optimisé et finalisé' };
+  // Sofia — optimisation
+  if ((newStatus === 'optimisation' || newStatus === 'pret_paiement') && !d._aiTeam.optimisation) {
+    d._aiTeam.optimisation = { aiId: 'sofia', at: now, label: 'Document optimisé' };
+  }
+  // Léa — pôle qualité & présentation
+  if (newStatus === 'pole_qualite' && !d._aiTeam.presentation) {
+    d._aiTeam.presentation = { aiId: 'lea', at: now, label: 'Mise en forme professionnelle' };
+  }
+  // Viktor — validation finale
+  if ((newStatus === 'a_verifier' || newStatus === 'valide_manager' || newStatus === 'correction_demandee') && !d._aiTeam.verification) {
+    d._aiTeam.verification = { aiId: 'viktor', at: now, label: 'Validation finale' };
   }
   return d._aiTeam;
 }
@@ -121,7 +136,8 @@ const STATUT_LABELS = {
   a_verifier:          'À vérifier',
   valide_manager:      'Validé ✓',
   correction_demandee: 'Correction demandée',
-  pret_paiement:       'Prêt paiement'
+  pret_paiement:       'Prêt paiement',
+  pole_qualite:        'Pôle Qualité & Présentation'
 };
 const STATUT_CLASS = {
   /* ── New pipeline statuses ── */
@@ -144,7 +160,8 @@ const STATUT_CLASS = {
   a_verifier:          'badge-verifier',
   valide_manager:      'badge-valide',
   correction_demandee: 'badge-correction',
-  pret_paiement:       'badge-pret'
+  pret_paiement:       'badge-pret',
+  pole_qualite:        'badge-pq'
 };
 
 // "Completed" covers both legacy ('terminé') and pipeline ('delivered', 'paid') terminal states.
@@ -990,7 +1007,7 @@ function refreshBadge() {
     dot.style.display = 'none';
   }
   // Badge Supervision IA — demandes actives dans le pipeline
-  const IA_ACTIVE = new Set(['submitted','en_attente','processing','generated','en_cours','en_redaction','assignee','needs_review','a_verifier','correction_demandee','pending_payment','pret_paiement','valide_manager']);
+  const IA_ACTIVE = new Set(['submitted','en_attente','processing','generated','en_cours','en_redaction','assignee','needs_review','a_verifier','correction_demandee','pending_payment','pret_paiement','valide_manager','pole_qualite']);
   const nbIA = demandes.filter(d => IA_ACTIVE.has(d.statut)).length;
   const elQC = document.getElementById('nb-controle');
   if (elQC) { elQC.textContent = nbIA; elQC.style.display = nbIA ? 'flex' : 'none'; }
@@ -1738,28 +1755,105 @@ function closeModalOutside(e) {
 function _modalAITeamSection(d) {
   if (!d._aiTeam) return '';
   const steps = [
-    { key: 'accueil',      label: 'Accueil & collecte'     },
-    { key: 'generation',   label: 'Rédaction & génération' },
-    { key: 'verification', label: 'Contrôle qualité'       },
-    { key: 'optimisation', label: 'Optimisation finale'    },
+    { key: 'accueil',      label: 'Accueil & qualification'        },
+    { key: 'generation',   label: 'Rédaction'                      },
+    { key: 'optimisation', label: 'Optimisation'                   },
+    { key: 'presentation', label: 'Pôle Qualité & Présentation'    },
+    { key: 'verification', label: 'Vérification & validation'      },
   ];
   const rows = steps.filter(s => d._aiTeam[s.key]).map(s => {
     const entry = d._aiTeam[s.key];
     const agent = AI_TEAM.find(a => a.id === entry.aiId) || { nom: entry.aiId, color: '#475569', icon: '🤖', role: s.label };
+    const ts    = entry.at ? _fmtModalTime(entry.at) : '';
     return `<div class="ai-team-row">
       <div class="ai-team-dot" style="background:${agent.color}"></div>
       <div class="ai-team-info">
         <span class="ai-team-name" style="color:${agent.color}">${agent.icon} ${agent.nom}</span>
         <span class="ai-team-role">${agent.role}</span>
       </div>
-      <div class="ai-team-label">${escHtml(entry.label || '')}</div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="ai-team-label">${escHtml(entry.label || '')}</div>
+        ${ts ? `<div style="font-size:.66rem;color:#64748b;margin-top:1px">${ts}</div>` : ''}
+      </div>
     </div>`;
   });
   if (!rows.length) return '';
+
+  /* ── Pôle Qualité & Présentation : panneau étendu ── */
+  const pq      = d._pq || {};
+  const pqStatut = pq.statut || 'en_attente';
+  const pqLabels = { en_attente: '⏳ En attente', en_cours: '🔄 En cours', termine: '✅ Terminé' };
+  const pqColors = { en_attente: '#f59e0b', en_cours: '#3b82f6', termine: '#22c55e' };
+  const pqSection = `
+    <div class="pq-panel" id="pq-panel-${d.id}">
+      <div class="pq-panel-head">
+        <span style="font-weight:700;font-size:.82rem;color:#f1f5f9">🎨 Pôle Qualité & Présentation</span>
+        <span class="pq-status-badge" style="background:${pqColors[pqStatut]}22;color:${pqColors[pqStatut]};border:1px solid ${pqColors[pqStatut]}44">${pqLabels[pqStatut]}</span>
+      </div>
+      ${pq.inputHtml ? `<div class="pq-compare">
+        <div class="pq-compare-tabs">
+          <button class="pq-tab active" onclick="_pqTab(this,'before','${d.id}')">Avant</button>
+          <button class="pq-tab"        onclick="_pqTab(this,'after','${d.id}')">Après</button>
+        </div>
+        <div class="pq-compare-frame" id="pq-before-${d.id}">
+          <iframe srcdoc="${escHtml(pq.inputHtml)}" style="width:100%;height:320px;border:none;border-radius:6px;background:#fff"></iframe>
+        </div>
+        <div class="pq-compare-frame" id="pq-after-${d.id}" style="display:none">
+          <iframe srcdoc="${escHtml(pq.outputHtml || pq.inputHtml)}" style="width:100%;height:320px;border:none;border-radius:6px;background:#fff"></iframe>
+        </div>
+      </div>` : ''}
+      <div class="pq-comment-wrap">
+        <textarea id="pq-comment-${d.id}" class="pq-comment" placeholder="Commentaire interne sur la présentation…" rows="3">${escHtml(pq.comment || '')}</textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <select id="pq-statut-${d.id}" class="pq-statut-sel" onchange="_pqSaveStatut('${d.id}',this.value)">
+            <option value="en_attente"${pqStatut==='en_attente'?' selected':''}>⏳ En attente</option>
+            <option value="en_cours"${pqStatut==='en_cours'?' selected':''}>🔄 En cours</option>
+            <option value="termine"${pqStatut==='termine'?' selected':''}>✅ Terminé</option>
+          </select>
+          <button onclick="_pqSaveComment('${d.id}')" class="pq-save-btn">💾 Enregistrer</button>
+        </div>
+      </div>
+    </div>`;
+
   return `<div class="modal-section">
-    <div class="modal-section-title">🤖 Équipe IA assignée</div>
+    <div class="modal-section-title">🤖 Équipe IA — Parcours du dossier</div>
     <div class="ai-team-grid">${rows.join('')}</div>
+    ${pqSection}
   </div>`;
+}
+
+function _fmtModalTime(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short' }) + ' ' +
+           d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  } catch(_) { return ''; }
+}
+
+function _pqTab(btn, side, id) {
+  btn.closest('.pq-compare').querySelectorAll('.pq-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('pq-before-' + id).style.display = side === 'before' ? 'block' : 'none';
+  document.getElementById('pq-after-'  + id).style.display = side === 'after'  ? 'block' : 'none';
+}
+
+function _pqSaveComment(id) {
+  const dem = demandes.find(d => d.id == id);
+  if (!dem) return;
+  dem._pq = dem._pq || {};
+  dem._pq.comment = (document.getElementById('pq-comment-' + id) || {}).value || '';
+  if (db) db.ref('dok-peyi/demandes/' + id + '/_pq/comment').set(dem._pq.comment).catch(console.error);
+  showToast('💬 Commentaire enregistré', 'success');
+}
+
+function _pqSaveStatut(id, statut) {
+  const dem = demandes.find(d => d.id == id);
+  if (!dem) return;
+  dem._pq = dem._pq || {};
+  dem._pq.statut = statut;
+  if (db) db.ref('dok-peyi/demandes/' + id + '/_pq/statut').set(statut).catch(console.error);
+  refreshBadge();
 }
 
 /* ============================================================

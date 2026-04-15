@@ -20,6 +20,11 @@ var IA_LANES = [
     stepLabel: 'Optimisation'
   },
   {
+    agentId:  'lea',
+    statuses: { pole_qualite: 1 },
+    stepLabel: 'Pôle Qualité & Présentation'
+  },
+  {
     agentId:  'viktor',
     statuses: { needs_review: 1, a_verifier: 1, correction_demandee: 1, valide_manager: 1, paid: 1, delivered: 1 },
     stepLabel: 'Validation finale'
@@ -165,6 +170,7 @@ function _iaDashFeed() {
     { key: 'accueil',      agentId: 'lucas'  },
     { key: 'generation',   agentId: 'emma'   },
     { key: 'optimisation', agentId: 'sofia'  },
+    { key: 'presentation', agentId: 'lea'    },
     { key: 'verification', agentId: 'viktor' }
   ];
 
