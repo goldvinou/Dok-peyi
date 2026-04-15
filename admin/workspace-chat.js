@@ -801,27 +801,35 @@ function fchatInit() {
   if (backdrop) backdrop.addEventListener('click', fchatClose);
 }
 
-/* ── Drag & drop du FAB ──────────────────────────────────────── */
+/* ── Drag & drop du FAB avec inertie + rebond ───────────────── */
 function _fchatInitDrag(fab) {
-  // Restaurer la position sauvegardée
   try {
     const saved = JSON.parse(localStorage.getItem('dok_fchat_pos') || 'null');
     if (saved) _fchatApplyPos(saved.x, saved.y);
   } catch(e) {}
-
   fab.addEventListener('mousedown',  _fchatDragStart, { passive: false });
   fab.addEventListener('touchstart', _fchatDragStart, { passive: false });
 }
 
 function _fchatDragStart(e) {
-  // Ignorer clic droit
   if (e.button === 2) return;
+  // Stopper une éventuelle inertie en cours
+  if (_fchatDrag?._raf) { cancelAnimationFrame(_fchatDrag._raf); }
+
   const fab  = document.getElementById('fchat-fab');
   const rect = fab.getBoundingClientRect();
   const cx   = e.touches ? e.touches[0].clientX : e.clientX;
   const cy   = e.touches ? e.touches[0].clientY : e.clientY;
 
-  _fchatDrag = { startCX: cx, startCY: cy, startLeft: rect.left, startTop: rect.top, moved: false };
+  _fchatDrag = {
+    startCX: cx, startCY: cy,
+    startLeft: rect.left, startTop: rect.top,
+    moved: false,
+    // Historique des 4 derniers points pour calculer la vélocité
+    history: [{ cx, cy, t: performance.now() }],
+    vx: 0, vy: 0,
+    _raf: null
+  };
 
   document.addEventListener('mousemove',  _fchatDragMove, { passive: false });
   document.addEventListener('mouseup',    _fchatDragEnd);
@@ -843,6 +851,11 @@ function _fchatDragMove(e) {
   }
   if (!_fchatDrag.moved) return;
 
+  // Enregistrer l'historique (garder les 4 derniers)
+  const now = performance.now();
+  _fchatDrag.history.push({ cx, cy, t: now });
+  if (_fchatDrag.history.length > 4) _fchatDrag.history.shift();
+
   const W = window.innerWidth, H = window.innerHeight, S = 56;
   const x = Math.max(8, Math.min(W - S - 8, _fchatDrag.startLeft + dx));
   const y = Math.max(8, Math.min(H - S - 8, _fchatDrag.startTop  + dy));
@@ -858,17 +871,71 @@ function _fchatDragEnd() {
   const fab = document.getElementById('fchat-fab');
   fab?.classList.remove('dragging');
 
-  if (_fchatDrag?.moved) {
-    // Sauvegarder la nouvelle position
-    const rect = fab.getBoundingClientRect();
-    try { localStorage.setItem('dok_fchat_pos', JSON.stringify({ x: rect.left, y: rect.top })); } catch(e) {}
-    _fchatUpdateDrawerPos();
+  if (!_fchatDrag?.moved) {
     _fchatDrag = null;
-    return;  // ne pas déclencher toggle
+    fchatToggle();
+    return;
   }
-  _fchatDrag = null;
-  // Pas de déplacement → c'est un clic → ouvrir/fermer
-  fchatToggle();
+
+  // Calculer la vélocité à partir des derniers points enregistrés
+  const hist = _fchatDrag.history;
+  let vx = 0, vy = 0;
+  if (hist.length >= 2) {
+    const old = hist[0];
+    const cur = hist[hist.length - 1];
+    const dt  = Math.max(1, cur.t - old.t);
+    vx = (cur.cx - old.cx) / dt * 16;  // px/frame (≈16ms)
+    vy = (cur.cy - old.cy) / dt * 16;
+  }
+
+  _fchatDrag.vx = vx;
+  _fchatDrag.vy = vy;
+  _fchatLaunchInertia();
+}
+
+function _fchatLaunchInertia() {
+  const FRICTION  = 0.88;   // décélération par frame
+  const BOUNCE    = 0.45;   // rebond sur les bords (fraction de vélocité conservée)
+  const MIN_SPEED = 0.3;    // seuil d'arrêt en px/frame
+  const S = 56;
+
+  function step() {
+    if (!_fchatDrag) return;
+    const fab = document.getElementById('fchat-fab');
+    if (!fab) return;
+
+    const rect = fab.getBoundingClientRect();
+    const W = window.innerWidth, H = window.innerHeight;
+
+    let x = rect.left + _fchatDrag.vx;
+    let y = rect.top  + _fchatDrag.vy;
+
+    // Rebond bord gauche / droit
+    if (x < 8)           { x = 8;           _fchatDrag.vx = Math.abs(_fchatDrag.vx) * BOUNCE; }
+    if (x > W - S - 8)   { x = W - S - 8;   _fchatDrag.vx = -Math.abs(_fchatDrag.vx) * BOUNCE; }
+    // Rebond bord haut / bas
+    if (y < 8)           { y = 8;           _fchatDrag.vy = Math.abs(_fchatDrag.vy) * BOUNCE; }
+    if (y > H - S - 8)   { y = H - S - 8;   _fchatDrag.vy = -Math.abs(_fchatDrag.vy) * BOUNCE; }
+
+    _fchatApplyPos(x, y);
+
+    // Friction
+    _fchatDrag.vx *= FRICTION;
+    _fchatDrag.vy *= FRICTION;
+
+    const speed = Math.sqrt(_fchatDrag.vx ** 2 + _fchatDrag.vy ** 2);
+    if (speed > MIN_SPEED) {
+      _fchatDrag._raf = requestAnimationFrame(step);
+    } else {
+      // Arrêt — sauvegarder la position finale
+      const r = fab.getBoundingClientRect();
+      try { localStorage.setItem('dok_fchat_pos', JSON.stringify({ x: r.left, y: r.top })); } catch(e) {}
+      _fchatUpdateDrawerPos();
+      _fchatDrag = null;
+    }
+  }
+
+  _fchatDrag._raf = requestAnimationFrame(step);
 }
 
 function _fchatApplyPos(x, y) {
