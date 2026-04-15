@@ -3,12 +3,12 @@
    ============================================================ */
 
 // ===== CONSTANTES =====
-// ── Comptes utilisateurs — modifier les mots de passe ici ──────────────
+// ── Comptes utilisateurs — mots de passe gérés côté serveur via /api/admin-auth ──
 const USERS = [
-  { user: 'allan',  pass: 'Allan@2025',  nom: 'Allan',  role: 'admin',     color: '#2563eb' },
-  { user: 'yonel',  pass: 'Yonel@2025',  nom: 'Yonel',  role: 'admin',     color: '#10b981' },
-  { user: 'marvin', pass: 'Marvin@2025', nom: 'Marvin', role: 'manager',   color: '#f59e0b' },
-  { user: 'redac1', pass: 'Redac@2025',  nom: 'Rédacteur', role: 'redacteur', color: '#8b5cf6' }
+  { user: 'allan',  nom: 'Allan',      role: 'admin',      color: '#2563eb' },
+  { user: 'yonel',  nom: 'Yonel',      role: 'admin',      color: '#10b981' },
+  { user: 'marvin', nom: 'Marvin',     role: 'manager',    color: '#f59e0b' },
+  { user: 'redac1', nom: 'Rédacteur',  role: 'redacteur',  color: '#8b5cf6' }
 ];
 // ── Rôles ────────────────────────────────────────────────────────────────
 const ROLE_SECTIONS = {
@@ -587,15 +587,22 @@ async function adminLogin(e) {
   try {
     const storedHash = await getStoredHash(u);
     if (storedHash) {
-      // Mot de passe personnalisé — comparer le hash
+      // Mot de passe personnalisé — comparer le hash localement
       ok = (await hashPass(p)) === storedHash;
     } else {
-      // Aucun mot de passe personnalisé → vérifier le mot de passe temporaire
-      ok = (p === found.pass);
+      // Pas encore de mot de passe personnalisé → vérifier côté serveur
+      const res  = await fetch('/api/admin-auth', {
+        method:  'POST',
+        headers: { 'content-type': 'application/json' },
+        body:    JSON.stringify({ username: u, password: p })
+      });
+      const data = await res.json();
+      ok = data.ok === true;
       isFirstLogin = ok;
     }
   } catch(err) {
-    ok = (p === found.pass);  // fallback si Web Crypto indisponible
+    // Réseau indisponible — impossible de valider le mot de passe
+    ok = false;
   }
 
   if (ok) {

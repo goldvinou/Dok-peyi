@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Dok'péyi — Administration</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1277,8 +1277,15 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       height: 100%;
+      /* Viewport stable sur iOS — évite le saut quand la barre URL apparaît/disparaît */
+      height: -webkit-fill-available;
       font-family: Inter, system-ui, -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    /* dvh pour les navigateurs modernes */
+    @supports (height: 100dvh) {
+      html, body { height: 100dvh; }
     }
 
     /* ── LOGIN SCREEN ── */
