@@ -747,27 +747,35 @@ function _chatFirebaseListen() {
   _chatFirebaseListened = true;
 
   try {
-    db.ref('workspace/chat').on('value', snap => {
+    // Horodatage avant le chargement initial — tout child_added après = nouveau message
+    const listenFrom = new Date().toISOString();
+
+    // 1. Chargement initial de l'historique complet
+    db.ref('workspace/chat').orderByChild('ts').once('value', snap => {
       const data = snap.val();
-      if (!data) return;
+      if (data) {
+        const ids = new Set(wsMessages.map(m => m.id));
+        Object.values(data).forEach(m => { if (!ids.has(m.id)) wsMessages.push(m); });
+        wsMessages.sort((a, b) => new Date(a.ts) - new Date(b.ts));
+        _wsSave('dok_ws_chat', wsMessages);
+        if (wsCurrentTab === 'chat') _renderChatMessages();
+        if (_fchatOpen) _fchatRenderMessages();
+        _fchatUpdateBadge();
+      }
 
-      // Reconstruire le tableau depuis le snapshot
-      const remote = Object.values(data).sort((a, b) =>
-        new Date(a.ts) - new Date(b.ts));
-
-      // Fusionner sans doublons (par id)
-      const ids = new Set(wsMessages.map(m => m.id));
-      const newIds = new Set();
-      remote.forEach(m => { if (!ids.has(m.id)) { wsMessages.push(m); newIds.add(m.id); } });
-      wsMessages.sort((a, b) => new Date(a.ts) - new Date(b.ts));
-      _wsSave('dok_ws_chat', wsMessages);
-
-      // Re-rendre uniquement si on est dans le chat
-      if (wsCurrentTab === 'chat') _renderChatMessages();
-
-      // Notifier le tiroir flottant
-      const _fbMyId = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.user : null;
-      if (typeof _fchatOnFirebaseNew !== 'undefined') _fchatOnFirebaseNew(newIds, _fbMyId);
+      // 2. Écoute temps réel — uniquement les NOUVEAUX messages
+      db.ref('workspace/chat').orderByChild('ts').startAt(listenFrom)
+        .on('child_added', snap => {
+          const m = snap.val();
+          if (!m || !m.id || wsMessages.some(x => x.id === m.id)) return;
+          wsMessages.push(m);
+          wsMessages.sort((a, b) => new Date(a.ts) - new Date(b.ts));
+          _wsSave('dok_ws_chat', wsMessages);
+          if (wsCurrentTab === 'chat') _renderChatMessages();
+          if (_fchatOpen) _fchatRenderMessages();
+          const myId = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.user : null;
+          _fchatOnFirebaseNew(new Set([m.id]), myId);
+        });
     });
   } catch (e) { /* Firebase non configuré */ }
 }
@@ -791,6 +799,8 @@ let _fchatAttachments = [];
 let _fchatAudioCtx    = null;
 let _fchatNotifiedIds = new Set();
 let _fchatDrag        = null;   // état du drag en cours
+let _fbPresence       = {};     // présence Firebase (cross-browser)
+let _fbPresenceListened = false;
 
 /* ── Init (appelé une fois après login) ─────────────────────── */
 function fchatInit() {
@@ -803,6 +813,10 @@ function fchatInit() {
   _fchatUpdateBadge();
   _fchatRenderMessages();
   _fchatStartPolling();
+  // Sync instantanée entre onglets (storage event)
+  window.addEventListener('storage', _fchatOnStorageChange);
+  // Démarrer Firebase dès la connexion (pas uniquement au clic workspace)
+  _chatFirebaseListen();
   const backdrop = document.getElementById('fchat-backdrop');
   if (backdrop) backdrop.addEventListener('click', fchatClose);
 }
@@ -1150,18 +1164,68 @@ function fchatRemoveAttach(i) {
   _fchatRenderAttachPreview();
 }
 
+/* ── Sync instantanée cross-tab (storage event) ─────────────── */
+function _fchatOnStorageChange(e) {
+  if (e.key !== 'dok_ws_chat') return;
+  try {
+    const fresh = e.newValue ? JSON.parse(e.newValue) : [];
+    const ids   = new Set(wsMessages.map(m => m.id));
+    const myId  = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.user : null;
+    const newIds = new Set();
+    fresh.forEach(m => {
+      if (!ids.has(m.id)) {
+        wsMessages.push(m);
+        if (m.userId !== myId) newIds.add(m.id);
+      }
+    });
+    if (!newIds.size && fresh.length <= wsMessages.length) return;
+    wsMessages.sort((a, b) => new Date(a.ts) - new Date(b.ts));
+    if (wsCurrentTab === 'chat') _renderChatMessages();
+    if (_fchatOpen) _fchatRenderMessages();
+    _fchatUpdateBadge();
+    if (newIds.size) _fchatOnFirebaseNew(newIds, myId);
+  } catch(_) {}
+}
+
 /* ── Présence en ligne ───────────────────────────────────────── */
 function _fchatIsOnline(userId) {
+  // Firebase (cross-browser, source de vérité)
+  if (_fbPresence && _fbPresence[userId] !== undefined) {
+    return Date.now() - (_fbPresence[userId] || 0) < 120000;
+  }
+  // localStorage (fallback — même navigateur)
   const ts = parseInt(localStorage.getItem('dok_presence_' + userId) || '0', 10);
-  return Date.now() - ts < 120000; // 2 minutes
+  return Date.now() - ts < 120000;
 }
 
 function _fchatStartPresenceHeartbeat() {
   if (typeof currentUser === 'undefined' || !currentUser) return;
-  const key = 'dok_presence_' + currentUser.user;
-  localStorage.setItem(key, String(Date.now()));
+  const userId = currentUser.user;
+  const lsKey  = 'dok_presence_' + userId;
+
+  // localStorage (cross-tab, même navigateur)
+  localStorage.setItem(lsKey, String(Date.now()));
+
+  // Firebase (cross-browser) — présence temps réel
+  if (typeof db !== 'undefined' && db) {
+    const presRef = db.ref('workspace/presence/' + userId);
+    presRef.set(Date.now());
+    presRef.onDisconnect().set(0); // mis à 0 à la déconnexion
+
+    // Écouter les changements de présence de tous les membres
+    if (!_fbPresenceListened) {
+      _fbPresenceListened = true;
+      db.ref('workspace/presence').on('value', snap => {
+        _fbPresence = snap.val() || {};
+        _fchatRefreshPresence();
+      });
+    }
+  }
+
   setInterval(() => {
-    localStorage.setItem(key, String(Date.now()));
+    localStorage.setItem(lsKey, String(Date.now()));
+    if (typeof db !== 'undefined' && db)
+      db.ref('workspace/presence/' + userId).set(Date.now());
     _fchatRefreshPresence();
   }, 30000);
 }
