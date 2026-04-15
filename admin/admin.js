@@ -2241,13 +2241,15 @@ function initFirebase() {
           const obj = {};
           local.forEach(d => { obj[d.id] = d; });
           db.ref('dok-peyi/demandes').set(obj).then(() => {
-            showToast(`✅ ${local.length} commandes synchronisées sur Firebase`, 'success');
+            console.log(`[Firebase] Migration: ${local.length} commandes synchronisées`);
           });
         }
       }
     });
 
-    showToast('🔥 Firebase connecté — synchronisation active', 'success');
+    // Indicateur silencieux dans la sidebar (pas de toast intrusif)
+    const fbDot = document.getElementById('fb-status-dot');
+    if (fbDot) { fbDot.style.background = '#22c55e'; fbDot.title = 'Firebase connecté'; }
   } catch(e) {
     console.warn('Firebase init failed, fallback localStorage:', e.message);
   }
