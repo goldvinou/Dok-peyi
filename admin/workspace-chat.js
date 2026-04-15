@@ -981,12 +981,34 @@ function fchatOpen() {
   _fchatOpen = true;
   wsMessages = _wsLoad('dok_ws_chat') || wsMessages;
   _fchatRenderMessages();
-  document.getElementById('fchat-drawer')?.classList.add('open');
-  document.getElementById('fchat-fab')?.classList.add('open');
+
+  const drawer = document.getElementById('fchat-drawer');
+  const fab    = document.getElementById('fchat-fab');
+
+  // Ancrer le transform-origin sur le coin du tiroir le plus proche du FAB
+  // → le tiroir "sort" visuellement depuis le bouton, comme le calendrier depuis l'horloge
+  if (drawer && fab && window.innerWidth > 640) {
+    const fr = fab.getBoundingClientRect();
+    const fabCX = fr.left + fr.width  / 2;
+    const fabCY = fr.top  + fr.height / 2;
+
+    // Position du tiroir (calculée par _fchatUpdateDrawerPos ou valeur par défaut)
+    const dl = parseFloat(drawer.style.left)   || (window.innerWidth  - 360 - 28);
+    const dt = parseFloat(drawer.style.top)    || NaN;
+    const db = parseFloat(drawer.style.bottom) || NaN;
+    const drawerTop = isNaN(dt) ? (window.innerHeight - (isNaN(db) ? 164 : db) - 520) : dt;
+
+    const ox = fabCX < dl + 180 ? 'left' : 'right';
+    const oy = fabCY < drawerTop + 260  ? 'top'  : 'bottom';
+    drawer.style.transformOrigin = `${oy} ${ox}`;
+  }
+
+  drawer?.classList.add('open');
+  fab?.classList.add('open');
   if (window.innerWidth <= 640)
     document.getElementById('fchat-backdrop')?.classList.add('open');
   _fchatMarkRead();
-  setTimeout(() => { document.getElementById('fchat-input')?.focus(); }, 260);
+  setTimeout(() => { document.getElementById('fchat-input')?.focus(); }, 230);
 }
 
 function fchatClose() {
