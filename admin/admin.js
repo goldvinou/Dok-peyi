@@ -5,15 +5,48 @@
 // ===== CONSTANTES =====
 // ── Comptes utilisateurs — modifier les mots de passe ici ──────────────
 const USERS = [
-  { user: 'allan',  pass: 'Allan@2025',  nom: 'Allan',  role: 'admin',   color: '#2563eb' },
-  { user: 'yonel',  pass: 'Yonel@2025',  nom: 'Yonel',  role: 'admin',   color: '#10b981' },
-  { user: 'marvin', pass: 'Marvin@2025', nom: 'Marvin', role: 'admin',   color: '#f59e0b' }
+  { user: 'allan',  pass: 'Allan@2025',  nom: 'Allan',  role: 'admin',     color: '#2563eb' },
+  { user: 'yonel',  pass: 'Yonel@2025',  nom: 'Yonel',  role: 'admin',     color: '#10b981' },
+  { user: 'marvin', pass: 'Marvin@2025', nom: 'Marvin', role: 'manager',   color: '#f59e0b' },
+  { user: 'redac1', pass: 'Redac@2025',  nom: 'Rédacteur', role: 'redacteur', color: '#8b5cf6' }
 ];
-// ── Rôles : admin = tout, manager = dashboard + demandes + stats ────────
+// ── Rôles ────────────────────────────────────────────────────────────────
 const ROLE_SECTIONS = {
-  admin:   ['dashboard','demandes','services','ia','stats','workspace'],
-  manager: ['dashboard','demandes','stats','workspace']
+  admin:     ['dashboard','demandes','services','ia','stats','workspace','controle'],
+  manager:   ['dashboard','demandes','stats','workspace','controle'],
+  redacteur: ['dashboard','controle']
 };
+
+// ── Équipe IA interne ─────────────────────────────────────────────────────
+const AI_TEAM = [
+  { id: 'lucas',  nom: 'Lucas',  role: 'IA Accueil',      specialite: 'Accueil & collecte',        color: '#3b82f6', icon: '🤝' },
+  { id: 'emma',   nom: 'Emma',   role: 'IA Rédaction',    specialite: 'Rédaction & génération',    color: '#10b981', icon: '✍️' },
+  { id: 'viktor', nom: 'Viktor', role: 'IA Vérification', specialite: 'Contrôle qualité',          color: '#f59e0b', icon: '🔍' },
+  { id: 'sofia',  nom: 'Sofia',  role: 'IA Optimisation', specialite: 'Optimisation & adaptation', color: '#8b5cf6', icon: '⚡' }
+];
+
+// Attribue automatiquement les agents IA selon le statut de la demande
+function _assignAI(d, newStatus) {
+  d._aiTeam = d._aiTeam || {};
+  const now = new Date().toISOString();
+  // Lucas — accueil (à la création)
+  if (!d._aiTeam.accueil) {
+    d._aiTeam.accueil = { aiId: 'lucas', at: d.date || now, label: 'Demande reçue et collectée' };
+  }
+  // Emma — génération
+  if ((newStatus === 'processing' || newStatus === 'generated') && !d._aiTeam.generation) {
+    d._aiTeam.generation = { aiId: 'emma', at: now, label: 'Document généré' };
+  }
+  // Viktor — vérification
+  if ((newStatus === 'a_verifier' || newStatus === 'valide_manager' || newStatus === 'correction_demandee') && !d._aiTeam.verification) {
+    d._aiTeam.verification = { aiId: 'viktor', at: now, label: 'Contrôle qualité en cours' };
+  }
+  // Sofia — optimisation finale
+  if ((newStatus === 'pret_paiement' || newStatus === 'delivered') && !d._aiTeam.optimisation) {
+    d._aiTeam.optimisation = { aiId: 'sofia', at: now, label: 'Document optimisé et finalisé' };
+  }
+  return d._aiTeam;
+}
 
 const PRICES_DEFAULT = { cv: 8, lettre: 5, dossier: 12, courrier: 7, sejour: 15, impot: 10, naturalisation: 20 };
 const SERVICE_NAMES  = { cv: 'CV Professionnel', lettre: 'Lettre de motivation', dossier: 'Dossier administratif', courrier: 'Courrier officiel', sejour: 'Titre de séjour', impot: 'Avis d\'impôt', naturalisation: 'Naturalisation' };
@@ -33,7 +66,14 @@ const STATUT_LABELS = {
   en_attente: 'En attente',
   en_cours:   'En cours',
   terminé:    'Terminé',
-  annulé:     'Annulé'
+  annulé:     'Annulé',
+  /* ── QC workflow ── */
+  assignee:            'Assignée',
+  en_redaction:        'En rédaction',
+  a_verifier:          'À vérifier',
+  valide_manager:      'Validé ✓',
+  correction_demandee: 'Correction demandée',
+  pret_paiement:       'Prêt paiement'
 };
 const STATUT_CLASS = {
   /* ── New pipeline statuses ── */
@@ -49,13 +89,20 @@ const STATUT_CLASS = {
   en_attente: 'badge-attente',
   en_cours:   'badge-cours',
   terminé:    'badge-termine',
-  annulé:     'badge-annule'
+  annulé:     'badge-annule',
+  /* ── QC workflow ── */
+  assignee:            'badge-assignee',
+  en_redaction:        'badge-redaction',
+  a_verifier:          'badge-verifier',
+  valide_manager:      'badge-valide',
+  correction_demandee: 'badge-correction',
+  pret_paiement:       'badge-pret'
 };
 
 // "Completed" covers both legacy ('terminé') and pipeline ('delivered', 'paid') terminal states.
-const DONE_STATUSES    = new Set(['terminé', 'delivered', 'paid']);
+const DONE_STATUSES    = new Set(['terminé', 'delivered', 'paid', 'pret_paiement', 'valide_manager']);
 // "Pending" covers anything waiting on admin attention.
-const PENDING_STATUSES = new Set(['en_attente', 'submitted', 'pending_payment', 'needs_review']);
+const PENDING_STATUSES = new Set(['en_attente','submitted','pending_payment','needs_review','a_verifier','correction_demandee']);
 
 // ===== ÉTAT =====
 const APP = {
@@ -812,7 +859,8 @@ const SECTION_TITLES = {
   services:  'Services & Tarifs',
   ia:        'Configuration IA',
   stats:     'Statistiques',
-  workspace: 'Workspace'
+  workspace: 'Workspace',
+  controle:  'Contrôle qualité'
 };
 
 function showSection(name, navEl) {
@@ -850,6 +898,7 @@ function showSection(name, navEl) {
   if (name === 'ia')        renderAIConfig();
   if (name === 'stats')     renderStats();
   if (name === 'workspace') renderWorkspace();
+  if (name === 'controle')  renderQualiteControl();
 
   // Fermer la sidebar sur mobile
   closeSidebar();
@@ -890,6 +939,10 @@ function refreshBadge() {
     badge.style.display = 'none';
     dot.style.display = 'none';
   }
+  // Badge contrôle qualité
+  const nbQC = demandes.filter(d => d.statut === 'a_verifier' || d.statut === 'correction_demandee').length;
+  const elQC = document.getElementById('nb-controle');
+  if (elQC) { elQC.textContent = nbQC; elQC.style.display = nbQC ? 'flex' : 'none'; }
 }
 
 /* ============================================================
@@ -1312,7 +1365,8 @@ function quickChangeStatus(id, newStatus) {
   if (!dem) return;
   const oldStatus = dem.statut;
   dem.statut = newStatus;
-  if (db) fbUpdate(id, { statut: newStatus });
+  _assignAI(dem, newStatus);
+  if (db) fbUpdate(id, { statut: newStatus, _aiTeam: dem._aiTeam || null });
   else    saveData();
   auditLog('statut_change', `#${id} ${STATUT_LABELS[oldStatus]} → ${STATUT_LABELS[newStatus]}`);
   refreshBadge();
@@ -1546,6 +1600,8 @@ function openModal(id) {
 
     ${pipelineSection}
 
+    ${_modalAITeamSection(d)}
+
     ${Object.keys(d.details || {}).length ? `
     <div class="modal-section">
       <div class="modal-section-title">Informations fournies</div>
@@ -1603,8 +1659,9 @@ function saveModal() {
   const note = document.getElementById('modal-note');
   if (sel)  d.statut = sel.value;
   if (note) d.note   = note.value;
+  _assignAI(d, d.statut);
 
-  if (db) fbUpdate(d.id, { statut: d.statut, note: d.note });
+  if (db) fbUpdate(d.id, { statut: d.statut, note: d.note, _aiTeam: d._aiTeam || null });
   else    saveData();
   auditLog('save_modal', `#${d.id} statut=${d.statut}${d.note ? ' + note' : ''}`);
   refreshBadge();
@@ -1624,6 +1681,34 @@ function closeModal() {
 
 function closeModalOutside(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+/* ── Section Équipe IA dans la modale ── */
+function _modalAITeamSection(d) {
+  if (!d._aiTeam) return '';
+  const steps = [
+    { key: 'accueil',      label: 'Accueil & collecte'     },
+    { key: 'generation',   label: 'Rédaction & génération' },
+    { key: 'verification', label: 'Contrôle qualité'       },
+    { key: 'optimisation', label: 'Optimisation finale'    },
+  ];
+  const rows = steps.filter(s => d._aiTeam[s.key]).map(s => {
+    const entry = d._aiTeam[s.key];
+    const agent = AI_TEAM.find(a => a.id === entry.aiId) || { nom: entry.aiId, color: '#475569', icon: '🤖', role: s.label };
+    return `<div class="ai-team-row">
+      <div class="ai-team-dot" style="background:${agent.color}"></div>
+      <div class="ai-team-info">
+        <span class="ai-team-name" style="color:${agent.color}">${agent.icon} ${agent.nom}</span>
+        <span class="ai-team-role">${agent.role}</span>
+      </div>
+      <div class="ai-team-label">${escHtml(entry.label || '')}</div>
+    </div>`;
+  });
+  if (!rows.length) return '';
+  return `<div class="modal-section">
+    <div class="modal-section-title">🤖 Équipe IA assignée</div>
+    <div class="ai-team-grid">${rows.join('')}</div>
+  </div>`;
 }
 
 /* ============================================================
@@ -2123,6 +2208,7 @@ function fbDelete(id) {
 
 /* Écriture d'une nouvelle demande (appelé depuis script.js via bridge) */
 function fbWrite(demande) {
+  _assignAI(demande, demande.statut || 'submitted'); // Lucas assigné à l'accueil
   if (db) db.ref('dok-peyi/demandes/' + demande.id).set(demande).catch(console.error);
 }
 

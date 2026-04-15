@@ -1035,6 +1035,112 @@
     /* ===== RESPONSIVE ===== */
     @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:900px){.row-2{grid-template-columns:1fr}.svc-grid{grid-template-columns:1fr}}
+    /* ===== CONTRÔLE QUALITÉ ===== */
+    /* Statuts QC */
+    .badge-assignee{background:rgba(139,92,246,.15);color:#a78bfa}
+    .badge-redaction{background:rgba(234,179,8,.15);color:#fbbf24}
+    .badge-verifier{background:rgba(249,115,22,.15);color:#fb923c}
+    .badge-valide{background:rgba(16,185,129,.15);color:#34d399}
+    .badge-correction{background:rgba(239,68,68,.15);color:#f87171}
+    .badge-pret{background:rgba(99,102,241,.15);color:#818cf8}
+    /* Layout principal QC */
+    #s-controle.active{margin:-28px -28px -48px;padding:0;animation:none;overflow:hidden}
+    .qc-shell{display:flex;height:calc(100vh - var(--topbar-h));background:#030812;overflow:hidden}
+    /* Panneau liste */
+    .qc-list-panel{width:360px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.06);background:#0a0f1e}
+    .qc-list-head{padding:18px 16px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .qc-list-title{font-size:.95rem;font-weight:800;color:#f1f5f9;margin-bottom:12px;letter-spacing:-.02em}
+    .qc-filter-row{display:flex;gap:6px;flex-wrap:wrap}
+    .qc-filter{padding:4px 10px;border-radius:99px;border:1.5px solid rgba(255,255,255,.08);background:transparent;color:#64748b;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .qc-filter.active{border-color:#3b82f6;color:#93c5fd;background:rgba(59,130,246,.1)}
+    .qc-list-body{flex:1;overflow-y:auto;padding:10px}
+    .qc-list-body::-webkit-scrollbar{width:4px}
+    .qc-list-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}
+    /* Cartes demandes */
+    .qc-card{padding:12px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.06);background:#0d1117;margin-bottom:8px;cursor:pointer;transition:all .18s}
+    .qc-card:hover{background:#161b22;border-color:rgba(59,130,246,.2)}
+    .qc-card.selected{background:#161b22;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+    .qc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+    .qc-card-name{font-weight:700;font-size:.85rem;color:#e2e8f0;line-height:1.3}
+    .qc-card-svc{font-size:.72rem;color:#64748b;margin-top:2px}
+    .qc-card-meta{display:flex;align-items:center;gap:8px;margin-top:4px}
+    .qc-card-date{font-size:.68rem;color:#475569}
+    .qc-card-author{font-size:.68rem;color:#475569;display:flex;align-items:center;gap:4px}
+    .qc-avatar-xs{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:800;color:#fff;flex-shrink:0}
+    /* Panneau détail */
+    .qc-detail-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .qc-detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#334155;gap:12px}
+    .qc-detail-empty-icon{font-size:2.5rem;opacity:.4}
+    .qc-detail-head{padding:16px 22px 12px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .qc-detail-client{font-weight:800;font-size:1rem;color:#f1f5f9}
+    .qc-detail-meta{font-size:.74rem;color:#64748b;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .qc-detail-body{flex:1;overflow-y:auto;display:flex;gap:0;min-height:0}
+    .qc-detail-body::-webkit-scrollbar{width:5px}
+    .qc-detail-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}
+    /* Prévisualisation document */
+    .qc-doc-pane{flex:1;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.06)}
+    .qc-doc-label{font-size:.72rem;font-weight:700;color:#475569;padding:10px 16px 6px;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0}
+    .qc-doc-frame{flex:1;border:none;background:#fff;min-height:0}
+    .qc-doc-none{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#334155;gap:10px;font-size:.85rem}
+    /* Panneau actions */
+    .qc-action-pane{width:300px;flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto;padding:16px}
+    .qc-action-pane::-webkit-scrollbar{width:4px}
+    .qc-action-pane::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}
+    .qc-section-label{font-size:.7rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;margin-top:14px;display:flex;align-items:center;gap:6px}
+    .qc-section-label:first-child{margin-top:0}
+    /* Boutons actions */
+    .qc-btn{width:100%;padding:9px 14px;border-radius:10px;border:none;font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:7px;transition:all .2s;text-align:left}
+    .qc-btn-valider{background:linear-gradient(135deg,#059669,#047857);color:#fff}
+    .qc-btn-valider:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(5,150,105,.35)}
+    .qc-btn-correction{background:rgba(239,68,68,.12);color:#f87171;border:1.5px solid rgba(239,68,68,.2)}
+    .qc-btn-correction:hover{background:rgba(239,68,68,.2)}
+    .qc-btn-relancer{background:rgba(99,102,241,.12);color:#818cf8;border:1.5px solid rgba(99,102,241,.2)}
+    .qc-btn-relancer:hover{background:rgba(99,102,241,.2)}
+    .qc-btn-envoyer{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff}
+    .qc-btn-envoyer:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(37,99,235,.35)}
+    .qc-btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+    /* Assignation */
+    .qc-assign-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+    .qc-assign-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;border:1.5px solid rgba(255,255,255,.08);background:transparent;color:#94a3b8;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s}
+    .qc-assign-chip.active{border-color:currentColor;background:rgba(255,255,255,.06)}
+    /* Commentaires */
+    .qc-comment-input{width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.08);border-radius:10px;color:#e2e8f0;padding:8px 11px;font-size:.8rem;resize:none;outline:none;font-family:inherit;line-height:1.5;margin-bottom:7px;transition:border-color .2s}
+    .qc-comment-input:focus{border-color:rgba(59,130,246,.4)}
+    .qc-comment-input::placeholder{color:#334155}
+    .qc-btn-comment{padding:7px 14px;border-radius:9px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.08);color:#94a3b8;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .18s;width:100%}
+    .qc-btn-comment:hover{background:rgba(255,255,255,.12);color:#e2e8f0}
+    /* Historique */
+    .qc-history{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+    .qc-hist-item{background:rgba(255,255,255,.03);border-radius:9px;padding:9px 11px;border-left:3px solid}
+    .qc-hist-item.valide_manager{border-color:#059669}
+    .qc-hist-item.correction_demandee{border-color:#ef4444}
+    .qc-hist-item.a_verifier{border-color:#f97316}
+    .qc-hist-item.assignee{border-color:#8b5cf6}
+    .qc-hist-item.commentaire{border-color:#3b82f6}
+    .qc-hist-item.en_redaction{border-color:#eab308}
+    .qc-hist-item.pret_paiement{border-color:#6366f1}
+    .qc-hist-who{font-size:.72rem;font-weight:700;color:#94a3b8;margin-bottom:3px}
+    .qc-hist-text{font-size:.78rem;color:#cbd5e1;line-height:1.4}
+    .qc-hist-time{font-size:.65rem;color:#475569;margin-top:4px}
+    .qc-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;color:#334155;gap:8px;font-size:.82rem;text-align:center}
+    /* ── QC : timeline Équipe IA dans le panneau détail ── */
+    .qc-ai-timeline{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+    .qc-ai-step{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.03)}
+    .qc-ai-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .qc-ai-info{flex:1;display:flex;flex-direction:column;gap:1px}
+    .qc-ai-name{font-size:.78rem;font-weight:700}
+    .qc-ai-role{font-size:.67rem;color:#475569}
+    .qc-ai-ts{font-size:.65rem;color:#334155;white-space:nowrap}
+    /* ── Modale : section Équipe IA ── */
+    .ai-team-grid{display:flex;flex-direction:column;gap:8px}
+    .ai-team-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#f8fafc;border-radius:10px;border:1.5px solid #e2e8f0}
+    .ai-team-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .ai-team-info{display:flex;flex-direction:column;gap:1px;min-width:130px}
+    .ai-team-name{font-size:.82rem;font-weight:700}
+    .ai-team-role{font-size:.71rem;color:var(--gray-500)}
+    .ai-team-label{font-size:.77rem;color:var(--gray-600);margin-left:auto;text-align:right;max-width:160px}
+    @media(max-width:900px){.qc-action-pane{width:240px}.qc-list-panel{width:280px}}
+    @media(max-width:700px){.qc-shell{flex-direction:column}.qc-list-panel{width:100%;height:220px;border-right:none;border-bottom:1px solid rgba(255,255,255,.06)}.qc-detail-body{flex-direction:column}.qc-doc-pane{border-right:none;border-bottom:1px solid rgba(255,255,255,.06);max-height:300px}.qc-action-pane{width:100%}}
     /* Sidebar en overlay sur tablette ET mobile (≤1024px) */
     @media(max-width:1024px){
       .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sb-w)!important;transform:translateX(-100%);z-index:100}
@@ -1410,6 +1516,11 @@
         <span class="nt">Workspace</span>
         <span class="nb" id="ws-notif-badge" style="display:none">0</span>
       </a>
+      <a href="#" class="nav-item nav-qc" onclick="return showSection('controle', this)">
+        <span class="ni">✅</span>
+        <span class="nt">Contrôle qualité</span>
+        <span class="nb" id="nb-controle" style="display:none">0</span>
+      </a>
     </nav>
 
     <div class="sb-footer">
@@ -1663,6 +1774,11 @@
   </div>
 </div>
 
+      <!-- ========== SECTION : CONTRÔLE QUALITÉ ========== -->
+      <section class="adm-section" id="s-controle">
+        <div id="qc-root" style="height:100%;display:flex;flex-direction:column;overflow:hidden"></div>
+      </section>
+
 <!-- ======================================================
      MODAL DÉTAIL DEMANDE
      ====================================================== -->
@@ -1728,5 +1844,6 @@
 <script src="/admin/workspace-tasks.js?v=1"></script>
 <script src="/admin/workspace-notes.js?v=1"></script>
 <script src="/admin/workspace-ai.js?v=1"></script>
+<script src="/admin/workspace-qc.js?v=1"></script>
 </body>
 </html>
