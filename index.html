@@ -5,8 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dok'péyi — Aide pour tes papiers</title>
   <meta name="description" content="CV, lettres, dossiers administratifs… fais ta demande en quelques minutes. Service rapide, simple et accessible.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://dok-peyi.vercel.app/">
+  <meta property="og:title"       content="Dok'péyi — Aide administrative en Guyane">
+  <meta property="og:description" content="CV, lettres, dossiers… générés en quelques minutes. Service d'aide administrative simple et accessible en Guyane française.">
+  <meta property="og:image"       content="https://dok-peyi.vercel.app/og-image.svg">
+  <meta property="og:locale"      content="fr_FR">
+  <!-- Twitter -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="Dok'péyi — Aide administrative en Guyane">
+  <meta name="twitter:description" content="CV, lettres, dossiers… générés en quelques minutes.">
+  <meta name="twitter:image"       content="https://dok-peyi.vercel.app/og-image.svg">
+  <!-- Canonical -->
+  <link rel="canonical" href="https://dok-peyi.vercel.app/">
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Dok'péyi",
+    "description": "Service d'aide à la rédaction de documents administratifs en Guyane française. CV, lettres de motivation, courriers officiels, dossiers administratifs.",
+    "url": "https://dok-peyi.vercel.app",
+    "email": "contact@dok-peyi.fr",
+    "inLanguage": ["fr", "ht", "pt", "en"],
+    "areaServed": {
+      "@type": "Place",
+      "name": "Guyane française",
+      "containedInPlace": { "@type": "Country", "name": "France" }
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Services administratifs",
+      "itemListElement": [
+        { "@type": "Offer", "name": "CV Professionnel",        "price": "8",  "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Lettre de motivation",    "price": "5",  "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Courrier officiel",       "price": "7",  "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Dossier administratif",   "price": "12", "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Titre de séjour",         "price": "15", "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Déclaration d'impôts",   "price": "10", "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Naturalisation",          "price": "15", "priceCurrency": "EUR" }
+      ]
+    }
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tokens.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="lang.css">
 </head>
@@ -393,11 +441,10 @@
   </footer>
 
   <!-- Firebase SDK — synchronisation commandes vers l'admin -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-  <script src="/firebase-config.js"></script>
-
-  <script src="lang.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script defer src="/firebase-config.js"></script>
+  <script defer src="lang.js"></script>
   <script>
     (function(){
       var targets = document.querySelectorAll('.card,.step,.advantage,.testimonial');

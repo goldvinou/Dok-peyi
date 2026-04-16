@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Cercles décoratifs -->
+  <circle cx="1050" cy="120" r="180" fill="#3b82f6" opacity="0.25"/>
+  <circle cx="150"  cy="520" r="140" fill="#1d4ed8" opacity="0.3"/>
+  <!-- Logo D -->
+  <rect x="80" y="80" width="100" height="100" rx="22" fill="white" opacity="0.15"/>
+  <text x="130" y="156" font-family="Arial,sans-serif" font-size="72" font-weight="900" fill="white" text-anchor="middle">D</text>
+  <!-- Titre -->
+  <text x="220" y="148" font-family="Arial,sans-serif" font-size="68" font-weight="800" fill="white">Dok'péyi</text>
+  <!-- Séparateur -->
+  <rect x="80" y="215" width="600" height="4" rx="2" fill="white" opacity="0.3"/>
+  <!-- Sous-titre -->
+  <text x="80" y="290" font-family="Arial,sans-serif" font-size="36" font-weight="400" fill="rgba(255,255,255,0.85)">Aide administrative simple &amp; accessible</text>
+  <text x="80" y="340" font-family="Arial,sans-serif" font-size="32" font-weight="400" fill="rgba(255,255,255,0.7)">en Guyane française</text>
+  <!-- Services pills -->
+  <rect x="80"  y="420" width="140" height="44" rx="22" fill="white" opacity="0.15"/>
+  <text x="150" y="448" font-family="Arial,sans-serif" font-size="20" fill="white" text-anchor="middle">📄 CV</text>
+  <rect x="238" y="420" width="200" height="44" rx="22" fill="white" opacity="0.15"/>
+  <text x="338" y="448" font-family="Arial,sans-serif" font-size="20" fill="white" text-anchor="middle">✉️ Lettres</text>
+  <rect x="456" y="420" width="220" height="44" rx="22" fill="white" opacity="0.15"/>
+  <text x="566" y="448" font-family="Arial,sans-serif" font-size="20" fill="white" text-anchor="middle">📁 Dossiers</text>
+  <rect x="694" y="420" width="240" height="44" rx="22" fill="white" opacity="0.15"/>
+  <text x="814" y="448" font-family="Arial,sans-serif" font-size="20" fill="white" text-anchor="middle">🛂 Séjour</text>
+  <!-- URL -->
+  <text x="80" y="560" font-family="Arial,sans-serif" font-size="24" fill="rgba(255,255,255,0.5)">dok-peyi.vercel.app</text>
+</svg>
