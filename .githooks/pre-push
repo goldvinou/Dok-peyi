@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# ============================================================
+#  DOK'PÉYI — pre-push security hook
+#  Deuxième ligne de défense : scanne tous les commits
+#  sur le point d'être poussés (pas encore sur le remote).
+#  Installé via : git config core.hooksPath .githooks
+# ============================================================
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+ERRORS=0
+REMOTE=$1
+REMOTE_URL=$2
+
+echo ""
+echo "🔒 Dok'péyi — scan de sécurité pre-push (remote: $REMOTE)…"
+
+# ── Lire les refs poussées depuis stdin ───────────────────────────────────
+# Format : <local_ref> <local_sha> <remote_ref> <remote_sha>
+while read -r local_ref local_sha remote_ref remote_sha; do
+
+  # Push de suppression (sha vide) → ignorer
+  [ "$local_sha" = "0000000000000000000000000000000000000000" ] && continue
+
+  # Déterminer la plage de commits à analyser
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    # Nouvelle branche : uniquement les commits qui n'existent pas encore
+    # sur le remote (évite de re-scanner l'historique déjà poussé)
+    COMMITS=$(git rev-list "$local_sha" --not --remotes=origin 2>/dev/null)
+  else
+    # Branche existante : uniquement les nouveaux commits
+    COMMITS=$(git rev-list "$remote_sha..$local_sha" 2>/dev/null)
+  fi
+
+  [ -z "$COMMITS" ] && continue
+
+  echo "  Analyse de $(echo "$COMMITS" | wc -l | tr -d ' ') commit(s) sur $local_ref…"
+
+  # Patterns de secrets (mêmes que pre-commit)
+  declare -A SECRET_PATTERNS
+  SECRET_PATTERNS["Mot de passe en clair (pass: '...')"]="pass:\s*['\"][^'\"]{6,}['\"]"
+  SECRET_PATTERNS["Clé privée RSA/EC/SSH"]="-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY"
+  SECRET_PATTERNS["Clé AWS Access Key"]="AKIA[0-9A-Z]{16}"
+  SECRET_PATTERNS["Clé Anthropic (sk-ant-)"]="sk-ant-[a-zA-Z0-9_\-]{20,}"
+  SECRET_PATTERNS["Clé OpenAI (sk-)"]="\"sk-[a-zA-Z0-9]{20,}\""
+  SECRET_PATTERNS["Token GitHub (ghp_)"]="ghp_[a-zA-Z0-9]{36}"
+  SECRET_PATTERNS["Token Stripe live"]="sk_live_[a-zA-Z0-9]{24,}"
+  SECRET_PATTERNS["Secret générique"]="(secret|SECRET)\s*[:=]\s*['\"][^'\"]{8,}['\"]"
+
+  while IFS= read -r commit; do
+    [ -z "$commit" ] && continue
+
+    SHORT=$(git log --format="%h %s" -1 "$commit" 2>/dev/null)
+
+    for label in "${!SECRET_PATTERNS[@]}"; do
+      pattern="${SECRET_PATTERNS[$label]}"
+
+      # Chercher dans le diff de ce commit (lignes ajoutées uniquement)
+      MATCH=$(git show --format="" "$commit" 2>/dev/null \
+        | grep '^+' | grep -v '^+++' \
+        | grep -iE "$pattern" 2>/dev/null | head -2)
+
+      if [ -n "$MATCH" ]; then
+        echo -e "${RED}${BOLD}✗ SECRET DÉTECTÉ${NC} — ${label}"
+        echo -e "  Commit : ${YELLOW}$SHORT${NC}"
+        echo "$MATCH" | sed 's/\(.\{50\}\).*/\1…/' | sed 's/^/  → /'
+        echo ""
+        ERRORS=$((ERRORS + 1))
+      fi
+    done
+
+    # Vérifier les fichiers sensibles inclus dans le commit
+    SENSITIVE_FILES=$(git show --name-only --format="" "$commit" 2>/dev/null \
+      | grep -E '\.(env|pem|key|p12|pfx|ppk)$|^id_rsa$|^id_ecdsa$|credentials\.json$' \
+      | grep -v '\.(example|sample)$')
+
+    if [ -n "$SENSITIVE_FILES" ]; then
+      echo -e "${RED}${BOLD}✗ FICHIER SENSIBLE${NC} dans le commit ${YELLOW}$SHORT${NC} :"
+      echo "$SENSITIVE_FILES" | sed 's/^/  → /'
+      echo ""
+      ERRORS=$((ERRORS + 1))
+    fi
+
+  done <<< "$COMMITS"
+
+done
+
+# ── Résultat ──────────────────────────────────────────────────────────────
+echo ""
+if [ "$ERRORS" -gt 0 ]; then
+  echo -e "${RED}${BOLD}✗ Push BLOQUÉ — $ERRORS secret(s) détecté(s) dans l'historique.${NC}"
+  echo ""
+  echo "  Les secrets sont dans des commits déjà créés."
+  echo "  Pour corriger l'historique :"
+  echo ""
+  echo "    1. Révoque immédiatement les clés exposées (même si pas encore poussées)"
+  echo "    2. Supprime le secret avec git-filter-repo :"
+  echo "       pip install git-filter-repo"
+  echo "       git filter-repo --path <fichier> --invert-paths"
+  echo "    3. Ou réécris avec : git rebase -i et amende le commit fautif"
+  echo ""
+  echo -e "  ${YELLOW}git push --no-verify${NC}   ← uniquement si la clé est déjà révoquée"
+  echo ""
+  exit 1
+else
+  echo -e "${GREEN}✓ Push OK — historique propre.${NC}"
+  echo ""
+  exit 0
+fi

@@ -1,15 +1,74 @@
-# Environnement — ne jamais commiter les secrets
+# ============================================================
+#  DOK'PÉYI — .gitignore
+# ============================================================
+
+# ── Environnement & secrets ──────────────────────────────
 .env
 .env.local
 .env.*.local
+# Autoriser les fichiers d'exemple (sans valeurs réelles)
+!.env.example
+!.env.*.example
 
-# Node
+# ── Clés & certificats ──────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
+*.ppk
+id_rsa
+id_rsa.pub
+id_ecdsa
+id_ecdsa.pub
+id_ed25519
+id_ed25519.pub
+
+# ── Credentials services tiers ──────────────────────────
+credentials.json
+service-account.json
+service-account-*.json
+*-service-account.json
+secrets.json
+gcloud-*.json
+
+# ── Dépendances ─────────────────────────────────────────
 node_modules/
-npm-debug.log*
 
-# Vercel
+# ── Build & cache ────────────────────────────────────────
+dist/
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
 .vercel/
+*.min.js.map
 
-# OS
+# ── Logs ────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── OS ──────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── IDE & éditeurs ───────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*.orig
+
+# ── Tests & couverture ───────────────────────────────────
+coverage/
+.nyc_output/
