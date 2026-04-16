@@ -1,6 +1,7 @@
 export const config = { runtime: 'edge' };
 
-import { rateLimit } from '../lib/rate-limit.js';
+import { rateLimit }            from '../lib/rate-limit.js';
+import { CORS as _CORS }        from '../lib/edge-response.js';
 
 /* ── PROMPT SYSTÈME GLOBAL ────────────────────────────────────────────────
    Appliqué à chaque appel Anthropic, quel que soit le service.
@@ -29,11 +30,7 @@ RÈGLES ABSOLUES
 7. Répondre UNIQUEMENT avec le code HTML complet — zéro texte avant le <!DOCTYPE, zéro texte après </html>`;
 
 export default async function handler(req) {
-  const cors = {
-    'Access-Control-Allow-Origin':  '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+  const cors  = _CORS;
   const jsonH = { ...cors, 'content-type': 'application/json' };
 
   if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: cors });

@@ -1318,6 +1318,9 @@ function setDemChip(type, val, btn) {
   applyFilters();
 }
 
+const PAGE_SIZE = 25;
+let _filteredDemandes = [];
+
 function applyFilters() {
   const search = (document.getElementById('f-search')  || {}).value || '';
   const sort   = (document.getElementById('dem-sort')  || {}).value || 'desc';
@@ -1353,6 +1356,8 @@ function applyFilters() {
   else if (sort === 'amount') filtered.sort((a,b) => (b.montant||0)-(a.montant||0));
   else                   filtered.sort((a,b) => (b.id||0)-(a.id||0));
 
+  _filteredDemandes = filtered;
+
   const total = demandes.length;
   const shown = filtered.length;
   const cEl = document.getElementById('dem-count');
@@ -1360,11 +1365,78 @@ function applyFilters() {
   if (cEl) cEl.textContent = total ? (shown < total ? `${shown} / ${total}` : `${total}`) : '';
   if (mEl) mEl.textContent = shown === 0 ? '' : shown === 1 ? '1 demande' : `${shown} demandes`;
 
-  renderDemandesCards('demandes-table', filtered);
+  renderDemandesCards('demandes-table', filtered.slice(0, PAGE_SIZE), filtered.length);
+}
+
+function loadMoreDemandes() {
+  const el = document.getElementById('demandes-table');
+  if (!el) return;
+  const currentCount = el.querySelectorAll('.dem-card').length;
+  const nextBatch    = _filteredDemandes.slice(currentCount, currentCount + PAGE_SIZE);
+  if (!nextBatch.length) return;
+
+  /* Supprimer le bouton "Voir plus" existant avant d'ajouter les cartes */
+  const oldBtn = document.getElementById('dem-load-more');
+  if (oldBtn) oldBtn.remove();
+
+  const list = el.querySelector('.dem-list');
+  if (list) list.insertAdjacentHTML('beforeend', nextBatch.map(d => _demCard(d)).join(''));
+
+  const remaining = _filteredDemandes.length - (currentCount + nextBatch.length);
+  if (remaining > 0) _appendLoadMoreBtn(el, remaining);
+}
+
+/* ── Single card HTML ─────────────────────────────────────── */
+const _CARD_CLS = {
+  submitted:'st-wait', en_attente:'st-wait', pending_payment:'st-wait',
+  processing:'st-active', generated:'st-active', en_cours:'st-active',
+  needs_review:'st-review',
+  paid:'st-done', delivered:'st-done', terminé:'st-done',
+  failed:'st-dead', annulé:'st-dead'
+};
+
+function _demCard(d) {
+  const cc      = _CARD_CLS[d.statut] || 'st-wait';
+  const nom     = [d.prenom, d.nom].filter(Boolean).join(' ') || '—';
+  const stLbl   = STATUT_LABELS[d.statut] || d.statut || '—';
+  const svcIco  = SERVICE_ICONS[d.service] || '📄';
+  const svcName = SERVICE_NAMES[d.service] || d.service || '—';
+  const dateLbl = d.date ? formatDate(d.date) + (d.heure ? ' · ' + d.heure : '') : '—';
+  const opts = ['submitted','processing','generated','pending_payment','paid','needs_review','delivered','failed','en_attente','en_cours','terminé','annulé']
+    .map(s => `<option value="${s}"${d.statut===s?' selected':''}>${STATUT_LABELS[s]||s}</option>`).join('');
+  return `<div class="dem-card ${cc}" onclick="openModal(${d.id})">
+    <div class="dem-card-top">
+      <span class="dem-st-pill">${stLbl}</span>
+      <span class="dem-svc-tag">${svcIco} ${escHtml(svcName)}</span>
+    </div>
+    <div class="dem-card-body">
+      <div class="dem-card-name">${escHtml(nom)}</div>
+      <div class="dem-card-email">${escHtml(d.email || '')}</div>
+    </div>
+    <div class="dem-card-foot">
+      <span class="dem-card-date">${dateLbl}</span>
+      <span class="dem-card-price">${d.montant || 0}€</span>
+      <div class="dem-card-acts" onclick="event.stopPropagation()">
+        <button class="dem-act" title="Voir" onclick="openModal(${d.id})">👁</button>
+        <select class="dem-st-sel" title="Statut" onchange="quickChangeStatus(${d.id},this.value)">${opts}</select>
+        <button class="dem-act del" title="Supprimer" onclick="deleteDemande(${d.id})">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function _appendLoadMoreBtn(el, remaining) {
+  el.insertAdjacentHTML('beforeend',
+    `<div id="dem-load-more" style="text-align:center;padding:16px 0">
+      <button onclick="loadMoreDemandes()" style="padding:9px 24px;border:1.5px solid var(--gray-200);border-radius:99px;background:var(--white);font-size:.82rem;font-weight:600;color:var(--gray-600);cursor:pointer;transition:all .18s" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-600)'">
+        Voir ${remaining} de plus
+      </button>
+    </div>`
+  );
 }
 
 /* ── Cards renderer ── */
-function renderDemandesCards(containerId, data) {
+function renderDemandesCards(containerId, data, total = data.length) {
   const el = document.getElementById(containerId);
   if (!el) return;
 
@@ -1378,44 +1450,10 @@ function renderDemandesCards(containerId, data) {
     return;
   }
 
-  const CARD_CLS = {
-    submitted:'st-wait', en_attente:'st-wait', pending_payment:'st-wait',
-    processing:'st-active', generated:'st-active', en_cours:'st-active',
-    needs_review:'st-review',
-    paid:'st-done', delivered:'st-done', terminé:'st-done',
-    failed:'st-dead', annulé:'st-dead'
-  };
+  el.innerHTML = '<div class="dem-list">' + data.map(d => _demCard(d)).join('') + '</div>';
 
-  el.innerHTML = '<div class="dem-list">' + data.map(d => {
-    const cc      = CARD_CLS[d.statut] || 'st-wait';
-    const nom     = [d.prenom, d.nom].filter(Boolean).join(' ') || '—';
-    const stLbl   = STATUT_LABELS[d.statut] || d.statut || '—';
-    const svcIco  = SERVICE_ICONS[d.service] || '📄';
-    const svcName = SERVICE_NAMES[d.service] || d.service || '—';
-    const dateLbl = d.date ? formatDate(d.date) + (d.heure ? ' · ' + d.heure : '') : '—';
-    const opts = ['submitted','processing','generated','pending_payment','paid','needs_review','delivered','failed','en_attente','en_cours','terminé','annulé']
-      .map(s => `<option value="${s}"${d.statut===s?' selected':''}>${STATUT_LABELS[s]||s}</option>`).join('');
-
-    return `<div class="dem-card ${cc}" onclick="openModal(${d.id})">
-      <div class="dem-card-top">
-        <span class="dem-st-pill">${stLbl}</span>
-        <span class="dem-svc-tag">${svcIco} ${escHtml(svcName)}</span>
-      </div>
-      <div class="dem-card-body">
-        <div class="dem-card-name">${escHtml(nom)}</div>
-        <div class="dem-card-email">${escHtml(d.email || '')}</div>
-      </div>
-      <div class="dem-card-foot">
-        <span class="dem-card-date">${dateLbl}</span>
-        <span class="dem-card-price">${d.montant || 0}€</span>
-        <div class="dem-card-acts" onclick="event.stopPropagation()">
-          <button class="dem-act" title="Voir" onclick="openModal(${d.id})">👁</button>
-          <select class="dem-st-sel" title="Statut" onchange="quickChangeStatus(${d.id},this.value)">${opts}</select>
-          <button class="dem-act del" title="Supprimer" onclick="deleteDemande(${d.id})">🗑</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('') + '</div>';
+  const remaining = total - data.length;
+  if (remaining > 0) _appendLoadMoreBtn(el, remaining);
 }
 
 /* Journal d'audit — visible dans Firebase Console → dok-peyi/audit */
@@ -2366,11 +2404,31 @@ function initFirebase() {
     db = firebase.database();
 
     /* Listener temps réel — se déclenche pour TOUS les admins connectés */
+    let knownIds  = new Set();
     let firstLoad = true;
+
     db.ref('dok-peyi/demandes').on('value', snapshot => {
-      const raw = snapshot.val() || {};
-      demandes = Object.values(raw).sort((a, b) => b.id - a.id);
+      const raw  = snapshot.val() || {};
+      const prev = knownIds;
+      demandes   = Object.values(raw).sort((a, b) => b.id - a.id);
+      knownIds   = new Set(demandes.map(d => d.id));
       try { localStorage.setItem('dok_demandes', JSON.stringify(demandes)); } catch(e) {}
+
+      /* Détecter les nouvelles commandes après le premier chargement */
+      if (!firstLoad) {
+        const newOrders = demandes.filter(d => !prev.has(d.id));
+        if (newOrders.length > 0) {
+          const svcLabels = { cv: 'CV', lettre: 'Lettre', dossier: 'Dossier',
+                              courrier: 'Courrier', sejour: 'Séjour', impot: 'Avis impôt', naturalisation: 'Naturalisation' };
+          newOrders.forEach(d => {
+            const svc = svcLabels[d.service] || d.service;
+            showToast(`🔔 Nouvelle commande — ${svc} (${d.prenom || '—'})`, 'success');
+          });
+          /* Allumer le point rouge sur la cloche topbar */
+          const dot = document.getElementById('notif-dot');
+          if (dot) dot.style.display = 'block';
+        }
+      }
 
       refreshBadge();
       if (APP.section === 'dashboard') renderDashboard();
