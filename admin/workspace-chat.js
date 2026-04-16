@@ -559,7 +559,7 @@ function _renderOneMessage(msg) {
       <div class="chat-msg redac-msg">
         <div class="chat-msg-avatar redac-avatar">R</div>
         <div class="chat-msg-body">
-          <div class="chat-msg-name">Rédac <span class="redac-badge">IA</span></div>
+          <div class="chat-msg-name">Rédac <span class="redac-badge">Coordination</span></div>
           ${msg.text
             ? `<div class="chat-msg-text redac-text">${_formatRedacText(msg.text)}</div>`
             : ''}
@@ -1389,41 +1389,63 @@ function _fchatPing() {
 }
 
 /* ============================================================
-   RÉDAC — agent IA central
+   RÉDAC — agent IA central de coordination
    ============================================================ */
 
-/** Sérialise les demandes depuis localStorage pour le contexte API. */
-function _redacSerializeDemandes() {
+/* Statuts considérés urgents / bloqués */
+const _REDAC_URGENT_ST = new Set([
+  'pending_payment', 'needs_review', 'submitted', 'en_attente'
+]);
+
+/**
+ * Construit le contexte intelligent à envoyer à l'API.
+ * Ne sérialise PAS toutes les commandes — envoie :
+ *   summary  : résumé global (total + par statut + nb urgents)
+ *   urgent   : commandes bloquées / paiement en attente (max 12)
+ *   recent   : 8 dernières commandes
+ *   mentioned: commandes citées explicitement via #NNN
+ */
+function _redacBuildContext(message) {
   const raw = _wspReadLS('dok_demandes') || [];
-  // Exclure _documents (HTML lourd), garder uniquement les métadonnées utiles
-  return raw.slice(0, 80).map(d => ({
-    id:         d.id,
-    service:    d.service,
-    prenom:     d.prenom,
-    nom:        d.nom,
-    email:      d.email,
-    statut:     d.statut,
-    montant:    d.montant,
-    date:       d.date,
-    assignedTo: d.assignedTo,
-    _pipeline:  d._pipeline
-  }));
+
+  /* Extraire les IDs mentionnés dans le message (#42, #123…) */
+  const mentionedIds = new Set(
+    (message.match(/#(\d+)/g) || []).map(s => parseInt(s.slice(1), 10))
+  );
+
+  /* Résumé par statut */
+  const byStatus = {};
+  raw.forEach(d => { byStatus[d.statut || '?'] = (byStatus[d.statut || '?'] || 0) + 1; });
+
+  const urgent   = raw.filter(d => _REDAC_URGENT_ST.has(d.statut)).slice(0, 12);
+  const recent   = [...raw].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 8);
+  const mentioned = raw.filter(d => mentionedIds.has(d.id));
+
+  const strip = d => {
+    /* Supprimer _documents (HTML lourd inutile pour Rédac) */
+    const { _documents, ...rest } = d;
+    return rest;
+  };
+
+  return {
+    summary: { total: raw.length, byStatus, urgentCount: urgent.length },
+    urgent:   urgent.map(strip),
+    recent:   recent.map(strip),
+    mentioned: mentioned.map(strip)
+  };
 }
 
-/** Ajoute l'indicateur "Rédac réfléchit…" dans le chat. */
+/** Affiche l'indicateur "Rédac analyse…" dans les deux zones de chat. */
 function _redacShowTyping() {
-  const typingId = 'redac-typing-indicator';
-  ['chat-messages', 'fchat-messages'].forEach(containerId => {
-    const el = document.getElementById(containerId);
-    if (!el) return;
-    if (el.querySelector('#' + typingId + '-' + containerId)) return;
+  ['chat-messages', 'fchat-messages'].forEach(cid => {
+    const el = document.getElementById(cid);
+    if (!el || el.querySelector('.redac-typing')) return;
     const div = document.createElement('div');
-    div.id = typingId + '-' + containerId;
     div.className = 'redac-typing';
     div.innerHTML = `
       <div class="redac-typing-avatar">R</div>
       <div class="redac-typing-content">
-        <span class="redac-typing-label">Rédac réfléchit</span>
+        <span class="redac-typing-label">Rédac analyse</span>
         <span class="redac-typing-dots"><span></span><span></span><span></span></span>
       </div>`;
     el.appendChild(div);
@@ -1431,33 +1453,38 @@ function _redacShowTyping() {
   });
 }
 
-/** Retire l'indicateur "Rédac réfléchit…". */
+/** Retire l'indicateur "Rédac analyse…". */
 function _redacHideTyping() {
-  document.querySelectorAll('[id^="redac-typing-indicator"]').forEach(el => el.remove());
+  document.querySelectorAll('.redac-typing').forEach(el => el.remove());
 }
 
 /**
- * Appelle /api/redac-chat et injecte la réponse dans le chat.
- * @param {string} message - Message de l'utilisateur (avec @Rédac)
- * @param {Array}  history - Derniers messages du chat pour contexte
+ * Appelle /api/redac-chat avec le contexte intelligent et injecte
+ * la réponse dans le chat comme message de Rédac.
  */
 async function _redacRespond(message, history) {
   _redacShowTyping();
 
-  const demandes = _redacSerializeDemandes();
+  /* Contexte ciblé : résumé + urgent + récent + dossiers mentionnés */
+  const context = _redacBuildContext(message);
+
+  /* Historique utile uniquement — messages avec texte, 12 derniers */
+  const usefulHistory = history
+    .filter(m => m.text && m.text.trim())
+    .slice(-12);
 
   let reply;
   try {
     const res = await fetch('/api/redac-chat', {
       method:  'POST',
       headers: { 'content-type': 'application/json' },
-      body:    JSON.stringify({ message, history, demandes })
+      body:    JSON.stringify({ message, history: usefulHistory, context })
     });
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Erreur Rédac');
+    if (!data.ok) throw new Error(data.error || 'Erreur interne');
     reply = data.reply;
   } catch (err) {
-    reply = `⚠️ Je rencontre une difficulté technique : ${err.message}. Réessayez dans un moment.`;
+    reply = `⚠️ Je rencontre une difficulté technique : ${err.message}.\nRéessayez dans un moment ou vérifiez la configuration.`;
   }
 
   _redacHideTyping();
