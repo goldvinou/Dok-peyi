@@ -1,0 +1,23 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "demandes": {
+      // Clients can create orders; they cannot read or modify existing ones
+      "$orderId": {
+        ".read": false,
+        ".write": "!data.exists()",
+        ".validate": "newData.hasChildren(['service','prenom','email','statut','createdAt'])"
+      }
+    },
+
+    "statusUpdates": {
+      // Webhook writes order status updates; no public read/write
+      "$orderId": {
+        ".read": false,
+        ".write": false
+      }
+    }
+  }
+}

@@ -1958,15 +1958,36 @@ function sendDocWhatsApp(id) {
 }
 
 /* ── Envoi au client par email ── */
-function sendDocEmail(id) {
+async function sendDocEmail(id) {
   const d = demandes.find(dm => dm.id === id);
   if (!d) return;
-  const svcLabel = { cv: 'CV', lettre: 'lettre de motivation', dossier: 'document administratif', courrier: 'courrier officiel', sejour: 'guide titre de séjour' };
-  const doc     = svcLabel[d.service] || 'document';
-  const subject = `Votre ${doc} — Dok'péyi`;
-  const body    = `Bonjour ${d.prenom},\n\nVotre ${doc} est prêt. Vous trouverez le fichier PDF en pièce jointe.\n\nN'hésitez pas à nous contacter si vous avez des questions.\n\nCordialement,\nL'équipe Dok'péyi`;
-  window.location.href = `mailto:${d.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  markSent(id);
+
+  const btn = document.querySelector(`button[onclick="sendDocEmail(${id})"]`);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Envoi…'; }
+
+  try {
+    const res = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        type: 'document_delivered',
+        order: {
+          id:       d.id,
+          service:  d.service,
+          prenom:   d.prenom,
+          email:    d.email,
+          montant:  d.montant
+        }
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    showToast('✅ Email envoyé à ' + d.email);
+    markSent(id);
+  } catch (err) {
+    console.error('sendDocEmail error:', err);
+    showToast('❌ Échec envoi email — ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '📧 Email — ' + d.email; }
+  }
 }
 
 /* ── Marquer la commande comme terminée après envoi ── */

@@ -480,5 +480,9 @@
       document.getElementById('cookie-banner').style.display = 'none';
     }
   </script>
+  <!-- Vercel Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Service Worker -->
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>

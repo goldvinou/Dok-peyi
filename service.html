@@ -205,5 +205,9 @@
     (function(){ if (!localStorage.getItem('dok_cookies_ok')) document.getElementById('cookie-banner').style.display='block'; })();
     function dokAcceptCookies(){ localStorage.setItem('dok_cookies_ok','1'); document.getElementById('cookie-banner').style.display='none'; }
   </script>
+  <!-- Vercel Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Service Worker -->
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>
