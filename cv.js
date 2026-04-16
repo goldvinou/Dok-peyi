@@ -118,10 +118,12 @@ function cwBuildForm() {
         <div class="cw-file-zone" id="cw-fzone" onclick="document.getElementById('cw-finput').click()">
           <input type="file" id="cw-finput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                  style="display:none" onchange="cwFile(this)">
-          <div id="cw-finner">
-            <div class="cw-fi">📎</div>
-            <div class="cw-ft">Clique pour joindre ton CV</div>
-            <div class="cw-fh">PDF, Word ou image · max 3 Mo</div>
+          <div id="cw-finner" style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:#FACC15;border-radius:10px;cursor:pointer">
+            <span style="font-size:1.5rem;flex-shrink:0">⬆️</span>
+            <span>
+              <span style="display:block;color:#78350f;font-weight:700;font-size:.92rem">Gagnez du temps — importer un document</span>
+              <span style="display:block;color:#92400e;font-size:.74rem;margin-top:2px">PDF, Word ou image · max 3 Mo</span>
+            </span>
           </div>
           <div class="cw-fchosen" id="cw-fchosen" style="display:none">
             <span>📄</span>

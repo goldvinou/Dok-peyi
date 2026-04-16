@@ -164,14 +164,15 @@ const SVC = {
 
 /* ── STATE ───────────────────────────────────────────────── */
 const SSW = {
-  svc:      null,
-  step:     1,
-  choice:   null,
-  personal: { prenom: '', nom: '', email: '', phone: '' },
-  details:  {},
-  html:     null,
-  paid:     false,
-  orderId:  null   // set by swSaveOrder(), used by swUpdateOrderStatus()
+  svc:        null,
+  step:       1,
+  choice:     null,
+  personal:   { prenom: '', nom: '', email: '', phone: '' },
+  details:    {},
+  html:       null,
+  paid:       false,
+  orderId:    null,
+  importFile: null   // fichier importé par l'utilisateur (base64)
 };
 
 /* ── INIT ─────────────────────────────────────────────────── */
@@ -356,19 +357,73 @@ function swNext(from) {
   }
 }
 
+/* ── IMPORT FILE HANDLERS ─────────────────────────────────── */
+function swHandleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    const btn = document.querySelector('.sw-import-btn');
+    if (btn) swShake(btn);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    SSW.importFile = { name: file.name, type: file.type, data: e.target.result };
+    const chosen = document.getElementById('sw-import-chosen');
+    const btn    = document.querySelector('.sw-import-btn');
+    const nm     = document.getElementById('sw-import-name');
+    if (nm)     nm.textContent           = file.name;
+    if (chosen) chosen.style.display     = 'flex';
+    if (btn)    btn.style.display        = 'none';
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function swRemoveImport() {
+  SSW.importFile = null;
+  const chosen = document.getElementById('sw-import-chosen');
+  const btn    = document.querySelector('.sw-import-btn');
+  if (chosen) chosen.style.display = 'none';
+  if (btn)    btn.style.display    = 'flex';
+}
+
 /* ── BUILD FORM (step 2) ──────────────────────────────────── */
 function swBuildForm() {
   const questions = SVC[SSW.svc].questions(SSW.choice);
   const titles = {
-    cv: 'Vos informations professionnelles',
-    lettre: 'Votre candidature',
-    courrier: 'Votre courrier officiel',
-    dossier: 'Votre dossier administratif',
-    sejour: 'Votre situation'
+    cv:             'Vos informations professionnelles',
+    lettre:         'Votre candidature',
+    courrier:       'Votre courrier officiel',
+    dossier:        'Votre dossier administratif',
+    sejour:         'Votre situation',
+    impot:          'Votre demande',
+    naturalisation: 'Votre dossier de naturalisation'
   };
   document.getElementById('sw-q-title').textContent = titles[SSW.svc] || 'Informations';
 
-  document.getElementById('sw-fields').innerHTML = questions.map(q => `
+  /* Bouton import jaune — affiché pour tous les services */
+  const importHtml = `
+    <div class="sw-import-wrap">
+      <input type="file" id="sw-import-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+             style="display:none" onchange="swHandleImport(this)">
+      <button type="button" class="sw-import-btn"
+              onclick="document.getElementById('sw-import-input').click()">
+        <span class="sw-import-icon">⬆️</span>
+        <span>
+          <span class="sw-import-title">Gagnez du temps — importer un document</span>
+          <span class="sw-import-hint">PDF, Word ou image · max 3 Mo</span>
+        </span>
+      </button>
+      <div class="sw-import-chosen" id="sw-import-chosen" style="display:none">
+        <span>📄</span>
+        <span id="sw-import-name"></span>
+        <button type="button" onclick="swRemoveImport()">✕</button>
+      </div>
+    </div>
+    <div class="sw-import-or">— ou remplissez le formulaire —</div>`;
+
+  document.getElementById('sw-fields').innerHTML = importHtml + questions.map(q => `
     <div class="sw-fg">
       <label for="sw-f-${q.id}">${escSw(q.label)}</label>
       ${q.type === 'textarea'
@@ -378,7 +433,17 @@ function swBuildForm() {
              placeholder="${escSw(q.placeholder || '')}">`}
     </div>`).join('');
 
-  // Restore values if returning from step 3
+  /* Restaurer le fichier importé si retour depuis étape 3 */
+  if (SSW.importFile) {
+    const chosen = document.getElementById('sw-import-chosen');
+    const btn    = document.querySelector('.sw-import-btn');
+    const nm     = document.getElementById('sw-import-name');
+    if (nm)     nm.textContent       = SSW.importFile.name;
+    if (chosen) chosen.style.display = 'flex';
+    if (btn)    btn.style.display    = 'none';
+  }
+
+  /* Restore values if returning from step 3 */
   Object.entries(SSW.details).forEach(([k, v]) => {
     const el = document.getElementById('sw-f-' + k);
     if (el) el.value = v;
@@ -623,8 +688,14 @@ function swBuildPrompt() {
     parcours:     d.parcours     || ''
   };
 
-  return tpl.replace(/\{\{(\w+)\}\}/g, (_, k) =>
+  const result = tpl.replace(/\{\{(\w+)\}\}/g, (_, k) =>
     Object.prototype.hasOwnProperty.call(vars, k) ? vars[k] : '');
+
+  const importNote = SSW.importFile
+    ? `\n\n[Document importé par le client : ${SSW.importFile.name}. Utilise ce document comme base et applique les demandes ci-dessus.]`
+    : '';
+
+  return result + importNote;
 }
 
 /* ── DEFAULT PROMPTS (si admin n'a pas configuré) ─────────── */

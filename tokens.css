@@ -24,6 +24,14 @@
   --amber:       #f59e0b;
   --purple:      #8b5cf6;
 
+  /* ── Jaune import (action rapide) ── */
+  --yellow:        #FACC15;
+  --yellow-hover:  #FDE047;
+  --yellow-border: #EAB308;
+  --yellow-light:  #fefce8;
+  --yellow-text:   #78350f;
+  --yellow-hint:   #92400e;
+
   /* ── Noirs & gris ── */
   --dark:        #0a0f1e;
   --gray-900:    #0f172a;
