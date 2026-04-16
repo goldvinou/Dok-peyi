@@ -175,6 +175,9 @@ const IS_TEST_MODE = location.hostname === 'localhost'
   || location.hostname === '127.0.0.1'
   || new URLSearchParams(location.search).get('test') === '1';
 
+/* ── PAYPAL — email du compte PayPal Business ────────────── */
+const PAYPAL_EMAIL = 'contact@dok-peyi.fr';
+
 /* ── STATE ───────────────────────────────────────────────── */
 const SSW = {
   svc:             null,
@@ -921,8 +924,30 @@ function swSwitchTab(btn, type) {
   if (p) p.style.display = type === 'paypal' ? 'block' : 'none';
 }
 
+function swPayPayPal() {
+  const cfg     = SVC[SSW.svc] || {};
+  const orderId = SSW.orderId || Date.now();
+  SSW.orderId   = orderId;
+  _swSaveState();
+  const base   = location.origin;
+  const params = new URLSearchParams({
+    cmd:          '_xclick',
+    business:     PAYPAL_EMAIL,
+    amount:       cfg.price || 0,
+    currency_code:'EUR',
+    item_name:    "Dok'péyi — " + (cfg.name || SSW.svc),
+    return:       base + '/service?success=1&order_id=' + orderId,
+    cancel_return:base + '/service?s=' + SSW.svc + '&cancelled=1'
+  });
+  location.href = 'https://www.paypal.com/cgi-bin/webscr?' + params;
+}
+
 async function swPay() {
   if (IS_TEST_MODE) { swPayTest(); return; }
+
+  if (document.getElementById('sw-pay-paypal')?.style.display !== 'none') {
+    swPayPayPal(); return;
+  }
 
   const btn = document.getElementById('sw-pay-btn');
   const lbl = document.getElementById('sw-pay-lbl');

@@ -146,19 +146,36 @@
 
         <div class="sw-recap" id="sw-recap"></div>
 
-        <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:20px;text-align:center">
-          <div style="font-size:2rem;margin-bottom:12px">🔒</div>
-          <p style="color:#475569;font-size:.9rem;line-height:1.6;margin:0 0 16px">
-            Vous allez être redirigé vers notre plateforme de paiement sécurisée.<br>
-            <strong>Carte bancaire, Apple Pay, Google Pay</strong> acceptés.
-          </p>
-          <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
-            <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">💳 Visa</span>
-            <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">💳 Mastercard</span>
-            <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b"> Apple Pay</span>
-            <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">G Google Pay</span>
+        <div class="sw-pay-tabs">
+          <button class="sw-pay-tab active" onclick="swSwitchTab(this,'card')">💳 Carte bancaire</button>
+          <button class="sw-pay-tab"        onclick="swSwitchTab(this,'paypal')">PayPal</button>
+        </div>
+
+        <div id="sw-pay-card">
+          <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:20px;text-align:center">
+            <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+            <p style="color:#475569;font-size:.9rem;line-height:1.6;margin:0 0 16px">
+              Vous allez être redirigé vers notre plateforme de paiement sécurisée.<br>
+              <strong>Carte bancaire, Apple Pay, Google Pay</strong> acceptés.
+            </p>
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+              <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">💳 Visa</span>
+              <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">💳 Mastercard</span>
+              <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b"> Apple Pay</span>
+              <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">G Google Pay</span>
+            </div>
+            <p style="font-size:.72rem;color:#94a3b8;margin:10px 0 0">Paiement traité par Stripe · Cryptage SSL 256 bits</p>
           </div>
-          <p style="font-size:.72rem;color:#94a3b8;margin:10px 0 0">Paiement traité par Stripe · Cryptage SSL 256 bits</p>
+        </div>
+
+        <div id="sw-pay-paypal" style="display:none">
+          <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:20px;text-align:center">
+            <div style="font-size:2.5rem;margin-bottom:12px">🅿️</div>
+            <p style="color:#475569;font-size:.9rem;line-height:1.6;margin:0">
+              Vous serez redirigé vers PayPal pour finaliser votre paiement en toute sécurité.
+            </p>
+            <p style="font-size:.72rem;color:#94a3b8;margin:10px 0 0">Compte PayPal ou carte bancaire via PayPal · Cryptage SSL</p>
+          </div>
         </div>
 
         <div class="sw-actions">

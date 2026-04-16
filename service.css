@@ -562,6 +562,32 @@ button { font-family: var(--font); }
   color: #64748b;
 }
 
+/* ── PAYMENT TABS ─────────────────────────────────────── */
+.sw-pay-tabs {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 16px;
+}
+.sw-pay-tab {
+  flex: 1;
+  padding: .6rem 1rem;
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius);
+  font-size: .9rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all var(--t);
+}
+.sw-pay-tab.active {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+.sw-pay-tab:hover:not(.active) { background: #e2e8f0; }
+
 /* ── MOBILE ───────────────────────────────────────────── */
 @media(max-width: 520px) {
   .sw-step { padding: 22px 16px; }
