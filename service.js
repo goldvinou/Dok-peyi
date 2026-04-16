@@ -164,15 +164,16 @@ const SVC = {
 
 /* ── STATE ───────────────────────────────────────────────── */
 const SSW = {
-  svc:        null,
-  step:       1,
-  choice:     null,
-  personal:   { prenom: '', nom: '', email: '', phone: '' },
-  details:    {},
-  html:       null,
-  paid:       false,
-  orderId:    null,
-  importFile: null   // fichier importé par l'utilisateur (base64)
+  svc:             null,
+  step:            1,
+  choice:          null,
+  personal:        { prenom: '', nom: '', email: '', phone: '' },
+  details:         {},
+  html:            null,
+  paid:            false,
+  orderId:         null,
+  importFile:      null,   // fichier importé { name, type, data }
+  importExtracted: null    // champs extraits par l'IA depuis le document
 };
 
 /* ── INIT ─────────────────────────────────────────────────── */
@@ -358,34 +359,87 @@ function swNext(from) {
 }
 
 /* ── IMPORT FILE HANDLERS ─────────────────────────────────── */
+
+function _swImportStatus(type, msg) {
+  const el = document.getElementById('sw-import-status');
+  if (!el) return;
+  el.className    = 'sw-import-status' + (type ? ' sw-import-status--' + type : '');
+  el.textContent  = msg || '';
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function _swApplyExtracted(ext) {
+  const map = { 'sw-prenom': 'prenom', 'sw-nom': 'nom', 'sw-email': 'email', 'sw-phone': 'phone' };
+  Object.entries(map).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el && ext[key]) el.value = ext[key];
+  });
+}
+
 function swHandleImport(input) {
   const file = input.files[0];
   if (!file) return;
+  input.value = '';
+
   if (file.size > 3 * 1024 * 1024) {
-    const btn = document.querySelector('.sw-import-btn');
-    if (btn) swShake(btn);
+    swShake(document.querySelector('.sw-import-btn'));
     return;
   }
+
+  /* Affichage immédiat du fichier choisi */
+  const chosen = document.getElementById('sw-import-chosen');
+  const btn    = document.querySelector('.sw-import-btn');
+  const nm     = document.getElementById('sw-import-name');
+  if (nm)     nm.textContent       = file.name;
+  if (chosen) chosen.style.display = 'flex';
+  if (btn)    btn.style.display    = 'none';
+
+  const canAnalyze = file.type === 'application/pdf' || file.type.startsWith('image/');
+
+  if (!canAnalyze) {
+    SSW.importFile = { name: file.name, type: file.type };
+    _swImportStatus('neutral', 'Document joint · remplissez les champs ci-dessous');
+    return;
+  }
+
+  _swImportStatus('loading', 'Analyse du document en cours…');
+
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     SSW.importFile = { name: file.name, type: file.type, data: e.target.result };
-    const chosen = document.getElementById('sw-import-chosen');
-    const btn    = document.querySelector('.sw-import-btn');
-    const nm     = document.getElementById('sw-import-name');
-    if (nm)     nm.textContent           = file.name;
-    if (chosen) chosen.style.display     = 'flex';
-    if (btn)    btn.style.display        = 'none';
+    try {
+      const res  = await fetch('/api/extract-doc', {
+        method:  'POST',
+        headers: { 'content-type': 'application/json' },
+        body:    JSON.stringify({ file: { data: e.target.result, type: file.type, name: file.name } })
+      });
+      const data = await res.json();
+      if (data.ok && data.extracted) {
+        SSW.importExtracted = data.extracted;
+        _swApplyExtracted(data.extracted);
+        const filled = Object.values(data.extracted).filter(v => v && String(v).trim()).length;
+        _swImportStatus(
+          filled > 0 ? 'success' : 'neutral',
+          filled > 0
+            ? 'Informations détectées — vérifiez et modifiez si nécessaire'
+            : 'Document joint · remplissez les champs ci-dessous'
+        );
+      } else {
+        _swImportStatus('neutral', 'Document joint · remplissez les champs ci-dessous');
+      }
+    } catch(_) {
+      _swImportStatus('neutral', 'Document joint · remplissez les champs ci-dessous');
+    }
   };
   reader.readAsDataURL(file);
-  input.value = '';
 }
 
 function swRemoveImport() {
-  SSW.importFile = null;
-  const chosen = document.getElementById('sw-import-chosen');
-  const btn    = document.querySelector('.sw-import-btn');
-  if (chosen) chosen.style.display = 'none';
-  if (btn)    btn.style.display    = 'flex';
+  SSW.importFile      = null;
+  SSW.importExtracted = null;
+  document.getElementById('sw-import-chosen').style.display = 'none';
+  document.querySelector('.sw-import-btn').style.display    = 'flex';
+  _swImportStatus('', '');
 }
 
 /* ── BUILD FORM (step 2) ──────────────────────────────────── */
@@ -412,10 +466,18 @@ function swBuildForm() {
              placeholder="${escSw(q.placeholder || '')}">`}
     </div>`).join('');
 
-  /* Restore values if returning from step 3 */
+  /* Pré-remplissage depuis données extraites du document importé */
+  if (SSW.importExtracted) {
+    Object.entries(SSW.importExtracted).forEach(([k, v]) => {
+      const el = document.getElementById('sw-f-' + k);
+      if (el && v && !el.value) el.value = v;
+    });
+  }
+
+  /* Restore values if returning from step 3 (prioritaire sur l'extraction) */
   Object.entries(SSW.details).forEach(([k, v]) => {
     const el = document.getElementById('sw-f-' + k);
-    if (el) el.value = v;
+    if (el && v) el.value = v;
   });
 }
 

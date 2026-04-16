@@ -201,13 +201,25 @@ button { font-family: var(--font); }
   font-size: .9rem;
   color: #1e293b;
   outline: none;
-  transition: border-color .2s, box-shadow .2s;
+  transition: border-color .2s, box-shadow .2s, background-color .2s;
   resize: vertical;
   background: #fff;
 }
 .sw-fg input:focus, .sw-fg textarea:focus {
   border-color: var(--sw-color);
   box-shadow: 0 0 0 3px rgba(var(--sw-rgb),.12);
+  background: #fff;
+}
+
+/* ── Anti-autofill jaune (Chrome, Safari, iOS) ── */
+.sw-fg input:-webkit-autofill,
+.sw-fg input:-webkit-autofill:hover,
+.sw-fg input:-webkit-autofill:focus,
+.sw-fg input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 40px #fff inset !important;
+  -webkit-text-fill-color: #1e293b !important;
+  caret-color: #1e293b;
+  transition: background-color 9999s ease-in-out 0s;
 }
 .sw-opt { font-weight: 400; color: #94a3b8; font-size: .76rem; }
 
@@ -512,13 +524,42 @@ button { font-family: var(--font); }
 }
 .sw-import-chosen button:hover { background: rgba(180,83,9,.1); }
 
-.sw-import-or {
-  text-align: center;
-  color: #94a3b8;
-  font-size: .76rem;
-  font-weight: 500;
-  margin: 14px 0 4px;
-  letter-spacing: .03em;
+/* Statut après import (analyse, succès, neutre) */
+.sw-import-status {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: .83rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.sw-import-status--loading {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.sw-import-status--loading::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #cbd5e1;
+  border-top-color: #94a3b8;
+  border-radius: 50%;
+  animation: swSpin .7s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes swSpin { to { transform: rotate(360deg); } }
+.sw-import-status--success {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  color: #166534;
+}
+.sw-import-status--success::before { content: '✓ '; }
+.sw-import-status--neutral {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  color: #64748b;
 }
 
 /* ── MOBILE ───────────────────────────────────────────── */
