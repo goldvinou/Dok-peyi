@@ -13,11 +13,20 @@ const { default: handler } = await import('../api/create-checkout.js');
 
 /* ── Helpers ─────────────────────────────────────────────── */
 
+let _ipSeed = 100;
 function makeReq(body, method = 'POST') {
   return new Request('https://dok-peyi.vercel.app/api/create-checkout', {
     method,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', 'x-forwarded-for': `10.2.${Math.floor(++_ipSeed/256)}.${_ipSeed%256}` },
     body:    method === 'POST' ? JSON.stringify(body) : undefined
+  });
+}
+
+function makeReqSameIp(body) {
+  return new Request('https://dok-peyi.vercel.app/api/create-checkout', {
+    method:  'POST',
+    headers: { 'content-type': 'application/json', 'x-forwarded-for': '10.2.99.99' },
+    body:    JSON.stringify(body)
   });
 }
 
@@ -185,5 +194,22 @@ describe('Stripe API errors', () => {
     const body = await res.json();
     assert.equal(body.ok, false);
     assert.ok(body.error.length > 0);
+  });
+});
+
+/* ── Rate limiting ────────────────────────────────────────── */
+
+describe('Rate limiting', () => {
+  test('blocks after 3 requests from the same IP within 1 minute', async () => {
+    globalThis.fetch = mockStripeOk();
+    // Use fixed IP shared across all calls in this test
+    for (let i = 0; i < 3; i++) {
+      const r = await handler(makeReqSameIp(VALID_BODY));
+      assert.equal(r.status, 200, `request ${i + 1} should be allowed`);
+    }
+    const blocked = await handler(makeReqSameIp(VALID_BODY));
+    assert.equal(blocked.status, 429);
+    const body = await blocked.json();
+    assert.equal(body.ok, false);
   });
 });

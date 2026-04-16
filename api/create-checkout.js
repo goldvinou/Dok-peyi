@@ -7,6 +7,8 @@ export const config = { runtime: 'edge' };
      NEXT_PUBLIC_BASE_URL — https://dok-peyi.vercel.app (sans slash final)
    ============================================================ */
 
+import { rateLimit } from '../lib/rate-limit.js';
+
 const SERVICE_LABELS = {
   cv:             'CV Professionnel',
   lettre:         'Lettre de motivation',
@@ -21,6 +23,10 @@ export default async function handler(req) {
   if (req.method !== 'POST') {
     return resp({ ok: false, error: 'Method not allowed' }, 405);
   }
+
+  /* Limit Stripe session creation — prevents abuse of paid Stripe API */
+  const rl = rateLimit(req, { max: 3, windowMs: 60_000 });
+  if (!rl.ok) return resp({ ok: false, error: 'Trop de requêtes — réessayez dans une minute.' }, 429);
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) return resp({ ok: false, error: 'Stripe non configuré' }, 503);

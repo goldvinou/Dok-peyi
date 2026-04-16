@@ -6,7 +6,8 @@ export const config = { runtime: 'edge' };
    variables d'environnement Vercel, jamais exposés au client.
    ============================================================ */
 
-import { rateLimit } from '../lib/rate-limit.js';
+import { rateLimit }    from '../lib/rate-limit.js';
+import { CORS, json }   from '../lib/edge-response.js';
 
 /* Utilisateurs — les mots de passe viennent des env vars */
 const USERS = [
@@ -17,77 +18,36 @@ const USERS = [
 ];
 
 export default async function handler(req) {
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ ok: false, error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'content-type': 'application/json' }
-    });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: CORS });
+  if (req.method !== 'POST')   return json({ ok: false, error: 'Method not allowed' }, 405);
 
   /* Brute-force guard — 5 attempts per 5 minutes per IP */
   const rl = rateLimit(req, { max: 5, windowMs: 300_000 });
-  if (!rl.ok) {
-    return new Response(JSON.stringify({ ok: false, error: 'Trop de tentatives — réessayez dans 5 minutes.' }), {
-      status: 429,
-      headers: { 'content-type': 'application/json', 'Retry-After': '300' }
-    });
-  }
+  if (!rl.ok) return new Response(JSON.stringify({ ok: false, error: 'Trop de tentatives — réessayez dans 5 minutes.' }), {
+    status: 429, headers: { ...CORS, 'content-type': 'application/json', 'Retry-After': '300' }
+  });
 
   let body;
-  try {
-    body = await req.json();
-  } catch (_) {
-    return new Response(JSON.stringify({ ok: false, error: 'Invalid JSON' }), {
-      status: 400,
-      headers: { 'content-type': 'application/json' }
-    });
-  }
+  try { body = await req.json(); }
+  catch (_) { return json({ ok: false, error: 'Invalid JSON' }, 400); }
 
   const { username, password } = body || {};
-
-  if (!username || !password) {
-    return new Response(JSON.stringify({ ok: false, error: 'Missing credentials' }), {
-      status: 400,
-      headers: { 'content-type': 'application/json' }
-    });
-  }
+  if (!username || !password) return json({ ok: false, error: 'Missing credentials' }, 400);
 
   const found = USERS.find(u => u.user === String(username).trim().toLowerCase());
   if (!found) {
-    /* Délai constant pour éviter les timing attacks */
     await new Promise(r => setTimeout(r, 200));
-    return new Response(JSON.stringify({ ok: false }), {
-      status: 200,
-      headers: { 'content-type': 'application/json' }
-    });
+    return json({ ok: false }, 200);
   }
 
-  /* Lire le mot de passe depuis les variables d'environnement */
   const expectedPass = process.env[found.envKey] || '';
-
-  /* Comparaison en temps constant */
   const ok = expectedPass.length > 0 && timingSafeEqual(String(password), expectedPass);
 
-  await new Promise(r => setTimeout(r, 200)); /* délai uniforme */
+  await new Promise(r => setTimeout(r, 200));
 
-  if (!ok) {
-    return new Response(JSON.stringify({ ok: false }), {
-      status: 200,
-      headers: { 'content-type': 'application/json' }
-    });
-  }
+  if (!ok) return json({ ok: false }, 200);
 
-  /* Succès — retourner les infos publiques (sans le mot de passe) */
-  return new Response(JSON.stringify({
-    ok:    true,
-    user:  found.user,
-    nom:   found.nom,
-    role:  found.role,
-    color: found.color
-  }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' }
-  });
+  return json({ ok: true, user: found.user, nom: found.nom, role: found.role, color: found.color });
 }
 
 /* Comparaison en temps constant pour résister aux timing attacks */
