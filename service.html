@@ -68,6 +68,26 @@
         <h2>Commençons par vous</h2>
         <p class="sw-sub">Ces informations serviront à personnaliser votre document</p>
 
+        <!-- Bouton import rapide -->
+        <div class="sw-import-wrap">
+          <input type="file" id="sw-import-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                 style="display:none" onchange="swHandleImport(this)">
+          <button type="button" class="sw-import-btn"
+                  onclick="document.getElementById('sw-import-input').click()">
+            <span class="sw-import-icon">⬆️</span>
+            <span>
+              <span class="sw-import-title">Gagnez du temps — importer un document</span>
+              <span class="sw-import-hint">PDF, Word ou image · max 3 Mo</span>
+            </span>
+          </button>
+          <div class="sw-import-chosen" id="sw-import-chosen" style="display:none">
+            <span>📄</span>
+            <span id="sw-import-name"></span>
+            <button type="button" onclick="swRemoveImport()">✕</button>
+          </div>
+        </div>
+        <div class="sw-import-or">— ou remplissez le formulaire —</div>
+
         <div class="sw-personal">
           <h3>👤 Vos coordonnées</h3>
           <div class="sw-row">

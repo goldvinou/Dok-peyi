@@ -402,28 +402,7 @@ function swBuildForm() {
   };
   document.getElementById('sw-q-title').textContent = titles[SSW.svc] || 'Informations';
 
-  /* Bouton import jaune — affiché pour tous les services */
-  const importHtml = `
-    <div class="sw-import-wrap">
-      <input type="file" id="sw-import-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-             style="display:none" onchange="swHandleImport(this)">
-      <button type="button" class="sw-import-btn"
-              onclick="document.getElementById('sw-import-input').click()">
-        <span class="sw-import-icon">⬆️</span>
-        <span>
-          <span class="sw-import-title">Gagnez du temps — importer un document</span>
-          <span class="sw-import-hint">PDF, Word ou image · max 3 Mo</span>
-        </span>
-      </button>
-      <div class="sw-import-chosen" id="sw-import-chosen" style="display:none">
-        <span>📄</span>
-        <span id="sw-import-name"></span>
-        <button type="button" onclick="swRemoveImport()">✕</button>
-      </div>
-    </div>
-    <div class="sw-import-or">— ou remplissez le formulaire —</div>`;
-
-  document.getElementById('sw-fields').innerHTML = importHtml + questions.map(q => `
+  document.getElementById('sw-fields').innerHTML = questions.map(q => `
     <div class="sw-fg">
       <label for="sw-f-${q.id}">${escSw(q.label)}</label>
       ${q.type === 'textarea'
@@ -432,16 +411,6 @@ function swBuildForm() {
         : `<input type="text" id="sw-f-${q.id}" data-fid="${q.id}" ${q.required ? 'data-req="1"' : ''}
              placeholder="${escSw(q.placeholder || '')}">`}
     </div>`).join('');
-
-  /* Restaurer le fichier importé si retour depuis étape 3 */
-  if (SSW.importFile) {
-    const chosen = document.getElementById('sw-import-chosen');
-    const btn    = document.querySelector('.sw-import-btn');
-    const nm     = document.getElementById('sw-import-name');
-    if (nm)     nm.textContent       = SSW.importFile.name;
-    if (chosen) chosen.style.display = 'flex';
-    if (btn)    btn.style.display    = 'none';
-  }
 
   /* Restore values if returning from step 3 */
   Object.entries(SSW.details).forEach(([k, v]) => {
