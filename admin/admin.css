@@ -1530,3 +1530,158 @@ html, body {
   color: var(--white);
   border-color: rgba(37,99,235,.4);
 }
+
+/* ============================================================
+   RÉDAC — Agent IA Central
+   ============================================================ */
+
+/* Bulle Rédac — distincte des messages humains */
+.redac-msg {
+  display: flex;
+  gap: 10px;
+  margin: 6px 0;
+  align-items: flex-start;
+}
+
+/* Avatar violet/dégradé */
+.redac-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: .88rem;
+  color: #fff;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  box-shadow: 0 2px 8px rgba(124,58,237,.35);
+}
+
+/* Corps du message Rédac */
+.redac-msg .chat-msg-body {
+  background: linear-gradient(135deg, #1e1b4b 0%, #1a1a3e 100%);
+  border: 1px solid rgba(139,92,246,.25);
+  border-radius: 0 12px 12px 12px;
+  padding: 10px 14px;
+  max-width: 82%;
+  box-shadow: 0 2px 12px rgba(79,70,229,.15);
+}
+
+/* Nom + badge IA */
+.redac-msg .chat-msg-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #a78bfa;
+  font-weight: 700;
+  font-size: .78rem;
+  margin-bottom: 5px;
+}
+
+.redac-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: #fff;
+  font-size: .62rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 20px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+/* Texte du message Rédac */
+.redac-text {
+  color: #e2e8f0;
+  font-size: .87rem;
+  line-height: 1.6;
+}
+
+/* Mise en forme inline dans le texte Rédac */
+.redac-text strong { color: #c4b5fd; font-weight: 700; }
+.redac-bullet { color: #7c3aed; font-weight: 700; }
+.redac-ref {
+  display: inline-block;
+  background: rgba(124,58,237,.18);
+  color: #a78bfa;
+  font-weight: 700;
+  font-size: .82rem;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+/* Timestamp Rédac */
+.redac-msg .chat-msg-time {
+  color: rgba(167,139,250,.5);
+  font-size: .7rem;
+  margin-top: 5px;
+}
+
+/* Indicateur "Rédac réfléchit…" */
+.redac-typing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 4px;
+  animation: fadeIn .25s ease;
+}
+
+.redac-typing-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: .75rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.redac-typing-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1e1b4b, #1a1a3e);
+  border: 1px solid rgba(139,92,246,.2);
+  border-radius: 20px;
+  padding: 6px 14px;
+}
+
+.redac-typing-label {
+  font-size: .75rem;
+  color: #a78bfa;
+  font-weight: 600;
+}
+
+.redac-typing-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.redac-typing-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7c3aed;
+  animation: redacDot .9s ease-in-out infinite;
+}
+
+.redac-typing-dots span:nth-child(2) { animation-delay: .15s; }
+.redac-typing-dots span:nth-child(3) { animation-delay: .30s; }
+
+@keyframes redacDot {
+  0%, 80%, 100% { opacity: .25; transform: scale(.8); }
+  40%            { opacity: 1;   transform: scale(1.2); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -462,7 +462,7 @@ function _renderChat() {
           </label>
           <textarea
             class="chat-input" id="chat-input"
-            placeholder="Écrire un message… (Entrée pour envoyer)"
+            placeholder="Écrire un message… · @Rédac pour interroger l'agent IA"
             rows="1"
             onkeydown="chatKeyDown(event)"
             oninput="chatAutoResize(this)"
@@ -534,12 +534,13 @@ function _renderChatMessages() {
 }
 
 function _renderOneMessage(msg) {
-  const isMine = msg.userId === (typeof currentUser !== 'undefined' ? currentUser?.user : null);
-  const user   = (typeof USERS !== 'undefined')
+  const isRedac = msg.userId === 'redac';
+  const isMine  = !isRedac && msg.userId === (typeof currentUser !== 'undefined' ? currentUser?.user : null);
+  const user    = (!isRedac && typeof USERS !== 'undefined')
     ? USERS.find(u => u.user === msg.userId) || {}
     : {};
-  const color  = user.color || '#64748b';
-  const init   = (msg.userName || '?').charAt(0).toUpperCase();
+  const color   = user.color || '#64748b';
+  const init    = (msg.userName || '?').charAt(0).toUpperCase();
 
   const filesHtml = (msg.files || []).map(f => {
     if (f.type && f.type.startsWith('image/')) {
@@ -553,6 +554,21 @@ function _renderOneMessage(msg) {
     </a>`;
   }).join('');
 
+  if (isRedac) {
+    return `
+      <div class="chat-msg redac-msg">
+        <div class="chat-msg-avatar redac-avatar">R</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-name">Rédac <span class="redac-badge">IA</span></div>
+          ${msg.text
+            ? `<div class="chat-msg-text redac-text">${_formatRedacText(msg.text)}</div>`
+            : ''}
+          ${filesHtml}
+          <div class="chat-msg-time">${_wsFmt(msg.ts)}</div>
+        </div>
+      </div>`;
+  }
+
   return `
     <div class="chat-msg${isMine ? ' mine' : ''}">
       <div class="chat-msg-avatar" style="background:${color}">${init}</div>
@@ -565,6 +581,20 @@ function _renderOneMessage(msg) {
         <div class="chat-msg-time">${_wsFmt(msg.ts)}</div>
       </div>
     </div>`;
+}
+
+/** Formate le texte de Rédac : échappe, puis applique mise en forme sûre. */
+function _formatRedacText(raw) {
+  let t = _esc(raw);
+  // Gras : **texte**
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Puces : lignes commençant par • ou -
+  t = t.replace(/^([•\-]) (.+)$/gm, '<span class="redac-bullet">$1</span> $2');
+  // Références #NNN
+  t = t.replace(/#(\d+)/g, '<span class="redac-ref">#$1</span>');
+  // Sauts de ligne
+  t = t.replace(/\n/g, '<br>');
+  return t;
 }
 
 function _fileIcon(mime) {
@@ -619,6 +649,9 @@ function chatSend() {
   _renderChatMessages();
   if (typeof _fchatRenderMessages !== 'undefined' && _fchatOpen) _fchatRenderMessages();
   if (typeof _fchatUpdateBadge   !== 'undefined') _fchatUpdateBadge();
+
+  // Déclenchement Rédac si @Rédac mentionné
+  if (/^@[Rr][eé]dac\b/i.test(text)) _redacRespond(text, wsMessages.slice(-12));
 }
 
 function chatKeyDown(e) {
@@ -1123,6 +1156,9 @@ function fchatSend() {
   _fchatRenderMessages();
   _fchatMarkRead();
   if (wsCurrentTab === 'chat') _renderChatMessages();
+
+  // Déclenchement Rédac si @Rédac mentionné
+  if (/^@[Rr][eé]dac\b/i.test(text)) _redacRespond(text, wsMessages.slice(-12));
 }
 
 function fchatKeyDown(e) {
@@ -1351,6 +1387,100 @@ function _fchatPing() {
     osc.stop(ctx.currentTime + 0.36);
   } catch(e) {}
 }
+
+/* ============================================================
+   RÉDAC — agent IA central
+   ============================================================ */
+
+/** Sérialise les demandes depuis localStorage pour le contexte API. */
+function _redacSerializeDemandes() {
+  const raw = _wspReadLS('dok_demandes') || [];
+  // Exclure _documents (HTML lourd), garder uniquement les métadonnées utiles
+  return raw.slice(0, 80).map(d => ({
+    id:         d.id,
+    service:    d.service,
+    prenom:     d.prenom,
+    nom:        d.nom,
+    email:      d.email,
+    statut:     d.statut,
+    montant:    d.montant,
+    date:       d.date,
+    assignedTo: d.assignedTo,
+    _pipeline:  d._pipeline
+  }));
+}
+
+/** Ajoute l'indicateur "Rédac réfléchit…" dans le chat. */
+function _redacShowTyping() {
+  const typingId = 'redac-typing-indicator';
+  ['chat-messages', 'fchat-messages'].forEach(containerId => {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (el.querySelector('#' + typingId + '-' + containerId)) return;
+    const div = document.createElement('div');
+    div.id = typingId + '-' + containerId;
+    div.className = 'redac-typing';
+    div.innerHTML = `
+      <div class="redac-typing-avatar">R</div>
+      <div class="redac-typing-content">
+        <span class="redac-typing-label">Rédac réfléchit</span>
+        <span class="redac-typing-dots"><span></span><span></span><span></span></span>
+      </div>`;
+    el.appendChild(div);
+    _scrollToBottom(el);
+  });
+}
+
+/** Retire l'indicateur "Rédac réfléchit…". */
+function _redacHideTyping() {
+  document.querySelectorAll('[id^="redac-typing-indicator"]').forEach(el => el.remove());
+}
+
+/**
+ * Appelle /api/redac-chat et injecte la réponse dans le chat.
+ * @param {string} message - Message de l'utilisateur (avec @Rédac)
+ * @param {Array}  history - Derniers messages du chat pour contexte
+ */
+async function _redacRespond(message, history) {
+  _redacShowTyping();
+
+  const demandes = _redacSerializeDemandes();
+
+  let reply;
+  try {
+    const res = await fetch('/api/redac-chat', {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({ message, history, demandes })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Erreur Rédac');
+    reply = data.reply;
+  } catch (err) {
+    reply = `⚠️ Je rencontre une difficulté technique : ${err.message}. Réessayez dans un moment.`;
+  }
+
+  _redacHideTyping();
+
+  const msg = {
+    id:       _wsId(),
+    userId:   'redac',
+    userName: 'Rédac',
+    ts:       _wsNow(),
+    text:     reply,
+    files:    []
+  };
+
+  wsMessages.push(msg);
+  _wsSave('dok_ws_chat', wsMessages);
+  _chatFirebasePush(msg);
+
+  if (wsCurrentTab === 'chat') _renderChatMessages();
+  if (_fchatOpen) _fchatRenderMessages();
+  if (typeof _fchatUpdateBadge !== 'undefined') _fchatUpdateBadge();
+  if (typeof _fchatPing !== 'undefined') _fchatPing();
+}
+
 
 /* ============================================================
    UTILITAIRE INTERNE
