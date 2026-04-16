@@ -578,36 +578,19 @@
 
         <div class="sw-recap" id="sw-recap"></div>
 
-        <div class="sw-pay-tabs">
-          <button class="sw-pay-tab active" onclick="swSwitchTab(this,'card')">💳 Carte bancaire</button>
-          <button class="sw-pay-tab"        onclick="swSwitchTab(this,'paypal')">PayPal</button>
-        </div>
-
-        <div id="sw-pay-card">
-          <div class="sw-fg">
-            <label>Numéro de carte</label>
-            <input type="text" id="sw-card-num" placeholder="1234 5678 9012 3456" maxlength="19"
-                   oninput="swFmtCard(this)" autocomplete="cc-number">
+        <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:20px;text-align:center">
+          <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+          <p style="color:#475569;font-size:.9rem;line-height:1.6;margin:0 0 16px">
+            Vous allez être redirigé vers notre plateforme de paiement sécurisée.<br>
+            <strong>Carte bancaire, Apple Pay, Google Pay</strong> acceptés.
+          </p>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">💳 Visa</span>
+            <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">💳 Mastercard</span>
+            <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b"> Apple Pay</span>
+            <span style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#64748b">G Google Pay</span>
           </div>
-          <div class="sw-row">
-            <div class="sw-fg" style="margin-bottom:0">
-              <label>Expiration</label>
-              <input type="text" id="sw-card-exp" placeholder="MM/AA" maxlength="5"
-                     oninput="swFmtExp(this)" autocomplete="cc-exp">
-            </div>
-            <div class="sw-fg" style="margin-bottom:0">
-              <label>CVV</label>
-              <input type="text" id="sw-card-cvv" placeholder="123" maxlength="3"
-                     oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="cc-csc">
-            </div>
-          </div>
-          <div class="sw-pay-secure">🔒 Paiement 100% sécurisé et chiffré</div>
-        </div>
-
-        <div id="sw-pay-paypal" style="display:none">
-          <div style="background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:var(--radius);padding:24px;text-align:center;color:#64748b;line-height:1.6">
-            <p style="font-size:.9rem">📧 Vous serez redirigé vers PayPal pour finaliser votre paiement en toute sécurité</p>
-          </div>
+          <p style="font-size:.72rem;color:#94a3b8;margin:10px 0 0">Paiement traité par Stripe · Cryptage SSL 256 bits</p>
         </div>
 
         <div class="sw-actions">
@@ -640,5 +623,22 @@
   <script src="/firebase-config.js"></script>
   <script src="/lib/statuses.js"></script>
   <script src="/service.js"></script>
+
+  <!-- ── Bannière cookies RGPD ── -->
+  <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0f172a;color:#e2e8f0;padding:16px 24px;box-shadow:0 -4px 24px rgba(0,0,0,.3);font-family:Inter,sans-serif">
+    <div style="max-width:900px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px;font-size:.82rem;line-height:1.5;color:#cbd5e1">
+        🍪 Nous utilisons des cookies strictement nécessaires au fonctionnement du site.
+        <a href="/legales#cookies" style="color:#60a5fa">En savoir plus</a>
+      </div>
+      <div style="display:flex;gap:10px;flex-shrink:0">
+        <button onclick="dokAcceptCookies()" style="padding:8px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer">J'accepte</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function(){ if (!localStorage.getItem('dok_cookies_ok')) document.getElementById('cookie-banner').style.display='block'; })();
+    function dokAcceptCookies(){ localStorage.setItem('dok_cookies_ok','1'); document.getElementById('cookie-banner').style.display='none'; }
+  </script>
 </body>
 </html>

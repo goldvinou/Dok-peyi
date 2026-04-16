@@ -47,7 +47,40 @@ export default async function handler(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: CORS });
   if (req.method !== 'POST')   return json({ ok: false, error: 'Method not allowed' }, 405);
 
-  /* ── 1. Parse body ── */
+  const stripeSignature = req.headers.get('stripe-signature');
+
+  /* ── Stripe webhook direct ─────────────────────────────────
+     Stripe envoie stripe-signature header + body brut en texte.
+     On doit lire le body AVANT tout JSON.parse. */
+  if (stripeSignature) {
+    const rawBody = await req.text();
+    const sigSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (sigSecret) {
+      const valid = await verifyStripeSignature(rawBody, stripeSignature, sigSecret);
+      if (!valid) return json({ ok: false, error: 'Stripe signature invalide' }, 400);
+    }
+
+    let event;
+    try { event = JSON.parse(rawBody); } catch { return json({ ok: false, error: 'JSON invalide' }, 400); }
+
+    if (event.type === 'checkout.session.completed') {
+      const session  = event.data.object;
+      const orderId  = session.metadata?.order_id;
+      const amount   = (session.amount_total || 0) / 100;
+      const ref      = session.payment_intent;
+
+      /* Mettre à jour Firebase directement */
+      await updateFirebaseOrderPaid(orderId, { amount, reference: ref, provider: 'stripe' });
+
+      /* Notifier l'admin par email */
+      await notifyAdmin(orderId, session);
+    }
+
+    return json({ ok: true });
+  }
+
+  /* ── Appel interne (admin manuel / autres providers) ─── */
   let body;
   try { body = await req.json(); }
   catch { return json({ ok: false, error: 'Body JSON invalide' }, 400); }
@@ -60,10 +93,7 @@ export default async function handler(req) {
     amount
   } = body || {};
 
-  /* ── 2. Validate shared webhook secret ──────────────────────
-     Set DOK_WEBHOOK_SECRET in Vercel env vars.
-     If the variable is not configured, the endpoint is open
-     (acceptable for local dev, not for production). */
+  /* Valider le secret partagé pour les appels internes */
   const webhookSecret = process.env.DOK_WEBHOOK_SECRET;
   if (webhookSecret && secret !== webhookSecret) {
     return json({ ok: false, error: 'Secret invalide — accès refusé.' }, 403);
@@ -101,4 +131,54 @@ export default async function handler(req) {
   const result = await handlers.confirm_payment(order, { provider, reference, amount });
 
   return json(result, result.ok ? 200 : 400);
+}
+
+/* ── Vérification signature Stripe (HMAC-SHA256) ───────────── */
+async function verifyStripeSignature(payload, header, secret) {
+  try {
+    const parts     = Object.fromEntries(header.split(',').map(p => p.split('=')));
+    const timestamp = parts.t;
+    const sig       = parts.v1;
+    if (!timestamp || !sig) return false;
+
+    const signed    = timestamp + '.' + payload;
+    const key       = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret),
+                        { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const mac       = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signed));
+    const computed  = Array.from(new Uint8Array(mac)).map(b => b.toString(16).padStart(2,'0')).join('');
+    return computed === sig;
+  } catch(_) { return false; }
+}
+
+/* ── Mise à jour Firebase via l'API REST (Edge-compatible) ─── */
+async function updateFirebaseOrderPaid(orderId, { amount, reference, provider }) {
+  if (!orderId) return;
+  const dbUrl = process.env.FIREBASE_DATABASE_URL;
+  if (!dbUrl) return;
+  try {
+    await fetch(dbUrl + '/dok-peyi/demandes/' + orderId + '.json', {
+      method:  'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({ paid: true, statut: 'paid', montant: amount, reference, provider })
+    });
+  } catch(_) {}
+}
+
+/* ── Notification admin par email ─────────────────────────── */
+async function notifyAdmin(orderId, session) {
+  try {
+    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/$/, '');
+    await fetch(baseUrl + '/api/send-email', {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({
+        type:  'new_order_admin',
+        order: {
+          id:      orderId,
+          email:   session.customer_email || '',
+          montant: (session.amount_total || 0) / 100
+        }
+      })
+    });
+  } catch(_) {}
 }

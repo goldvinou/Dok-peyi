@@ -178,29 +178,94 @@ const SSW = {
 document.addEventListener('DOMContentLoaded', swInit);
 
 function swInit() {
-  const s = new URLSearchParams(location.search).get('s') || '';
+  const params = new URLSearchParams(location.search);
+
+  /* ── Retour depuis Stripe Checkout ── */
+  if (params.get('success') === '1') {
+    const restoredSvc = _swRestoreState();
+    if (restoredSvc && SVC[restoredSvc]) {
+      _swApplyTheme(restoredSvc);
+      SSW.paid = true;
+      swSaveOrder();
+      swShowConfirm();
+      _swSendConfirmationEmail();
+      history.replaceState({}, '', '/service?s=' + restoredSvc);
+      return;
+    }
+  }
+  if (params.get('cancelled') === '1') {
+    const s = params.get('s') || '';
+    if (SVC[s]) {
+      _swApplyTheme(s);
+      _swRestoreState();
+      swGoStep(4);
+      history.replaceState({}, '', '/service?s=' + s);
+      return;
+    }
+  }
+
+  const s = params.get('s') || '';
   if (!SVC[s]) { location.href = '/'; return; }
   SSW.svc = s;
+  _swApplyTheme(s);
+  swRenderChoices();
+  swGoStep(1);
+}
 
-  const cfg = SVC[s];
+function _swApplyTheme(s) {
+  SSW.svc = s;
+  const cfg  = SVC[s];
   const root = document.documentElement;
   root.style.setProperty('--sw-color', cfg.color);
   root.style.setProperty('--sw-light', cfg.light);
-
-  // Decompose hex for rgba() usage in CSS
   const hex = cfg.color.replace('#', '');
   root.style.setProperty('--sw-rgb',
     parseInt(hex.slice(0,2),16) + ',' +
     parseInt(hex.slice(2,4),16) + ',' +
     parseInt(hex.slice(4,6),16));
-
   document.getElementById('sw-hero-icon').textContent  = cfg.icon;
   document.getElementById('sw-hero-name').textContent  = cfg.name;
   document.getElementById('sw-hero-price').textContent = cfg.price + '€';
   document.title = cfg.name + ' — Dok\'péyi';
+}
 
-  swRenderChoices();
-  swGoStep(1);
+/* Sauvegarde SSW dans localStorage avant redirection Stripe */
+function _swSaveState() {
+  try { localStorage.setItem('dok_ssw_pending', JSON.stringify(SSW)); } catch(_) {}
+}
+
+/* Restaure SSW depuis localStorage, retourne le service restauré */
+function _swRestoreState() {
+  try {
+    const raw = localStorage.getItem('dok_ssw_pending');
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    Object.assign(SSW, saved);
+    localStorage.removeItem('dok_ssw_pending');
+    return SSW.svc;
+  } catch(_) { return null; }
+}
+
+/* Envoie l'email de confirmation au client */
+async function _swSendConfirmationEmail() {
+  try {
+    const cfg = SVC[SSW.svc] || {};
+    await fetch('/api/send-email', {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({
+        type:  'order_confirmation',
+        order: {
+          id:      SSW.orderId,
+          service: SSW.svc,
+          prenom:  SSW.personal.prenom,
+          nom:     SSW.personal.nom,
+          email:   SSW.personal.email,
+          montant: cfg.price || 0
+        }
+      })
+    });
+  } catch(_) {}
 }
 
 /* ── PROGRESS ─────────────────────────────────────────────── */
@@ -676,26 +741,40 @@ function swSwitchTab(btn, type) {
   if (p) p.style.display = type === 'paypal' ? 'block' : 'none';
 }
 
-function swPay() {
-  const cardEl = document.getElementById('sw-pay-card');
-  if (cardEl && cardEl.style.display !== 'none') {
-    const num = (document.getElementById('sw-card-num')?.value || '').replace(/\s/g, '');
-    const exp =  document.getElementById('sw-card-exp')?.value || '';
-    const cvv =  document.getElementById('sw-card-cvv')?.value || '';
-    if (num.length < 16 || !exp.includes('/') || cvv.length < 3) {
-      swShake(cardEl); return;
-    }
-  }
+async function swPay() {
   const btn = document.getElementById('sw-pay-btn');
   const lbl = document.getElementById('sw-pay-lbl');
   if (btn) btn.disabled = true;
-  if (lbl) lbl.textContent = '⏳ Traitement en cours…';
+  if (lbl) lbl.textContent = '⏳ Redirection vers le paiement…';
 
-  setTimeout(() => {
-    SSW.paid = true;
-    swSaveOrder();
-    swShowConfirm();
-  }, 2000);
+  try {
+    const cfg = SVC[SSW.svc] || {};
+    _swSaveState(); /* sauvegarder l'état avant redirection */
+
+    const res  = await fetch('/api/create-checkout', {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({
+        service: SSW.svc,
+        amount:  cfg.price || 0,
+        orderId: SSW.orderId || Date.now(),
+        email:   SSW.personal.email,
+        prenom:  SSW.personal.prenom,
+        nom:     SSW.personal.nom
+      })
+    });
+    const data = await res.json();
+
+    if (!data.ok || !data.url) throw new Error(data.error || 'Erreur paiement');
+    location.href = data.url; /* redirection vers Stripe Checkout */
+  } catch(err) {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = 'Réessayer';
+    const errEl = document.createElement('p');
+    errEl.style.cssText = 'color:#ef4444;font-size:.85rem;text-align:center;margin:10px 0 0';
+    errEl.textContent = 'Erreur : ' + err.message;
+    document.getElementById('sw-pay-btn')?.parentNode?.appendChild(errEl);
+  }
 }
 
 function swSaveOrder() {
