@@ -1,5 +1,7 @@
 export const config = { runtime: 'edge' };
 
+import { rateLimit } from '../lib/rate-limit.js';
+
 /* ── PROMPT SYSTÈME GLOBAL ────────────────────────────────────────────────
    Appliqué à chaque appel Anthropic, quel que soit le service.
    Les prompts spécifiques (CV, lettre, courrier…) arrivent en message user.
@@ -36,6 +38,11 @@ export default async function handler(req) {
 
   if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: cors });
   if (req.method !== 'POST')   return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonH });
+
+  const rl = rateLimit(req, { max: 5, windowMs: 60_000 });
+  if (!rl.ok) return new Response(JSON.stringify({ error: 'Trop de requêtes — réessayez dans une minute.' }), {
+    status: 429, headers: { ...jsonH, 'Retry-After': '60' }
+  });
 
   const apiKey = process.env.CLAUD_API_KEY;
   if (!apiKey) return new Response(JSON.stringify({ error: 'CLAUD_API_KEY non configurée' }), { status: 500, headers: jsonH });

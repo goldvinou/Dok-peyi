@@ -2018,6 +2018,33 @@ function markSent(id) {
   showToast(`✅ Document envoyé — commande marquée ${doneLabel} !`, 'success');
 }
 
+/* ── Export CSV des commandes ─────────────────────────────── */
+function exportDemandesCSV() {
+  if (!demandes.length) { showToast('Aucune commande à exporter', ''); return; }
+
+  const COLS = ['id','service','prenom','nom','email','whatsapp','montant','statut','createdAt','reference','provider'];
+  const HEADERS = ['ID','Service','Prénom','Nom','Email','WhatsApp','Montant (€)','Statut','Date','Référence paiement','Fournisseur'];
+
+  const esc = v => {
+    const s = String(v ?? '').replace(/"/g, '""');
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+  };
+
+  const rows = [
+    HEADERS.join(','),
+    ...demandes.map(d => COLS.map(k => esc(d[k])).join(','))
+  ];
+
+  const blob = new Blob(['\uFEFF' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'dok-peyi-commandes-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✅ ${demandes.length} commandes exportées`, 'success');
+}
+
 /* ── Pipeline action: POST /api/pipeline and refresh the open modal ── */
 async function pipelineAction(id, action, payload = {}) {
   const d = demandes.find(dm => dm.id === id);

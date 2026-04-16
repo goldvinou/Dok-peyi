@@ -20,11 +20,15 @@
 
 export const config = { runtime: 'edge' };
 
-import { json, CORS } from '../lib/edge-response.js';
+import { json, CORS }   from '../lib/edge-response.js';
+import { rateLimit }    from '../lib/rate-limit.js';
 
 export default async function handler(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: CORS });
   if (req.method !== 'POST')   return json({ ok: false, error: 'Method not allowed' }, 405);
+
+  const rl = rateLimit(req, { max: 20, windowMs: 60_000 });
+  if (!rl.ok) return json({ ok: false, error: 'Trop de requêtes — réessayez dans une minute.' }, 429);
 
   let body;
   try { body = await req.json(); }
