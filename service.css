@@ -562,23 +562,6 @@ button { font-family: var(--font); }
   color: #64748b;
 }
 
-/* ── TEST PAYMENT BUTTON ──────────────────────────────── */
-.sw-btn-test {
-  display: block;
-  width: 100%;
-  margin-top: .5rem;
-  padding: .75rem 1.5rem;
-  background: #fff7ed;
-  color: #92400e;
-  border: 2px dashed #f59e0b;
-  border-radius: var(--radius);
-  font-size: .9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background var(--t);
-}
-.sw-btn-test:hover { background: #fef3c7; }
-
 /* ── MOBILE ───────────────────────────────────────────── */
 @media(max-width: 520px) {
   .sw-step { padding: 22px 16px; }

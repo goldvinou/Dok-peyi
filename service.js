@@ -902,15 +902,6 @@ function swGoStep4() {
   `;
   document.getElementById('sw-pay-lbl').textContent = `Payer ${cfg.price}€ et obtenir mon document`;
   swGoStep(4);
-
-  if (IS_TEST_MODE) {
-    const testBtn = document.createElement('button');
-    testBtn.type = 'button';
-    testBtn.className = 'sw-btn-test';
-    testBtn.textContent = '🧪 Simuler le paiement (test)';
-    testBtn.onclick = swPayTest;
-    document.getElementById('sw-pay-btn').insertAdjacentElement('afterend', testBtn);
-  }
 }
 
 function swPayTest() {
@@ -931,6 +922,8 @@ function swSwitchTab(btn, type) {
 }
 
 async function swPay() {
+  if (IS_TEST_MODE) { swPayTest(); return; }
+
   const btn = document.getElementById('sw-pay-btn');
   const lbl = document.getElementById('sw-pay-lbl');
   if (btn) btn.disabled = true;
