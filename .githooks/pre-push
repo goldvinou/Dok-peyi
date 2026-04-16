@@ -28,12 +28,12 @@ while read -r local_ref local_sha remote_ref remote_sha; do
 
   # Déterminer la plage de commits à analyser
   if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
-    # Nouvelle branche : analyser tous les commits locaux
-    RANGE="$local_sha"
-    COMMITS=$(git log --format="%H" "$RANGE" 2>/dev/null)
+    # Nouvelle branche : uniquement les commits qui n'existent pas encore
+    # sur le remote (évite de re-scanner l'historique déjà poussé)
+    COMMITS=$(git rev-list "$local_sha" --not --remotes=origin 2>/dev/null)
   else
     # Branche existante : uniquement les nouveaux commits
-    COMMITS=$(git log --format="%H" "$remote_sha..$local_sha" 2>/dev/null)
+    COMMITS=$(git rev-list "$remote_sha..$local_sha" 2>/dev/null)
   fi
 
   [ -z "$COMMITS" ] && continue
