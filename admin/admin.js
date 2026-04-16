@@ -2526,3 +2526,17 @@ function escHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+/* ============================================================
+   KEYBOARD SHORTCUTS
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  /* Ctrl+K (or Cmd+K on Mac) — focus demandes search */
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    const search = document.getElementById('f-search');
+    if (!search) return;
+    e.preventDefault();
+    showSection('demandes');
+    setTimeout(() => { search.focus(); search.select(); }, 50);
+  }
+});

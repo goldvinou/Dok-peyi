@@ -186,6 +186,7 @@ function swInit() {
     if (restoredSvc && SVC[restoredSvc]) {
       _swApplyTheme(restoredSvc);
       SSW.paid = true;
+      swClearDraft();
       swSaveOrder();
       swShowConfirm();
       _swSendConfirmationEmail();
@@ -209,6 +210,7 @@ function swInit() {
   SSW.svc = s;
   _swApplyTheme(s);
   swRenderChoices();
+  swRestoreDraft();
   swGoStep(1);
 }
 
@@ -331,6 +333,7 @@ function swNext(from) {
       email:  em.value.trim(),
       phone:  (document.getElementById('sw-phone')?.value || '').trim()
     };
+    swSaveDraft();
     swBuildForm();
     swGoStep(2);
     return;
@@ -347,6 +350,7 @@ function swNext(from) {
     document.querySelectorAll('#sw-fields [data-fid]').forEach(el => {
       SSW.details[el.dataset.fid] = el.value.trim();
     });
+    swSaveDraft();
     swGoStep(3);
     swGenerate();
   }
@@ -958,3 +962,48 @@ function escSw(str) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+/* ── DRAFT — sessionStorage save/restore ──────────────────── */
+const DRAFT_KEY = 'dok_sw_draft';
+
+function swSaveDraft() {
+  try {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+      svc:      SSW.svc,
+      choice:   SSW.choice,
+      personal: SSW.personal,
+      details:  SSW.details
+    }));
+  } catch(_) {}
+}
+
+function swRestoreDraft() {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    if (!d || d.svc !== SSW.svc) return false;
+    if (d.choice)   SSW.choice   = d.choice;
+    if (d.personal) SSW.personal = { ...SSW.personal, ...d.personal };
+    if (d.details)  SSW.details  = d.details;
+
+    /* Restore personal fields in the DOM */
+    ['prenom','nom','email','phone'].forEach(k => {
+      const el = document.getElementById('sw-' + k);
+      if (el && SSW.personal[k]) el.value = SSW.personal[k];
+    });
+    return true;
+  } catch(_) { return false; }
+}
+
+function swClearDraft() {
+  try { sessionStorage.removeItem(DRAFT_KEY); } catch(_) {}
+}
+
+/* ── BEFOREUNLOAD — warn on step 3+ ───────────────────────── */
+window.addEventListener('beforeunload', e => {
+  if (SSW.step >= 3 && !SSW.paid) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
