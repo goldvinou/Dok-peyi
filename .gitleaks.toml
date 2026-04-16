@@ -1,0 +1,84 @@
+# ============================================================
+#  DOK'PÉYI — Configuration Gitleaks
+#  Règles custom + règles built-in de gitleaks
+#  Ref : https://github.com/gitleaks/gitleaks#configuration
+# ============================================================
+
+title = "Dok'péyi secret scanning"
+
+# ── Utiliser les règles built-in en plus des custom ──────────
+# Gitleaks inclut déjà ~160 règles : AWS, Stripe, GitHub, GCP,
+# Azure, Slack, Twilio, SendGrid, etc.
+# On ajoute ici les patterns spécifiques à ce projet.
+
+# ══════════════════════════════════════════════════════════════
+#  RÈGLES CUSTOM — spécifiques à Dok'péyi
+# ══════════════════════════════════════════════════════════════
+
+[[rules]]
+id = "dokpeyi-hardcoded-password"
+description = "Mot de passe en clair dans un objet JS (pass: '...')"
+regex = '''pass:\s*['"][^'"]{6,}['"]'''
+tags = ["password", "dokpeyi"]
+keywords = ["pass"]
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Clé API Anthropic (sk-ant-...)"
+regex = '''sk-ant-[a-zA-Z0-9_\-]{20,}'''
+tags = ["api-key", "anthropic"]
+keywords = ["sk-ant-"]
+
+[[rules]]
+id = "openai-api-key"
+description = "Clé API OpenAI (sk-...)"
+regex = '''(?i)(?:openai|api)[_\-\s]*key\s*[:=]\s*['"]?(sk-[a-zA-Z0-9]{20,})['"]?'''
+tags = ["api-key", "openai"]
+keywords = ["sk-"]
+
+[[rules]]
+id = "firebase-database-secret"
+description = "Firebase Database Secret"
+regex = '''(?i)firebase[_\-\s]*(?:database[_\-\s]*)?secret\s*[:=]\s*['"][^'"]{10,}['"]'''
+tags = ["api-key", "firebase"]
+keywords = ["firebase"]
+
+[[rules]]
+id = "generic-secret-assignment"
+description = "Affectation d'un secret générique (secret/token/password = '...')"
+regex = '''(?i)(?:secret|token|password|passwd|api_key)\s*[:=]\s*['"][^'"]{8,}['"]'''
+tags = ["password", "generic"]
+keywords = ["secret", "token", "password", "passwd", "api_key"]
+
+[[rules]]
+id = "webhook-secret"
+description = "Webhook secret en dur"
+regex = '''(?i)webhook[_\-\s]*secret\s*[:=]\s*['"][^'"]{8,}['"]'''
+tags = ["webhook", "secret"]
+keywords = ["webhook"]
+
+# ══════════════════════════════════════════════════════════════
+#  ALLOWLIST — faux positifs à ignorer
+# ══════════════════════════════════════════════════════════════
+
+[allowlist]
+description = "Fichiers et patterns à exclure du scan"
+
+# Fichiers qui contiennent des patterns de détection (pas des vrais secrets)
+paths = [
+  '''.gitleaks\.toml$''',
+  '''.githooks/.*''',
+  '''scripts/install-hooks\.sh''',
+  '''\.env\.example$''',
+  '''\.env\..*\.example$''',
+  '''tests/.*\.test\.js$''',
+]
+
+# Valeurs connues comme faux positifs
+regexTarget = "match"
+regexes = [
+  # Placeholders Firebase dans les commentaires
+  '''REMPLACE_PAR_.*''',
+  # process.env.XXX (pas un secret, c'est une référence)
+  '''process\.env\.[A-Z_]+''',
+]
