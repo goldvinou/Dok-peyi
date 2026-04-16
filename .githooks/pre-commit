@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+# ============================================================
+#  DOK'PÉYI — pre-commit security hook
+#  Bloque les commits contenant des secrets ou fichiers sensibles.
+#  Installé via : git config core.hooksPath .githooks
+# ============================================================
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+ERRORS=0
+WARNINGS=0
+
+echo ""
+echo "🔒 Dok'péyi — scan de sécurité pre-commit…"
+
+# ── Fichiers stagés (ajoutés / modifiés / copiés) ─────────────────────────
+STAGED=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null)
+
+if [ -z "$STAGED" ]; then
+  echo -e "${GREEN}✓ Aucun fichier stagé.${NC}"
+  echo ""
+  exit 0
+fi
+
+# ══════════════════════════════════════════════════════════════════════════
+# 1. TYPES DE FICHIERS BLOQUÉS
+# ══════════════════════════════════════════════════════════════════════════
+BLOCKED_PATTERNS=(
+  '\.env$'
+  '\.env\.local$'
+  '\.env\.[a-zA-Z0-9_]+\.local$'
+  '\.pem$'
+  '\.key$'
+  '\.p12$'
+  '\.pfx$'
+  '^id_rsa$'
+  '^id_ecdsa$'
+  '^id_ed25519$'
+  '\.ppk$'
+  'secrets\.json$'
+  'credentials\.json$'
+  'service-account.*\.json$'
+)
+
+while IFS= read -r file; do
+  for pattern in "${BLOCKED_PATTERNS[@]}"; do
+    if echo "$file" | grep -qE "$pattern"; then
+      # Autoriser les fichiers .example / .sample
+      if echo "$file" | grep -qE '\.(example|sample)$'; then
+        continue
+      fi
+      echo -e "${RED}${BOLD}✗ FICHIER SENSIBLE${NC} : ${YELLOW}$file${NC}"
+      echo   "  → Ce type de fichier ne doit jamais être commité."
+      echo   "  → Ajoute-le dans .gitignore puis retire-le du staging :"
+      echo   "     git rm --cached \"$file\""
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+done <<< "$STAGED"
+
+# ══════════════════════════════════════════════════════════════════════════
+# 2. PATTERNS DE SECRETS DANS LE CONTENU
+# ══════════════════════════════════════════════════════════════════════════
+
+# Tableau : label → regex (recherche dans les lignes ajoutées du diff)
+declare -A SECRET_PATTERNS
+SECRET_PATTERNS["Mot de passe en clair (pass: '...')"]="pass:\s*['\"][^'\"]{6,}['\"]"
+SECRET_PATTERNS["Clé privée RSA/EC/SSH"]="-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY"
+SECRET_PATTERNS["Clé AWS Access Key"]="AKIA[0-9A-Z]{16}"
+SECRET_PATTERNS["Clé secrète AWS"]="['\"]?[0-9a-zA-Z/+]{40}['\"]?"
+SECRET_PATTERNS["Clé Anthropic (sk-ant-)"]="sk-ant-[a-zA-Z0-9_\-]{20,}"
+SECRET_PATTERNS["Clé OpenAI (sk-)"]="\"sk-[a-zA-Z0-9]{20,}\""
+SECRET_PATTERNS["Token GitHub (ghp_)"]="ghp_[a-zA-Z0-9]{36}"
+SECRET_PATTERNS["Token générique (bearer)"]="[Bb]earer\s+[a-zA-Z0-9_\-\.]{20,}"
+SECRET_PATTERNS["Secret générique (secret:)"]="(secret|SECRET)\s*[:=]\s*['\"][^'\"]{8,}['\"]"
+SECRET_PATTERNS["Token Stripe (sk_live_)"]="sk_live_[a-zA-Z0-9]{24,}"
+SECRET_PATTERNS["Mot de passe SMTP"]="(smtp.*pass|SMTP.*PASS)\s*[:=]\s*['\"][^'\"]+['\"]"
+
+while IFS= read -r file; do
+  # Ignorer les fichiers .example, .sample, les hooks eux-mêmes et les scripts d'install
+  echo "$file" | grep -qE '\.(example|sample)$' && continue
+  echo "$file" | grep -qE '^\.githooks/|^scripts/' && continue
+  [ ! -f "$file" ] && continue
+
+  # Ignorer les binaires
+  file_mime=$(file --mime-type -b "$file" 2>/dev/null)
+  echo "$file_mime" | grep -q 'charset=binary' && continue
+
+  # Lignes ajoutées dans le diff (préfixe +, hors +++  header)
+  DIFF_ADDED=$(git diff --cached -- "$file" 2>/dev/null \
+    | grep '^+' | grep -v '^+++')
+
+  [ -z "$DIFF_ADDED" ] && continue
+
+  for label in "${!SECRET_PATTERNS[@]}"; do
+    pattern="${SECRET_PATTERNS[$label]}"
+    MATCH=$(echo "$DIFF_ADDED" | grep -iE "$pattern" 2>/dev/null | head -3)
+    if [ -n "$MATCH" ]; then
+      echo -e "${RED}${BOLD}✗ SECRET DÉTECTÉ${NC} — ${label}"
+      echo -e "  Fichier : ${YELLOW}$file${NC}"
+      # Masquer la valeur réelle dans l'affichage
+      echo "$MATCH" | sed 's/\(.\{40\}\).*/\1…/' | sed 's/^/  → /'
+      echo ""
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+done <<< "$STAGED"
+
+# ══════════════════════════════════════════════════════════════════════════
+# 3. AVERTISSEMENTS (non bloquants)
+# ══════════════════════════════════════════════════════════════════════════
+
+while IFS= read -r file; do
+  echo "$file" | grep -qE '\.(example|sample)$' && continue
+  echo "$file" | grep -qE '^\.githooks/|^scripts/' && continue
+  [ ! -f "$file" ] && continue
+
+  DIFF_ADDED=$(git diff --cached -- "$file" 2>/dev/null \
+    | grep '^+' | grep -v '^+++')
+  [ -z "$DIFF_ADDED" ] && continue
+
+  # Clé Firebase exposée (avertissement, pas un blocage — c'est un design connu)
+  if echo "$DIFF_ADDED" | grep -qE 'apiKey:\s*"AIzaSy'; then
+    echo -e "${YELLOW}⚠ AVERTISSEMENT${NC} — Clé Firebase dans ${YELLOW}$file${NC}"
+    echo   "  → C'est acceptable si les règles Realtime DB imposent auth != null."
+    echo   "  → Vérifie la console Firebase avant de pousser en production."
+    WARNINGS=$((WARNINGS + 1))
+  fi
+
+  # TODO / FIXME contenant le mot "password" ou "secret"
+  if echo "$DIFF_ADDED" | grep -iqE '(TODO|FIXME).*pass(word)?'; then
+    echo -e "${YELLOW}⚠ AVERTISSEMENT${NC} — TODO/FIXME lié à un mot de passe dans ${YELLOW}$file${NC}"
+    WARNINGS=$((WARNINGS + 1))
+  fi
+done <<< "$STAGED"
+
+# ══════════════════════════════════════════════════════════════════════════
+# RÉSULTAT
+# ══════════════════════════════════════════════════════════════════════════
+echo ""
+if [ "$ERRORS" -gt 0 ]; then
+  echo -e "${RED}${BOLD}✗ Commit BLOQUÉ — $ERRORS erreur(s) critique(s) détectée(s).${NC}"
+  [ "$WARNINGS" -gt 0 ] && echo -e "${YELLOW}  + $WARNINGS avertissement(s)${NC}"
+  echo ""
+  echo "  Corrige les problèmes ci-dessus, puis relance ton commit."
+  echo ""
+  echo -e "  Si c'est un ${BOLD}faux positif avéré${NC} (ex: hash de test) :"
+  echo -e "  ${YELLOW}git commit --no-verify${NC}   ← utiliser avec discernement"
+  echo ""
+  exit 1
+else
+  if [ "$WARNINGS" -gt 0 ]; then
+    echo -e "${YELLOW}✓ Scan OK — $WARNINGS avertissement(s) à vérifier.${NC}"
+  else
+    echo -e "${GREEN}✓ Scan OK — aucun secret détecté.${NC}"
+  fi
+  echo ""
+  exit 0
+fi
