@@ -198,7 +198,7 @@
         <!-- Barre de recherche -->
         <div class="dem-search-bar">
           <svg class="dem-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input class="dem-search-input" type="text" id="f-search" placeholder="Rechercher client, email…" oninput="applyFilters()" autocomplete="off">
+          <input class="dem-search-input" type="text" id="f-search" placeholder="Rechercher client, email, #ID, service…" oninput="applyFilters()" autocomplete="off" aria-label="Rechercher dans les demandes">
           <span class="dem-search-count" id="dem-count"></span>
         </div>
 
@@ -383,7 +383,7 @@
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
 <!-- ===== FLOATING CHAT ===== -->
 <div id="fchat-backdrop" aria-hidden="true"></div>

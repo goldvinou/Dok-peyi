@@ -169,6 +169,9 @@ const DONE_STATUSES    = new Set(['terminé', 'delivered', 'paid', 'pret_paiemen
 // "Pending" covers anything waiting on admin attention.
 const PENDING_STATUSES = new Set(['en_attente','submitted','pending_payment','needs_review','a_verifier','correction_demandee']);
 
+const svcLabels = { cv: 'CV', lettre: 'Lettre', dossier: 'Dossier',
+                    courrier: 'Courrier', sejour: 'Séjour', impot: 'Avis impôt', naturalisation: 'Naturalisation' };
+
 // ===== ÉTAT =====
 const APP = {
   section:      'dashboard',
@@ -1336,9 +1339,11 @@ function applyFilters() {
   if (search.trim()) {
     const q = search.toLowerCase();
     filtered = filtered.filter(d =>
-      (d.prenom || '').toLowerCase().includes(q) ||
-      (d.nom    || '').toLowerCase().includes(q) ||
-      (d.email  || '').toLowerCase().includes(q)
+      (d.prenom  || '').toLowerCase().includes(q) ||
+      (d.nom     || '').toLowerCase().includes(q) ||
+      (d.email   || '').toLowerCase().includes(q) ||
+      String(d.id || '').includes(q) ||
+      (svcLabels[d.service] || d.service || '').toLowerCase().includes(q)
     );
   }
 
@@ -2418,8 +2423,6 @@ function initFirebase() {
       if (!firstLoad) {
         const newOrders = demandes.filter(d => !prev.has(d.id));
         if (newOrders.length > 0) {
-          const svcLabels = { cv: 'CV', lettre: 'Lettre', dossier: 'Dossier',
-                              courrier: 'Courrier', sejour: 'Séjour', impot: 'Avis impôt', naturalisation: 'Naturalisation' };
           newOrders.forEach(d => {
             const svc = svcLabels[d.service] || d.service;
             showToast(`🔔 Nouvelle commande — ${svc} (${d.prenom || '—'})`, 'success');

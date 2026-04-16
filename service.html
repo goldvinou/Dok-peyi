@@ -101,7 +101,7 @@
         <p class="sw-sub" id="sw-q-sub">Plus vous nous donnez de détails, meilleur sera le résultat</p>
         <div id="sw-fields"></div>
         <div class="sw-actions">
-          <button class="sw-btn-ghost" onclick="swGoStep(1)">← Retour</button>
+          <button class="sw-btn-ghost" onclick="swGoStep(1)" aria-label="Retour à l'étape précédente">← Retour</button>
           <button class="sw-btn-next"  onclick="swNext(2)">Générer mon document →</button>
         </div>
       </div>
@@ -110,14 +110,14 @@
       <div class="sw-step" id="sw-s3">
 
         <!-- État chargement -->
-        <div id="sw-loading">
-          <div class="sw-spinner"></div>
+        <div id="sw-loading" role="status" aria-live="polite" aria-atomic="true">
+          <div class="sw-spinner" aria-hidden="true"></div>
           <div class="sw-loading-msg" id="sw-loading-msg">Demande reçue</div>
           <div class="sw-loading-sub">Nous préparons votre document — cela prend quelques instants.</div>
         </div>
 
         <!-- Aperçu avec filigrane -->
-        <div id="sw-preview">
+        <div id="sw-preview" role="region" aria-label="Aperçu du document généré">
           <div class="sw-preview-head">
             <div class="sw-preview-title">✅ Document généré avec succès !</div>
             <div class="sw-preview-sub">Aperçu avec filigrane — payez pour obtenir la version finale sans filigrane</div>
@@ -129,7 +129,7 @@
             </div>
           </div>
           <div class="sw-actions">
-            <button class="sw-btn-ghost" onclick="swGoStep(2)">← Modifier</button>
+            <button class="sw-btn-ghost" onclick="swGoStep(2)" aria-label="Modifier les informations">← Modifier</button>
             <button class="sw-btn-next"  onclick="swGoStep4()">💳 Payer et obtenir mon document →</button>
           </div>
         </div>
@@ -181,6 +181,16 @@
     </div>
 
   </main>
+
+  <noscript>
+    <style>.sw-nav,.sw-hero,#sw-progress,.sw-main{display:none}</style>
+    <div style="font-family:Inter,system-ui,sans-serif;max-width:520px;margin:80px auto;padding:32px;text-align:center;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+      <div style="font-size:3rem;margin-bottom:16px">⚠️</div>
+      <h1 style="font-size:1.3rem;color:#0f172a;margin-bottom:12px">JavaScript requis</h1>
+      <p style="color:#64748b;line-height:1.6;margin-bottom:24px">Ce service nécessite JavaScript pour fonctionner. Veuillez l'activer dans votre navigateur pour continuer.</p>
+      <a href="/" style="display:inline-block;background:#2563eb;color:#fff;font-weight:600;padding:12px 28px;border-radius:10px;text-decoration:none">← Retour à l'accueil</a>
+    </div>
+  </noscript>
 
   <!-- Firebase SDK -->
   <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>

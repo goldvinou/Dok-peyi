@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page introuvable — Dok'péyi</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.08);
+      padding: 56px 48px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+    .code {
+      font-size: 6rem;
+      font-weight: 800;
+      color: #2563eb;
+      line-height: 1;
+      letter-spacing: -4px;
+    }
+    .icon {
+      font-size: 2.5rem;
+      margin: 16px 0;
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: .95rem;
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600;
+      font-size: .9rem;
+      padding: 12px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 600;
+      font-size: .9rem;
+      padding: 12px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .btn-ghost:hover { background: #e2e8f0; }
+    .services {
+      margin-top: 36px;
+      padding-top: 28px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .services p {
+      font-size: .82rem;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    .service-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .service-links a {
+      font-size: .8rem;
+      background: #eff6ff;
+      color: #2563eb;
+      padding: 5px 12px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background .15s;
+    }
+    .service-links a:hover { background: #dbeafe; }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <div class="code">404</div>
+    <div class="icon" aria-hidden="true">🗺️</div>
+    <h1>Page introuvable</h1>
+    <p>La page que vous cherchez n'existe pas ou a été déplacée.<br>Retournez à l'accueil pour continuer.</p>
+
+    <div class="actions">
+      <a href="/" class="btn-primary">← Accueil</a>
+      <a href="/#services" class="btn-ghost">Voir les services</a>
+    </div>
+
+    <div class="services">
+      <p>Accéder directement à un service :</p>
+      <div class="service-links">
+        <a href="/service?s=cv">CV</a>
+        <a href="/service?s=lettre">Lettre de motivation</a>
+        <a href="/service?s=courrier">Courrier</a>
+        <a href="/service?s=dossier">Dossier</a>
+        <a href="/service?s=sejour">Titre de séjour</a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
