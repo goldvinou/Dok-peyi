@@ -162,6 +162,14 @@ const SVC = {
   }
 };
 
+/* ── IMPORT — choix qui impliquent un document existant ─────── */
+const IMPORT_CHOICES = {
+  cv:     ['improve', 'pro'],
+  lettre: ['improve', 'adapt'],
+  sejour: ['renouvellement', 'regularisation'],
+  impot:  ['comprendre', 'aide']
+};
+
 /* ── STATE ───────────────────────────────────────────────── */
 const SSW = {
   svc:             null,
@@ -456,7 +464,29 @@ function swBuildForm() {
   };
   document.getElementById('sw-q-title').textContent = titles[SSW.svc] || 'Informations';
 
-  document.getElementById('sw-fields').innerHTML = questions.map(q => `
+  /* Bouton import — uniquement si le choix implique un document existant */
+  const showImport = (IMPORT_CHOICES[SSW.svc] || []).includes(SSW.choice);
+
+  const importHtml = showImport ? `
+    <div class="sw-import-wrap">
+      <input type="file" id="sw-import-input" accept=".pdf,.jpg,.jpeg,.png"
+             style="display:none" onchange="swHandleImport(this)">
+      <button type="button" class="sw-import-btn"
+              onclick="document.getElementById('sw-import-input').click()">
+        <span class="sw-import-icon">⬆️</span>
+        <span>
+          <span class="sw-import-title">Gagnez du temps — importer votre document</span>
+          <span class="sw-import-hint">PDF ou image · max 3 Mo · facultatif</span>
+        </span>
+      </button>
+      <div class="sw-import-chosen" id="sw-import-chosen" style="display:none">
+        <span>📄</span><span id="sw-import-name"></span>
+        <button type="button" onclick="swRemoveImport()">✕</button>
+      </div>
+      <div class="sw-import-status" id="sw-import-status" style="display:none"></div>
+    </div>` : '';
+
+  document.getElementById('sw-fields').innerHTML = importHtml + questions.map(q => `
     <div class="sw-fg">
       <label for="sw-f-${q.id}">${escSw(q.label)}</label>
       ${q.type === 'textarea'
@@ -466,7 +496,22 @@ function swBuildForm() {
              placeholder="${escSw(q.placeholder || '')}">`}
     </div>`).join('');
 
-  /* Pré-remplissage depuis données extraites du document importé */
+  /* Restaurer l'état visuel de l'import si retour depuis l'étape 3 */
+  if (showImport && SSW.importFile) {
+    document.getElementById('sw-import-name').textContent     = SSW.importFile.name;
+    document.getElementById('sw-import-chosen').style.display = 'flex';
+    document.querySelector('.sw-import-btn').style.display    = 'none';
+    if (SSW.importExtracted) {
+      const filled = Object.values(SSW.importExtracted).filter(v => v?.trim()).length;
+      _swImportStatus(
+        filled > 0 ? 'success' : 'neutral',
+        filled > 0 ? 'Informations détectées — vérifiez et modifiez si nécessaire'
+                   : 'Document joint · remplissez les champs ci-dessous'
+      );
+    }
+  }
+
+  /* Pré-remplissage depuis extraction (si pas déjà rempli manuellement) */
   if (SSW.importExtracted) {
     Object.entries(SSW.importExtracted).forEach(([k, v]) => {
       const el = document.getElementById('sw-f-' + k);
