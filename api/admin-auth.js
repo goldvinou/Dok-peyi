@@ -6,6 +6,8 @@ export const config = { runtime: 'edge' };
    variables d'environnement Vercel, jamais exposés au client.
    ============================================================ */
 
+import { rateLimit } from '../lib/rate-limit.js';
+
 /* Utilisateurs — les mots de passe viennent des env vars */
 const USERS = [
   { user: 'allan',  envKey: 'ADMIN_PASS_ALLAN',  nom: 'Allan',      role: 'admin',      color: '#2563eb' },
@@ -19,6 +21,15 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ ok: false, error: 'Method not allowed' }), {
       status: 405,
       headers: { 'content-type': 'application/json' }
+    });
+  }
+
+  /* Brute-force guard — 5 attempts per 5 minutes per IP */
+  const rl = rateLimit(req, { max: 5, windowMs: 300_000 });
+  if (!rl.ok) {
+    return new Response(JSON.stringify({ ok: false, error: 'Trop de tentatives — réessayez dans 5 minutes.' }), {
+      status: 429,
+      headers: { 'content-type': 'application/json', 'Retry-After': '300' }
     });
   }
 

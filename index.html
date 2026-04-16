@@ -53,7 +53,7 @@
   }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/tokens.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="lang.css">
@@ -482,7 +482,19 @@
   </script>
   <!-- Vercel Analytics -->
   <script defer src="/_vercel/insights/script.js"></script>
-  <!-- Service Worker -->
-  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <!-- Service Worker + update notification -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+      navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data?.type !== 'SW_UPDATED') return;
+        var b = document.createElement('div');
+        b.setAttribute('role', 'alert');
+        b.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;display:flex;align-items:center;gap:14px;font-family:Inter,sans-serif;font-size:.88rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.25)';
+        b.innerHTML = '<span>Nouvelle version disponible</span><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.82rem;font-weight:700;cursor:pointer">Actualiser</button><button onclick="this.parentNode.remove()" aria-label="Fermer" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;line-height:1">✕</button>';
+        document.body.appendChild(b);
+      });
+    }
+  </script>
 </body>
 </html>

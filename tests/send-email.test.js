@@ -14,10 +14,11 @@ const { default: handler } = await import('../api/send-email.js');
 
 /* ── Helpers ─────────────────────────────────────────────── */
 
+let _ipSeed = 200;
 function makeReq(body, method = 'POST') {
   return new Request('https://dok-peyi.vercel.app/api/send-email', {
     method,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', 'x-forwarded-for': `10.1.${Math.floor(++_ipSeed/256)}.${_ipSeed%256}` },
     body:    method === 'POST' ? JSON.stringify(body) : undefined
   });
 }

@@ -41,6 +41,7 @@ export const config = { runtime: 'edge' };
 import { handlers }     from '../lib/pipeline.js';
 import { getDocument }  from '../lib/documents.js';
 import { json, CORS }   from '../lib/edge-response.js';
+import { rateLimit }    from '../lib/rate-limit.js';
 
 /* ── Handler ──────────────────────────────────────────────── */
 export default async function handler(req) {
@@ -69,6 +70,8 @@ export default async function handler(req) {
     /* ── generate ── */
     case 'generate': {
       if (!apiKey) return json({ ok: false, error: 'CLAUD_API_KEY non configurée' }, 500);
+      const rl = rateLimit(req, { max: 5, windowMs: 60_000 });
+      if (!rl.ok) return json({ ok: false, error: 'Trop de requêtes — réessayez dans une minute.' }, 429);
 
       result = await handlers.generate(order, {
         apiKey,
