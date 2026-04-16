@@ -170,6 +170,11 @@ const IMPORT_CHOICES = {
   impot:  ['comprendre', 'aide']
 };
 
+/* ── TEST MODE — bouton paiement fictif ─────────────────── */
+const IS_TEST_MODE = location.hostname === 'localhost'
+  || location.hostname === '127.0.0.1'
+  || new URLSearchParams(location.search).get('test') === '1';
+
 /* ── STATE ───────────────────────────────────────────────── */
 const SSW = {
   svc:             null,
@@ -897,6 +902,22 @@ function swGoStep4() {
   `;
   document.getElementById('sw-pay-lbl').textContent = `Payer ${cfg.price}€ et obtenir mon document`;
   swGoStep(4);
+
+  if (IS_TEST_MODE) {
+    const testBtn = document.createElement('button');
+    testBtn.type = 'button';
+    testBtn.className = 'sw-btn-test';
+    testBtn.textContent = '🧪 Simuler le paiement (test)';
+    testBtn.onclick = swPayTest;
+    document.getElementById('sw-pay-btn').insertAdjacentElement('afterend', testBtn);
+  }
+}
+
+function swPayTest() {
+  SSW.paid = true;
+  swClearDraft();
+  swSaveOrder();
+  swShowConfirm();
 }
 
 /* ── PAYMENT ──────────────────────────────────────────────── */
