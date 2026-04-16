@@ -32,12 +32,18 @@ export default async function handler(req) {
 
   const { service = 'claude', prompt, history = [] } = body || {};
 
-  if (!prompt) return json({ ok: false, error: 'Champ prompt manquant' }, 400);
+  if (!prompt || typeof prompt !== 'string' || !prompt.trim())
+    return json({ ok: false, error: 'Champ prompt manquant ou invalide' }, 400);
+  if (prompt.length > 8000)
+    return json({ ok: false, error: 'Prompt trop long (max 8 000 caractères)' }, 400);
+  if (!Array.isArray(history))
+    return json({ ok: false, error: 'history doit être un tableau' }, 400);
 
-  // Sanitise history: keep last 10 turns, only valid roles
+  // Sanitise history: keep last 10 turns, valid roles only, max 2000 chars per message
   const ctx = history
-    .filter(m => m.role === 'user' || m.role === 'assistant')
-    .slice(-10);
+    .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .slice(-10)
+    .map(m => ({ role: m.role, content: m.content.slice(0, 2000) }));
 
   /* ── Claude (Anthropic) ──────────────────────────────────── */
   if (service === 'claude') {

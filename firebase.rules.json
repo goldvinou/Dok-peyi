@@ -13,8 +13,15 @@
     },
 
     "statusUpdates": {
-      // Webhook writes order status updates; no public read/write
       "$orderId": {
+        ".read": false,
+        ".write": false
+      }
+    },
+
+    "processed-events": {
+      // Server-side only — idempotence log for Stripe webhook events
+      "$eventId": {
         ".read": false,
         ".write": false
       }

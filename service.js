@@ -451,14 +451,24 @@ function swPipelineUpdate(statut, aiKey, agentId, label) {
 
 /** Appel API vers un agent spécifique avec son system prompt. */
 async function swCallAgent(systemPrompt, userPrompt) {
-  var res  = await fetch('/api/generate-cv', {
-    method:  'POST',
-    headers: { 'content-type': 'application/json' },
-    body:    JSON.stringify({ prompt: userPrompt, systemPrompt: systemPrompt })
-  });
-  var data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return (data.cv || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  var controller = new AbortController();
+  var timeout    = setTimeout(function() { controller.abort(); }, 45000);
+  try {
+    var res = await fetch('/api/generate-cv', {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({ prompt: userPrompt, systemPrompt: systemPrompt }),
+      signal:  controller.signal
+    });
+    clearTimeout(timeout);
+    var data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return (data.cv || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  } catch(err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw new Error('timeout');
+    throw err;
+  }
 }
 
 /* ── GENERATE — pipeline 4 agents ────────────────────────── */
@@ -532,13 +542,20 @@ async function swGenerate() {
       }
     }
   } catch(e) {
+    var isTimeout  = e.message === 'timeout';
+    var isOffline  = !navigator.onLine || e.message.toLowerCase().includes('network') || e.message.toLowerCase().includes('fetch');
+    var userMsg    = isTimeout  ? 'La génération a pris trop de temps. Nos serveurs sont occupés, réessayez dans quelques instants.'
+                  : isOffline  ? 'Impossible de contacter nos serveurs. Vérifiez votre connexion internet, puis réessayez.'
+                  : 'Une erreur est survenue lors de la génération. Réessayez ou revenez en arrière pour modifier vos informations.';
     if (loading) loading.innerHTML =
-      '<div style="text-align:center;padding:24px 16px">'
-      + '<div style="font-size:2.5rem;margin-bottom:12px">❌</div>'
-      + '<div style="color:#ef4444;font-weight:700;margin-bottom:8px">Erreur lors de la préparation</div>'
-      + '<div style="color:#64748b;font-size:.87rem;margin-bottom:20px">' + escSw(e.message) + '</div>'
-      + '<button class="sw-btn-ghost" onclick="swGoStep(2)">← Retour et réessayer</button>'
-      + '</div>';
+      '<div style="text-align:center;padding:32px 20px">'
+      + '<div style="font-size:2.5rem;margin-bottom:14px">' + (isOffline ? '📡' : '⚠️') + '</div>'
+      + '<div style="color:#dc2626;font-weight:700;font-size:1rem;margin-bottom:10px">Génération interrompue</div>'
+      + '<div style="color:#64748b;font-size:.87rem;line-height:1.6;margin-bottom:24px;max-width:320px;margin-left:auto;margin-right:auto">' + escSw(userMsg) + '</div>'
+      + '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'
+      + '<button class="sw-btn-ghost" onclick="swGoStep(2)">← Modifier mes infos</button>'
+      + '<button class="sw-btn-next" onclick="swGenerate()">Réessayer →</button>'
+      + '</div></div>';
   }
 }
 

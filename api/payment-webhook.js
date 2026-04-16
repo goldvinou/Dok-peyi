@@ -65,10 +65,19 @@ export default async function handler(req) {
     try { event = JSON.parse(rawBody); } catch { return json({ ok: false, error: 'JSON invalide' }, 400); }
 
     if (event.type === 'checkout.session.completed') {
+      /* ── Idempotence : rejeter les events déjà traités ── */
+      const alreadyDone = await isEventProcessed(event.id);
+      if (alreadyDone) return json({ ok: true, idempotent: true });
+
       const session  = event.data.object;
       const orderId  = session.metadata?.order_id;
       const amount   = (session.amount_total || 0) / 100;
       const ref      = session.payment_intent;
+
+      /* Marquer l'event comme traité AVANT les side-effects
+         (si les appels suivants échouent, Stripe retente → on retraite,
+         mais c'est plus sûr que de marquer après une mise à jour partielle) */
+      await markEventProcessed(event.id);
 
       /* Mettre à jour Firebase directement */
       await updateFirebaseOrderPaid(orderId, { amount, reference: ref, provider: 'stripe' });
@@ -148,6 +157,29 @@ async function verifyStripeSignature(payload, header, secret) {
     const computed  = Array.from(new Uint8Array(mac)).map(b => b.toString(16).padStart(2,'0')).join('');
     return computed === sig;
   } catch(_) { return false; }
+}
+
+/* ── Idempotence : check + mark via Firebase REST ─────────── */
+async function isEventProcessed(eventId) {
+  const dbUrl = process.env.FIREBASE_DATABASE_URL;
+  if (!dbUrl || !eventId) return false;
+  try {
+    const res = await fetch(dbUrl + '/dok-peyi/processed-events/' + eventId + '.json');
+    const val = await res.json();
+    return val !== null;
+  } catch(_) { return false; }
+}
+
+async function markEventProcessed(eventId) {
+  const dbUrl = process.env.FIREBASE_DATABASE_URL;
+  if (!dbUrl || !eventId) return;
+  try {
+    await fetch(dbUrl + '/dok-peyi/processed-events/' + eventId + '.json', {
+      method:  'PUT',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({ ts: Date.now() })
+    });
+  } catch(_) {}
 }
 
 /* ── Mise à jour Firebase via l'API REST (Edge-compatible) ─── */

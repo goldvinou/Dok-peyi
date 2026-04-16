@@ -45,11 +45,18 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: 'Body invalide' }), { status: 400, headers: jsonH });
   }
   const { prompt, systemPrompt: systemPromptOverride } = body || {};
-  if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+
+  if (!prompt || typeof prompt !== 'string' || !prompt.trim())
     return new Response(JSON.stringify({ error: 'Prompt manquant' }), { status: 400, headers: jsonH });
-  }
+  if (prompt.length > 12000)
+    return new Response(JSON.stringify({ error: 'Prompt trop long (max 12 000 caractères)' }), { status: 400, headers: jsonH });
+  if (systemPromptOverride !== undefined && typeof systemPromptOverride !== 'string')
+    return new Response(JSON.stringify({ error: 'systemPrompt doit être une chaîne' }), { status: 400, headers: jsonH });
+  if (systemPromptOverride && systemPromptOverride.length > 4000)
+    return new Response(JSON.stringify({ error: 'systemPrompt trop long (max 4 000 caractères)' }), { status: 400, headers: jsonH });
+
   // Utiliser le system prompt fourni par l'agent (Viktor, Sofia…) ou le prompt global par défaut
-  const effectiveSystem = (systemPromptOverride && typeof systemPromptOverride === 'string' && systemPromptOverride.trim())
+  const effectiveSystem = (systemPromptOverride && systemPromptOverride.trim())
     ? systemPromptOverride.trim()
     : SYSTEM_PROMPT;
 
