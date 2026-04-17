@@ -192,7 +192,7 @@ button { font-family: var(--font); }
   color: #374151;
   margin-bottom: 5px;
 }
-.sw-fg input, .sw-fg textarea {
+.sw-fg input, .sw-fg textarea, .sw-fg select {
   width: 100%;
   padding: 10px 12px;
   border: 1.5px solid #e2e8f0;
@@ -205,11 +205,22 @@ button { font-family: var(--font); }
   resize: vertical;
   background: #fff;
 }
-.sw-fg input:focus, .sw-fg textarea:focus {
+.sw-fg input:focus, .sw-fg textarea:focus, .sw-fg select:focus {
   border-color: var(--sw-color);
   box-shadow: 0 0 0 3px rgba(var(--sw-rgb),.12);
   background: #fff;
 }
+.sw-radio-group { display: flex; gap: 16px; padding: 4px 0; }
+.sw-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .9rem;
+  color: #1e293b;
+  cursor: pointer;
+  user-select: none;
+}
+.sw-radio input[type="radio"] { width: auto; margin: 0; accent-color: var(--sw-color); }
 
 /* ── Anti-autofill jaune (Chrome, Safari, iOS) ── */
 .sw-fg input:-webkit-autofill,

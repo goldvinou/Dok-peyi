@@ -103,9 +103,14 @@ const SVC = {
     ],
     questions: function() {
       return [
-        { id: 'nationalite', label: 'Nationalité *',                 type: 'text',     placeholder: 'Ex : Haïtienne, Brésilienne, Surinamaise…', required: true },
-        { id: 'situation',   label: 'Votre situation actuelle *',    type: 'textarea', placeholder: 'Depuis quand êtes-vous en Guyane/France ? Avec quel document ? Quel est votre projet de séjour ?', required: true },
-        { id: 'documents',   label: 'Documents dont vous disposez', type: 'textarea', placeholder: 'Passeport, visa, actes d\'état civil, attestation d\'hébergement, contrats de travail…', required: false }
+        { id: 'nationalite',      label: 'Nationalité *',                 type: 'text',     placeholder: 'Ex : Haïtienne, Brésilienne, Surinamaise…', required: true },
+        { id: 'situation',        label: 'Votre situation actuelle *',    type: 'textarea', placeholder: 'Depuis quand êtes-vous en Guyane/France ? Avec quel document ? Quel est votre projet de séjour ?', required: true },
+        { id: 'documents',        label: 'Documents dont vous disposez', type: 'textarea', placeholder: 'Passeport, visa, actes d\'état civil, attestation d\'hébergement, contrats de travail…', required: false },
+        { id: 'visa_actuel',      label: 'Visa ou titre actuel',          type: 'select',   options: ['Aucun', 'Visa touriste', 'Visa étudiant', 'Visa travail', 'Titre de séjour en cours', 'Autre'], required: false },
+        { id: 'date_expiration',  label: 'Date d\'expiration de votre titre/visa actuel', type: 'date', required: false },
+        { id: 'duree_presence',   label: 'Durée de présence en France/Guyane',            type: 'select', options: ['Moins de 1 an', '1-2 ans', '2-5 ans', '5-10 ans', 'Plus de 10 ans'], required: false },
+        { id: 'situation_pro',    label: 'Situation professionnelle',                      type: 'select', options: ['Sans emploi', 'Salarié', 'Indépendant', 'Étudiant', 'Retraité'], required: false },
+        { id: 'historique_refus', label: 'Avez-vous déjà eu un refus de titre de séjour ?', type: 'radio', options: ['oui', 'non'], required: false }
       ];
     }
   },
@@ -494,15 +499,32 @@ function swBuildForm() {
       <div class="sw-import-status" id="sw-import-status" style="display:none"></div>
     </div>` : '';
 
-  document.getElementById('sw-fields').innerHTML = importHtml + questions.map(q => `
-    <div class="sw-fg">
-      <label for="sw-f-${q.id}">${escSw(q.label)}</label>
-      ${q.type === 'textarea'
-        ? `<textarea id="sw-f-${q.id}" data-fid="${q.id}" ${q.required ? 'data-req="1"' : ''}
-             placeholder="${escSw(q.placeholder || '')}" rows="4"></textarea>`
-        : `<input type="text" id="sw-f-${q.id}" data-fid="${q.id}" ${q.required ? 'data-req="1"' : ''}
-             placeholder="${escSw(q.placeholder || '')}">`}
-    </div>`).join('');
+  document.getElementById('sw-fields').innerHTML = importHtml + questions.map(q => {
+    const req = q.required ? 'data-req="1"' : '';
+    let field;
+    if (q.type === 'textarea') {
+      field = `<textarea id="sw-f-${q.id}" data-fid="${q.id}" ${req}
+                 placeholder="${escSw(q.placeholder || '')}" rows="4"></textarea>`;
+    } else if (q.type === 'select') {
+      const opts = (q.options || []).map(o => `<option value="${escSw(o)}">${escSw(o)}</option>`).join('');
+      field = `<select id="sw-f-${q.id}" data-fid="${q.id}" ${req}>
+                 <option value="">— Choisir —</option>${opts}
+               </select>`;
+    } else if (q.type === 'date') {
+      field = `<input type="date" id="sw-f-${q.id}" data-fid="${q.id}" ${req}>`;
+    } else if (q.type === 'radio') {
+      const opts = (q.options || []).map(o =>
+        `<label class="sw-radio"><input type="radio" name="sw-r-${q.id}" value="${escSw(o)}"
+           onchange="document.getElementById('sw-f-${q.id}').value=this.value"> ${escSw(o)}</label>`
+      ).join('');
+      field = `<div class="sw-radio-group">${opts}</div>
+               <input type="hidden" id="sw-f-${q.id}" data-fid="${q.id}" ${req}>`;
+    } else {
+      field = `<input type="text" id="sw-f-${q.id}" data-fid="${q.id}" ${req}
+                 placeholder="${escSw(q.placeholder || '')}">`;
+    }
+    return `<div class="sw-fg"><label for="sw-f-${q.id}">${escSw(q.label)}</label>${field}</div>`;
+  }).join('');
 
   /* Restaurer l'état visuel de l'import si retour depuis l'étape 3 */
   if (showImport && SSW.importFile) {
@@ -530,7 +552,14 @@ function swBuildForm() {
   /* Restore values if returning from step 3 (prioritaire sur l'extraction) */
   Object.entries(SSW.details).forEach(([k, v]) => {
     const el = document.getElementById('sw-f-' + k);
-    if (el && v) el.value = v;
+    if (el && v) {
+      el.value = v;
+      /* Si c'est un champ radio (hidden input), cocher le bouton correspondant */
+      if (el.type === 'hidden') {
+        const radio = document.querySelector(`input[name="sw-r-${k}"][value="${v}"]`);
+        if (radio) radio.checked = true;
+      }
+    }
   });
 }
 
