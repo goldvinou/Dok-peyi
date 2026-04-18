@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>À propos — Dok'péyi</title>
+  <meta name="description" content="Dok'péyi est un service d'aide administrative conçu pour la Guyane — CV, lettres, dossiers, titres de séjour, impôts, naturalisation. Rapide, confidentiel, livré par email.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://dok-peyi.vercel.app/a-propos">
+  <meta property="og:title"       content="À propos — Dok'péyi">
+  <meta property="og:description" content="Service d'aide administrative conçu pour la Guyane. 7 services, livrés par email, propulsés par l'IA.">
+  <meta property="og:image"       content="https://dok-peyi.vercel.app/og-image.svg">
+  <meta property="og:locale"      content="fr_FR">
+  <meta name="twitter:card"       content="summary_large_image">
+  <meta name="twitter:title"      content="À propos — Dok'péyi">
+  <meta name="twitter:description" content="Service d'aide administrative conçu pour la Guyane.">
+  <link rel="canonical" href="https://dok-peyi.vercel.app/a-propos">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tokens.css">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    /* ── HERO SOMBRE ── */
+    .ap-hero {
+      background: var(--dark);
+      padding: 152px 0 108px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ap-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% -5%, rgba(37,99,235,.28) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .ap-hero-eyebrow {
+      display: inline-block;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--blue-mid);
+      margin-bottom: 24px;
+    }
+    .ap-hero h1 {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.05em;
+      line-height: 1.0;
+      margin-bottom: 28px;
+    }
+    .ap-hero h1 em { font-style: normal; color: var(--blue-mid); }
+    .ap-hero-sub {
+      font-size: 1.2rem;
+      color: var(--gray-400);
+      max-width: 520px;
+      line-height: 1.65;
+      font-weight: 400;
+      margin-bottom: 52px;
+    }
+    .ap-stats {
+      display: flex;
+      gap: 52px;
+      flex-wrap: wrap;
+    }
+    .ap-stat strong {
+      display: block;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+    .ap-stat span {
+      font-size: .72rem;
+      color: var(--gray-500);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* ── SECTION MISSION ── */
+    .ap-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: start;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .ap-lead {
+      font-size: 1.07rem;
+      line-height: 1.9;
+      color: var(--gray-600);
+      margin-bottom: 20px;
+    }
+    .ap-lead strong { color: var(--gray-900); }
+
+    /* ── TABLE SERVICES ── */
+    .svc-table {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      max-width: 740px;
+      margin: 0 auto;
+      background: var(--white);
+    }
+    .svc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 28px;
+      border-bottom: 1px solid var(--gray-100);
+      transition: background .15s;
+    }
+    .svc-row:last-child { border-bottom: none; }
+    .svc-row:hover { background: var(--blue-xlight); }
+    .svc-row-left { display: flex; align-items: center; gap: 18px; }
+    .svc-icon { font-size: 1.55rem; width: 44px; text-align: center; flex-shrink: 0; }
+    .svc-name { font-weight: 700; font-size: .95rem; color: var(--gray-900); margin-bottom: 2px; }
+    .svc-desc { font-size: .80rem; color: var(--gray-500); }
+    .svc-price { font-size: 1.22rem; font-weight: 800; color: var(--blue); letter-spacing: -0.03em; white-space: nowrap; flex-shrink: 0; }
+
+    /* ── GUYANE D'ABORD ── */
+    .ap-local-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: start;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .ap-eyebrow {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 16px;
+    }
+    .ap-section-title {
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      color: var(--gray-900);
+      margin-bottom: 28px;
+    }
+    .lang-tags { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; }
+    .lang-tag {
+      background: var(--blue-xlight);
+      color: var(--blue-dark);
+      font-size: .80rem;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 20px;
+    }
+    .ap-orga-eyebrow {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 20px;
+    }
+    .orga-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+      gap: 12px;
+    }
+    .orga-item {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 16px 18px;
+      font-size: .84rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .orga-item:hover {
+      border-color: var(--blue-mid);
+      box-shadow: 0 0 0 3px var(--blue-xlight);
+    }
+    .orga-item small {
+      display: block;
+      color: var(--gray-400);
+      font-weight: 400;
+      font-size: .74rem;
+      margin-top: 4px;
+    }
+
+    /* ── ENGAGEMENT ── */
+    .engage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .engage-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      transition: box-shadow .2s;
+    }
+    .engage-card:hover { box-shadow: var(--shadow-md); }
+    .engage-icon { font-size: 2rem; margin-bottom: 16px; }
+    .engage-title { font-size: 1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 10px; }
+    .engage-text { font-size: .87rem; color: var(--gray-500); line-height: 1.75; }
+
+    /* ── NAV ACTIVE ── */
+    .nav-active {
+      color: var(--blue) !important;
+      background: var(--blue-xlight) !important;
+      border-radius: 10px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .ap-two-col, .ap-local-grid { grid-template-columns: 1fr; gap: 36px; }
+      .ap-stats { gap: 32px; }
+      .ap-hero h1 { font-size: 2.8rem; }
+      .ap-section-title { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">Dok'<span>péyi</span></a>
+      <ul class="nav-links">
+        <li><a href="/#comment">Comment ça marche</a></li>
+        <li><a href="/#services">Services</a></li>
+        <li><a href="/#tarifs">Tarifs</a></li>
+        <li><a href="/a-propos" class="nav-active">À propos</a></li>
+        <li><a href="/#demande" class="nav-cta">Faire ma demande</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="/#comment" class="mobile-link">Comment ça marche</a>
+      <a href="/#services" class="mobile-link">Services</a>
+      <a href="/#tarifs" class="mobile-link">Tarifs</a>
+      <a href="/a-propos" class="mobile-link">À propos</a>
+      <a href="/#demande" class="mobile-link mobile-cta">Faire ma demande</a>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="ap-hero">
+    <div class="container">
+      <span class="ap-hero-eyebrow">Dok'péyi — Guyane française</span>
+      <h1>L'aide<br>administrative<br><em>réinventée.</em></h1>
+      <p class="ap-hero-sub">Des documents professionnels en quelques minutes. Conçu pour la Guyane. Accessible à tous, sans exception.</p>
+      <div class="ap-stats">
+        <div class="ap-stat">
+          <strong>7</strong>
+          <span>Services disponibles</span>
+        </div>
+        <div class="ap-stat">
+          <strong>24h</strong>
+          <span>Délai de livraison</span>
+        </div>
+        <div class="ap-stat">
+          <strong>100%</strong>
+          <span>Livré par email</span>
+        </div>
+        <div class="ap-stat">
+          <strong>RGPD</strong>
+          <span>Données protégées</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NOTRE MISSION ===== -->
+  <section class="section" id="mission">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Notre mission</h2>
+        <p>Rendre l'administration accessible, sans exception</p>
+      </div>
+      <div class="ap-two-col">
+        <div>
+          <p class="ap-lead">
+            La Guyane est un territoire exigeant. Avec une population de plus de 300 000 habitants,
+            une diversité linguistique sans équivalent en France et des démarches administratives
+            aussi complexes que variées, l'accès aux droits n'est pas une évidence pour tous.
+          </p>
+          <p class="ap-lead">
+            Dok'péyi est né de ce constat : <strong>rédiger un CV, monter un dossier CAF ou
+            préparer une demande de titre de séjour ne devrait pas être un parcours du combattant.</strong>
+            Chaque habitant mérite un document professionnel, clair, prêt à soumettre.
+          </p>
+        </div>
+        <div>
+          <p class="ap-lead">
+            Nous combinons l'intelligence artificielle et la connaissance du terrain guyanais
+            pour produire des documents structurés, adaptés aux exigences des organismes locaux —
+            disponibles en quelques minutes, livrés directement par email.
+          </p>
+          <p class="ap-lead">
+            Pas de rendez-vous. Pas de déplacement. Pas de formulaire interminable.
+            <strong>Juste votre document, prêt à soumettre.</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CE QUE NOUS FAISONS ===== -->
+  <section class="section section-light" id="services">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Ce que nous faisons</h2>
+        <p>Sept services, un seul objectif : simplifier vos démarches</p>
+      </div>
+      <div class="svc-table reveal">
+        <div class="svc-row">
+          <div class="svc-row-left">
+            <span class="svc-icon">📄</span>
+            <div>
+              <div class="svc-name">CV Professionnel</div>
+              <div class="svc-desc">Création ou amélioration — 6 templates inclus, prêt à candidater immédiatement</div>
+            </div>
+          </div>
+          <div class="svc-price">à partir de 8€</div>
+        </div>
+        <div class="svc-row">
+          <div class="svc-row-left">
+            <span class="svc-icon">✉️</span>
+            <div>
+              <div class="svc-name">Lettre de motivation</div>
+              <div class="svc-desc">Personnalisée selon le poste et l'entreprise, ton professionnel et accrocheur</div>
+            </div>
+          </div>
+          <div class="svc-price">5€</div>
+        </div>
+        <div class="svc-row">
+          <div class="svc-row-left">
+            <span class="svc-icon">📮</span>
+            <div>
+              <div class="svc-name">Courrier officiel</div>
+              <div class="svc-desc">Demande, réclamation ou contestation auprès de tout organisme administratif</div>
+            </div>
+          </div>
+          <div class="svc-price">7€</div>
+        </div>
+        <div class="svc-row">
+          <div class="svc-row-left">
+            <span class="svc-icon">📁</span>
+            <div>
+              <div class="svc-name">Dossier administratif</div>
+              <div class="svc-desc">CAF, logement social, aide sociale — guide complet, checklist et étapes</div>
+            </div>
+          </div>
+          <div class="svc-price">12€</div>
+        </div>
+        <div class="svc-row">
+          <div class="svc-row-left">
+            <span class="svc-icon">🛂</span>
+            <div>
+              <div class="svc-name">Titre de séjour</div>
+              <div class="svc-desc">Première demande, renouvellement, régularisation — relecture humaine incluse</div>
+            </div>
+          </div>
+          <div class="svc-price">15€</div>
+        </div>
+        <div class="svc-row">
+          <div class="svc-row-left">
+            <span class="svc-icon">🧾</span>
+            <div>
+              <div class="svc-name">Avis d'impôt</div>
+              <div class="svc-desc">Comprendre, contester ou écrire à la DGFiP — décryptage complet</div>
+            </div>
+          </div>
+          <div class="svc-price">10€</div>
+        </div>
+        <div class="svc-row">
+          <div class="svc-row-left">
+            <span class="svc-icon">🏛️</span>
+            <div>
+              <div class="svc-name">Naturalisation</div>
+              <div class="svc-desc">Éligibilité, constitution de dossier, lettre — relecture humaine incluse</div>
+            </div>
+          </div>
+          <div class="svc-price">20€</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:44px">
+        <a href="/#demande" class="btn btn-primary">Commencer ma demande</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== GUYANE D'ABORD ===== -->
+  <section class="section" id="guyane">
+    <div class="container">
+      <div class="ap-local-grid">
+        <div>
+          <p class="ap-eyebrow">Ancrage local</p>
+          <h2 class="ap-section-title">Guyane<br>d'abord.</h2>
+          <p class="ap-lead">
+            Notre service est conçu <em>pour</em> la Guyane, pas adapté depuis ailleurs.
+            Nous connaissons les organismes compétents, les interlocuteurs réels, les délais
+            effectifs et les spécificités du département 973.
+          </p>
+          <p class="ap-lead" style="margin-bottom:0">
+            La Guyane parle au moins sept langues. Nos documents sont rédigés en français clair,
+            construits pour être compris et acceptés par les administrations locales —
+            qu'il s'agisse de la Préfecture, de la CAF ou du Tribunal de Cayenne.
+          </p>
+          <div class="lang-tags">
+            <span class="lang-tag">Français</span>
+            <span class="lang-tag">Créole guyanais</span>
+            <span class="lang-tag">Créole haïtien</span>
+            <span class="lang-tag">Portugais brésilien</span>
+            <span class="lang-tag">Espagnol</span>
+            <span class="lang-tag">Néerlandais</span>
+            <span class="lang-tag">Anglais</span>
+          </div>
+        </div>
+        <div>
+          <p class="ap-orga-eyebrow">Organismes référencés</p>
+          <div class="orga-list">
+            <div class="orga-item">CAF de Guyane<small>Allocations — département 973</small></div>
+            <div class="orga-item">Préfecture de Guyane<small>Titres de séjour, naturalisation</small></div>
+            <div class="orga-item">OFPRA<small>Protection internationale</small></div>
+            <div class="orga-item">CIMADE Guyane<small>Aide aux étrangers, droits</small></div>
+            <div class="orga-item">Tribunal judiciaire de Cayenne<small>Contentieux administratifs</small></div>
+            <div class="orga-item">CPAM de Guyane<small>Assurance maladie</small></div>
+            <div class="orga-item">Pôle emploi Guyane<small>Emploi et formation</small></div>
+            <div class="orga-item">SIMKO / SIGUY<small>Logement social en Guyane</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NOTRE ENGAGEMENT ===== -->
+  <section class="section section-light" id="engagement">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Notre engagement</h2>
+        <p>Des principes non négociables</p>
+      </div>
+      <div class="engage-grid">
+        <div class="engage-card reveal">
+          <div class="engage-icon">⚡</div>
+          <div class="engage-title">Livraison rapide</div>
+          <p class="engage-text">Votre document est généré en temps réel et livré par email dans les heures qui suivent. Délai garanti sous 24h, souvent bien moins.</p>
+        </div>
+        <div class="engage-card reveal">
+          <div class="engage-icon">🔒</div>
+          <div class="engage-title">Confidentialité RGPD</div>
+          <p class="engage-text">Vos données personnelles ne sont jamais revendues. Stockage sécurisé, durée de conservation limitée à 12 mois, conformité RGPD totale.</p>
+        </div>
+        <div class="engage-card reveal">
+          <div class="engage-icon">🤖</div>
+          <div class="engage-title">IA + expertise humaine</div>
+          <p class="engage-text">Nos documents sont générés par intelligence artificielle et relus par notre équipe pour les dossiers sensibles — titre de séjour, naturalisation.</p>
+        </div>
+        <div class="engage-card reveal">
+          <div class="engage-icon">📋</div>
+          <div class="engage-title">Prêts à l'emploi</div>
+          <p class="engage-text">Chaque document est formaté A4, CSS inline, imprimable directement. Aucune retouche nécessaire avant dépôt ou envoi à l'organisme.</p>
+        </div>
+        <div class="engage-card reveal">
+          <div class="engage-icon">🎯</div>
+          <div class="engage-title">Spécificité Guyane</div>
+          <p class="engage-text">Nos contenus intègrent les organismes, délais et procédures spécifiques au département 973 — pas un service généraliste reconditionné.</p>
+        </div>
+        <div class="engage-card reveal">
+          <div class="engage-icon">⚖️</div>
+          <div class="engage-title">Transparence totale</div>
+          <p class="engage-text">CGV, mentions légales et politique de confidentialité accessibles en permanence. Aucun frais caché, aucun abonnement imposé.</p>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:56px">
+        <a href="/#demande" class="btn btn-primary" style="margin-right:12px">Faire ma demande</a>
+        <a href="/cgv" class="btn btn-outline">Lire les CGV</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-logo footer-logo">Dok'<span>péyi</span></div>
+          <p>Ton aide administrative simple et accessible, où que tu sois.</p>
+        </div>
+        <div class="footer-nav">
+          <h4>Navigation</h4>
+          <a href="/#comment">Comment ça marche</a>
+          <a href="/#services">Services</a>
+          <a href="/#tarifs">Tarifs</a>
+          <a href="/a-propos" style="color:var(--white);font-weight:600">À propos</a>
+          <a href="/#demande">Faire ma demande</a>
+        </div>
+        <div class="footer-contact">
+          <h4>Contact</h4>
+          <p>📧 contact@dokpeyi.com</p>
+          <p>📱 WhatsApp disponible</p>
+          <p>🕐 Lun–Sam · 8h–20h</p>
+        </div>
+      </div>
+      <div class="footer-legal">
+        <p>Dok'péyi est un service d'aide à la rédaction et à la préparation de documents. Les informations doivent être vérifiées avant utilisation.</p>
+        <p style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap">
+          <span>© 2026 Dok'péyi — Tous droits réservés</span>
+          <a href="/mentions-legales" style="color:#94a3b8;text-decoration:none;font-size:.82rem">Mentions légales</a>
+          <a href="/cgv" style="color:#94a3b8;text-decoration:none;font-size:.82rem">CGV</a>
+          <a href="/confidentialite" style="color:#94a3b8;text-decoration:none;font-size:.82rem">Confidentialité</a>
+          <a href="/cookies" style="color:#94a3b8;text-decoration:none;font-size:.82rem">Cookies</a>
+          <a href="/a-propos" style="color:#60a5fa;text-decoration:none;font-size:.82rem;font-weight:600">À propos</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobileMenu').classList.toggle('open');
+    });
+    (function(){
+      var targets = document.querySelectorAll('.reveal');
+      var obs = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+      }, { threshold: 0.10 });
+      targets.forEach(function(el){ obs.observe(el); });
+    })();
+  </script>
+  <!-- Vercel Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>
