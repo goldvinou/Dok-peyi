@@ -134,6 +134,7 @@ const SVC = {
           placeholder: 'Décrivez les changements souhaités (design, contenu, mise en page…)', required: true }
       ];
       return [
+        { id: 'cv_template', label: 'Modèle de CV', type: 'template-picker', required: false },
         { id: 'poste',       label: 'Poste recherché *',            type: 'hybrid-select', placeholder: 'Ou saisir un poste non listé…', required: true,  groups: CV_POSTES_GROUPS },
         { id: 'experience',  label: 'Expériences professionnelles', type: 'textarea',      placeholder: 'Postes occupés, entreprises, durées… (laissez vide si débutant)', required: false },
         { id: 'formation',   label: 'Formation / Diplômes',         type: 'hybrid-select', placeholder: 'Ou saisir un diplôme non listé…', required: false, groups: CV_DIPLOMES_GROUPS },
@@ -346,6 +347,14 @@ function swInit() {
   if (!SVC[s]) { location.href = '/'; return; }
   SSW.svc = s;
   _swApplyTheme(s);
+
+  /* Pré-sélection du template CV depuis le paramètre URL (ex: depuis cv-catalogue.html) */
+  const tplParam = params.get('template') || '';
+  if (tplParam && CV_TEMPLATES[tplParam]) {
+    SSW.details = SSW.details || {};
+    SSW.details.cv_template = tplParam;
+  }
+
   swRenderChoices();
   swRestoreDraft();
   swGoStep(1);
@@ -665,6 +674,26 @@ function swBuildForm() {
                            oninput="swTagsSync('${q.id}')"></textarea>
                  <input type="hidden" id="sw-f-${q.id}" data-fid="${q.id}" ${req}>
                </div>`;
+    } else if (q.type === 'template-picker') {
+      const cards = Object.values(CV_TEMPLATES).map(t => {
+        const priceHtml = t.prix === 0
+          ? '<span class="sw-tpl-price sw-tpl-price--free">Inclus</span>'
+          : `<span class="sw-tpl-price sw-tpl-price--paid">+${t.prix}€</span>`;
+        return `<div class="sw-tpl-card" data-tpl="${escSw(t.id)}" onclick="swTplSelect('${escSw(t.id)}')">
+                  <div class="sw-tpl-swatch sw-tpl-swatch--${escSw(t.id)}"></div>
+                  <div class="sw-tpl-info">
+                    <span class="sw-tpl-name">${escSw(t.nom)}</span>${priceHtml}
+                    <span class="sw-tpl-desc">${escSw(t.description)}</span>
+                  </div>
+                </div>`;
+      }).join('');
+      field = `<div class="sw-tpl-wrap" id="sw-tpl-wrap">
+                 <div class="sw-tpl-grid">${cards}</div>
+                 <a href="/cv-catalogue" target="_blank" class="sw-tpl-catalogue-link">
+                   Voir le catalogue complet →
+                 </a>
+                 <input type="hidden" id="sw-f-${q.id}" data-fid="${q.id}" value="classique">
+               </div>`;
     } else {
       field = `<input type="text" id="sw-f-${q.id}" data-fid="${q.id}" ${req}
                  placeholder="${escSw(q.placeholder || '')}">`;
@@ -679,6 +708,12 @@ function swBuildForm() {
       if (wrap) swTagAdd(wrap.id.replace('sw-tags-wrap-', ''), btn.dataset.tag);
     });
   });
+
+  /* Initialiser le template-picker : sélectionner la valeur courante */
+  if (document.getElementById('sw-tpl-wrap')) {
+    const stored = (SSW.details && SSW.details.cv_template) || 'classique';
+    swTplSelect(CV_TEMPLATES[stored] ? stored : 'classique');
+  }
 
   /* Restaurer l'état visuel de l'import si retour depuis l'étape 3 */
   if (showImport && SSW.importFile) {
@@ -803,6 +838,16 @@ function swTagsSync(id) {
   const joined  = selected.join(', ');
   const freeTxt = (free && free.value || '').trim();
   hidden.value = [joined, freeTxt].filter(Boolean).join(' · ');
+}
+
+/** Sélectionne un template CV dans le picker inline. */
+function swTplSelect(id) {
+  if (!CV_TEMPLATES[id]) return;
+  const hidden = document.getElementById('sw-f-cv_template');
+  if (hidden) hidden.value = id;
+  document.querySelectorAll('#sw-tpl-wrap .sw-tpl-card').forEach(c => {
+    c.classList.toggle('sw-tpl-card--selected', c.dataset.tpl === id);
+  });
 }
 
 /* ── PIPELINE HELPERS ─────────────────────────────────────── */

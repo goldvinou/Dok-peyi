@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modèles de CV — Dok'péyi</title>
+  <meta name="description" content="Choisissez parmi 6 modèles de CV professionnels créés pour la Guyane et la France.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:       #c9a84c;
+      --gold-light: #e8c96a;
+      --bg:         #0a0a0a;
+      --card-bg:    #161616;
+      --card-border:#242424;
+      --text:       #e8e8e8;
+      --muted:      #888;
+      --font:       'Inter', system-ui, sans-serif;
+      --font-serif: 'Playfair Display', Georgia, serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      height: 60px;
+      border-bottom: 1px solid #1e1e1e;
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,10,.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .nav-logo {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -.02em;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-back {
+      font-size: .82rem;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      transition: all .18s;
+    }
+    .nav-back:hover { color: #fff; border-color: #444; }
+
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      padding: 60px 24px 48px;
+    }
+    header h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -.02em;
+      margin-bottom: 12px;
+    }
+    header h1 span { color: var(--gold); }
+    header p {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 420px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── GRID ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    @media(max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color .2s, transform .18s, box-shadow .2s;
+      position: relative;
+      cursor: pointer;
+    }
+    .card:hover {
+      border-color: var(--gold);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(201,168,76,.15);
+    }
+    .card.selected {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,168,76,.25);
+    }
+
+    /* Badges */
+    .badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: .65rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      z-index: 2;
+    }
+    .badge-popular { background: var(--gold); color: #1a1a1a; }
+    .badge-premium { background: #fff; color: #1a1a1a; }
+
+    /* ── THUMBNAIL ── */
+    .thumb {
+      width: 100%;
+      aspect-ratio: 210 / 140;
+      overflow: hidden;
+      position: relative;
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    /* ── CARD BODY ── */
+    .card-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-name {
+      font-size: .95rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .card-price {
+      font-size: .8rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 99px;
+    }
+    .price-free  { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.25); }
+    .price-paid  { background: rgba(201,168,76,.12); color: var(--gold); border: 1px solid rgba(201,168,76,.25); }
+    .card-desc {
+      font-size: .8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .card-btn {
+      margin-top: 4px;
+      padding: 10px 0;
+      background: var(--gold);
+      color: #1a1a1a;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .12s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+    .card-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .card-btn.selected-btn {
+      background: #2a2a2a;
+      color: var(--gold);
+      border: 1.5px solid var(--gold);
+    }
+
+    /* ── NOTE PRIX ── */
+    .prix-note {
+      text-align: center;
+      font-size: .75rem;
+      color: #555;
+      margin-top: -4px;
+      margin-bottom: 36px;
+    }
+
+    /* ======================================================
+       THUMBNAILS — simulation des layouts
+    ====================================================== */
+
+    /* CLASSIQUE */
+    .thumb-classique {
+      display: flex;
+      height: 100%;
+    }
+    .thumb-classique .side {
+      width: 28%;
+      background: #f5f5f5;
+      padding: 10px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .thumb-classique .side .avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #2c3e50;
+      margin: 0 auto 4px;
+    }
+    .thumb-classique .side .line {
+      height: 3px; border-radius: 2px; background: #2c3e50; opacity: .6;
+    }
+    .thumb-classique .side .line.short { width: 60%; }
+    .thumb-classique .main {
+      flex: 1;
+      background: #fff;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .thumb-classique .main .name-line { height: 7px; background: #111; border-radius: 2px; width: 80%; }
+    .thumb-classique .main .sub-line  { height: 4px; background: #999; border-radius: 2px; width: 55%; }
+    .thumb-classique .main .sep       { height: 1px; background: #2c3e50; margin: 3px 0; }
+    .thumb-classique .main .body-line { height: 3px; background: #e0e0e0; border-radius: 2px; }
+    .thumb-classique .main .body-line.w90 { width: 90%; }
+    .thumb-classique .main .body-line.w70 { width: 70%; }
+    .thumb-classique .main .body-line.w80 { width: 80%; }
+
+    /* ELITE */
+    .thumb-elite {
+      display: flex;
+      height: 100%;
+    }
+    .thumb-elite .side {
+      width: 32%;
+      background: #1a1a2e;
+      padding: 10px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .thumb-elite .side .avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 2px solid #e94560;
+      margin: 0 auto 4px;
+      background: #2a2a4a;
+    }
+    .thumb-elite .side .name-w { height: 5px; background: #fff; border-radius: 2px; width: 80%; opacity: .85; }
+    .thumb-elite .side .bar-wrap { height: 3px; background: #333; border-radius: 2px; overflow: hidden; }
+    .thumb-elite .side .bar-fill { height: 100%; background: #e94560; border-radius: 2px; }
+    .thumb-elite .main {
+      flex: 1;
+      background: #fff;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .thumb-elite .main .dot-title {
+      display: flex; align-items: center; gap: 4px;
+    }
+    .thumb-elite .main .dot-title::before {
+      content: ''; display: block; width: 6px; height: 6px;
+      border-radius: 50%; background: #e94560; flex-shrink: 0;
+    }
+    .thumb-elite .main .dot-title .line { height: 4px; background: #222; border-radius: 2px; width: 55%; }
+    .thumb-elite .main .body-line { height: 3px; background: #e8e8e8; border-radius: 2px; margin-left: 10px; }
+    .thumb-elite .main .body-line.w80 { width: 80%; }
+    .thumb-elite .main .body-line.w65 { width: 65%; }
+
+    /* CORPORATE */
+    .thumb-corporate {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .thumb-corporate .header {
+      background: #1b2a4a;
+      padding: 10px 10px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .thumb-corporate .header .text { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .thumb-corporate .header .text .name { height: 7px; background: #fff; border-radius: 2px; width: 65%; }
+    .thumb-corporate .header .text .sub  { height: 3px; background: #7eb3e8; border-radius: 2px; width: 45%; }
+    .thumb-corporate .header .avatar { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #7eb3e8; background: #2c4a7e; flex-shrink: 0; }
+    .thumb-corporate .cols {
+      display: flex;
+      flex: 1;
+      background: #fff;
+    }
+    .thumb-corporate .col { flex: 1; padding: 8px 7px; display: flex; flex-direction: column; gap: 4px; }
+    .thumb-corporate .col:first-child { border-right: 1px solid #e8e8e8; }
+    .thumb-corporate .col .sec-title { height: 3px; background: #1b2a4a; border-radius: 2px; width: 70%; margin-bottom: 2px; }
+    .thumb-corporate .col .body-line { height: 3px; background: #e0e0e0; border-radius: 2px; }
+    .thumb-corporate .col .body-line.w90 { width: 90%; }
+    .thumb-corporate .col .body-line.w75 { width: 75%; }
+    .thumb-corporate .col .body-line.w60 { width: 60%; }
+
+    /* IMPACT */
+    .thumb-impact {
+      display: flex;
+      height: 100%;
+    }
+    .thumb-impact .side {
+      width: 30%;
+      background: #0f3460;
+      padding: 10px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .thumb-impact .side .avatar {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid #4fc3f7;
+      background: #16213e;
+      margin: 0 auto 4px;
+    }
+    .thumb-impact .side .w-line { height: 3px; background: rgba(255,255,255,.5); border-radius: 2px; }
+    .thumb-impact .side .w-line.s { width: 55%; }
+    .thumb-impact .side .dots { display: flex; gap: 2px; margin-top: 2px; }
+    .thumb-impact .side .dot { width: 4px; height: 4px; border-radius: 50%; background: #4fc3f7; }
+    .thumb-impact .side .dot.empty { background: transparent; border: 1px solid #4fc3f7; }
+    .thumb-impact .main {
+      flex: 1;
+      background: #fff;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .thumb-impact .main .hdr { height: 7px; background: #16213e; border-radius: 2px; width: 70%; }
+    .thumb-impact .main .sec { height: 3px; background: #e94560; border-radius: 2px; width: 50%; margin-top: 3px; }
+    .thumb-impact .main .body-line { height: 3px; background: #e8e8e8; border-radius: 2px; }
+    .thumb-impact .main .body-line.w85 { width: 85%; }
+    .thumb-impact .main .body-line.w70 { width: 70%; }
+
+    /* PRESTIGE */
+    .thumb-prestige {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #fff;
+    }
+    .thumb-prestige .header {
+      text-align: center;
+      padding: 10px 8px 8px;
+      background: #fff;
+      border-bottom: 1px solid #e8d9b0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .thumb-prestige .header .avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid #c9a84c;
+      background: #f5ead0;
+      margin-bottom: 2px;
+    }
+    .thumb-prestige .header .name { height: 5px; background: #1a1a1a; border-radius: 2px; width: 55%; }
+    .thumb-prestige .header .gold  { height: 3px; background: #c9a84c; border-radius: 2px; width: 35%; }
+    .thumb-prestige .cols {
+      display: flex;
+      flex: 1;
+    }
+    .thumb-prestige .col-l { width: 35%; background: #faf6ee; padding: 6px 6px; display: flex; flex-direction: column; gap: 4px; }
+    .thumb-prestige .col-r { flex: 1; background: #fff; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+    .thumb-prestige .bar-wrap { height: 3px; background: #e8d9b0; border-radius: 2px; overflow: hidden; }
+    .thumb-prestige .bar-fill { height: 100%; background: #c9a84c; border-radius: 2px; }
+    .thumb-prestige .body-line { height: 3px; background: #e0d9cc; border-radius: 2px; }
+    .thumb-prestige .body-line.w85 { width: 85%; }
+    .thumb-prestige .body-line.w70 { width: 70%; }
+    .thumb-prestige .sec-t { height: 3px; background: #8b6914; border-radius: 2px; width: 55%; }
+    .thumb-prestige .gold-line { height: 1px; background: #c9a84c; margin: 2px 0; }
+
+    /* EXECUTIVE */
+    .thumb-executive {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100%;
+      background: #fff;
+      padding: 14px 20px;
+    }
+    .thumb-executive .name  { height: 9px; background: #1a1a1a; border-radius: 2px; width: 65%; margin-bottom: 5px; }
+    .thumb-executive .rule  { height: 1px; background: #1a1a1a; width: 28%; margin-bottom: 5px; }
+    .thumb-executive .title { height: 3px; background: #888; border-radius: 2px; width: 40%; margin-bottom: 8px; }
+    .thumb-executive .contact { height: 3px; background: #bbb; border-radius: 2px; width: 70%; margin-bottom: 10px; }
+    .thumb-executive .sec { height: 2.5px; background: #aaa; border-radius: 2px; width: 30%; align-self: flex-start; margin-bottom: 2px; }
+    .thumb-executive .divider { height: .5px; background: #ddd; width: 100%; margin-bottom: 5px; }
+    .thumb-executive .body-line { height: 3px; background: #e8e8e8; border-radius: 2px; align-self: flex-start; margin-bottom: 3px; }
+    .thumb-executive .body-line.w80 { width: 80%; }
+    .thumb-executive .body-line.w65 { width: 65%; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">Dok'<span>péyi</span></a>
+    <a href="/service?s=cv" class="nav-back">← Retour au wizard CV</a>
+  </nav>
+
+  <header>
+    <h1>Choisissez votre <span>modèle de CV</span></h1>
+    <p>Votre contenu, notre mise en page premium</p>
+  </header>
+
+  <p class="prix-note">Les prix s'ajoutent au tarif de base du CV (8€).</p>
+
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const TEMPLATES = [
+      {
+        id: 'classique', nom: 'Classique', prix: 0,
+        description: 'Épuré et professionnel — convient à tous les secteurs',
+        badge: { text: 'POPULAIRE', cls: 'badge-popular' },
+        thumb: `
+          <div class="thumb-classique">
+            <div class="side">
+              <div class="avatar"></div>
+              <div class="line"></div><div class="line short"></div>
+              <div class="line"></div><div class="line short"></div>
+              <div class="line"></div>
+            </div>
+            <div class="main">
+              <div class="name-line"></div>
+              <div class="sub-line"></div>
+              <div class="sep"></div>
+              <div class="body-line w90"></div>
+              <div class="body-line w70"></div>
+              <div class="body-line w80"></div>
+              <div class="sep"></div>
+              <div class="body-line w90"></div>
+              <div class="body-line w70"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'elite', nom: 'Élite', prix: 4,
+        description: 'Sidebar sombre, impact visuel fort',
+        thumb: `
+          <div class="thumb-elite">
+            <div class="side">
+              <div class="avatar"></div>
+              <div class="name-w"></div>
+              <div class="bar-wrap"><div class="bar-fill" style="width:85%"></div></div>
+              <div class="bar-wrap"><div class="bar-fill" style="width:65%"></div></div>
+              <div class="bar-wrap"><div class="bar-fill" style="width:90%"></div></div>
+            </div>
+            <div class="main">
+              <div class="dot-title"><div class="line"></div></div>
+              <div class="body-line w80"></div>
+              <div class="body-line w65"></div>
+              <div class="dot-title" style="margin-top:4px"><div class="line"></div></div>
+              <div class="body-line w80"></div>
+              <div class="body-line w65"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'corporate', nom: 'Corporate', prix: 2,
+        description: 'Navy sobre — idéal fonction publique',
+        thumb: `
+          <div class="thumb-corporate">
+            <div class="header">
+              <div class="text">
+                <div class="name"></div>
+                <div class="sub"></div>
+              </div>
+              <div class="avatar"></div>
+            </div>
+            <div class="cols">
+              <div class="col">
+                <div class="sec-title"></div>
+                <div class="body-line w90"></div>
+                <div class="body-line w75"></div>
+                <div class="body-line w60"></div>
+                <div class="sec-title" style="margin-top:4px"></div>
+                <div class="body-line w90"></div>
+                <div class="body-line w75"></div>
+              </div>
+              <div class="col">
+                <div class="sec-title"></div>
+                <div class="body-line w90"></div>
+                <div class="body-line w75"></div>
+                <div class="body-line w60"></div>
+                <div class="sec-title" style="margin-top:4px"></div>
+                <div class="body-line w90"></div>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'impact', nom: 'Impact', prix: 2,
+        description: 'Dynamique — idéal commerce et BTP',
+        thumb: `
+          <div class="thumb-impact">
+            <div class="side">
+              <div class="avatar"></div>
+              <div class="w-line"></div>
+              <div class="w-line s"></div>
+              <div class="dots">
+                <div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot empty"></div>
+                <div class="dot empty"></div>
+              </div>
+              <div class="w-line" style="margin-top:4px"></div>
+              <div class="w-line s"></div>
+            </div>
+            <div class="main">
+              <div class="hdr"></div>
+              <div class="sec"></div>
+              <div class="body-line w85"></div>
+              <div class="body-line w70"></div>
+              <div class="sec" style="margin-top:4px"></div>
+              <div class="body-line w85"></div>
+              <div class="body-line w70"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'prestige', nom: 'Prestige', prix: 4,
+        description: 'Or et élégance — idéal santé et éducation',
+        thumb: `
+          <div class="thumb-prestige">
+            <div class="header">
+              <div class="avatar"></div>
+              <div class="name"></div>
+              <div class="gold"></div>
+            </div>
+            <div class="cols">
+              <div class="col-l">
+                <div class="bar-wrap"><div class="bar-fill" style="width:80%"></div></div>
+                <div class="bar-wrap"><div class="bar-fill" style="width:60%"></div></div>
+                <div class="bar-wrap"><div class="bar-fill" style="width:90%"></div></div>
+                <div class="body-line w85" style="margin-top:4px"></div>
+                <div class="body-line w70"></div>
+              </div>
+              <div class="col-r">
+                <div class="sec-t"></div>
+                <div class="gold-line"></div>
+                <div class="body-line w85"></div>
+                <div class="body-line w70"></div>
+                <div class="sec-t" style="margin-top:4px"></div>
+                <div class="gold-line"></div>
+                <div class="body-line w85"></div>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'executive', nom: 'Executive', prix: 7,
+        description: 'Ultra-minimaliste premium — direction et cadres',
+        badge: { text: 'PREMIUM', cls: 'badge-premium' },
+        thumb: `
+          <div class="thumb-executive">
+            <div class="name"></div>
+            <div class="rule"></div>
+            <div class="title"></div>
+            <div class="contact"></div>
+            <div class="sec"></div>
+            <div class="divider"></div>
+            <div class="body-line w80"></div>
+            <div class="body-line w65"></div>
+            <div class="sec" style="margin-top:6px"></div>
+            <div class="divider"></div>
+            <div class="body-line w80"></div>
+          </div>`
+      }
+    ];
+
+    function selectedId() {
+      return new URLSearchParams(location.search).get('template') || '';
+    }
+
+    function renderGrid() {
+      const sel = selectedId();
+      document.getElementById('grid').innerHTML = TEMPLATES.map(t => {
+        const priceHtml = t.prix === 0
+          ? '<span class="card-price price-free">Inclus</span>'
+          : `<span class="card-price price-paid">+${t.prix}€</span>`;
+
+        const badgeHtml = t.badge
+          ? `<span class="badge ${t.badge.cls}">${t.badge.text}</span>`
+          : '';
+
+        const isSelected = sel === t.id;
+        const btnText = isSelected ? '✓ Sélectionné' : 'Choisir ce modèle';
+        const btnCls  = isSelected ? 'card-btn selected-btn' : 'card-btn';
+
+        return `
+          <div class="card${isSelected ? ' selected' : ''}" onclick="selectTemplate('${t.id}')">
+            ${badgeHtml}
+            <div class="thumb">${t.thumb}</div>
+            <div class="card-body">
+              <div class="card-top">
+                <span class="card-name">${t.nom}</span>
+                ${priceHtml}
+              </div>
+              <p class="card-desc">${t.description}</p>
+              <a href="/service?s=cv&template=${t.id}" class="card-btn ${isSelected ? 'selected-btn' : ''}"
+                 onclick="event.stopPropagation()">${btnText}</a>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function selectTemplate(id) {
+      const url = new URL(location.href);
+      url.searchParams.set('template', id);
+      history.replaceState({}, '', url.toString());
+      renderGrid();
+    }
+
+    renderGrid();
+  </script>
+</body>
+</html>
