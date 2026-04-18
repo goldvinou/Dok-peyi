@@ -121,7 +121,7 @@ workspace-* (projets, tâches, chat, IA, QC, agents, notes, dashboard)
 ### Autres fichiers clés
 | Fichier | Rôle |
 |---|---|
-| `service.js` | Wizard client — logique complète, constantes `CV_TEMPLATES`, `MODIFY_SECTIONS`, `CV_POSTES_GROUPS`, `CV_DIPLOMES_GROUPS`, `CV_COMPETENCES_GROUPS`, `LETTRE_ENTREPRISES_GROUPS`, `LETTRE_SECTEUR_TAGS`, `COURRIER_DESTINATAIRES_GROUPS`, `COURRIER_OBJET_TYPES`, `DOSSIER_CAF_PRESTATIONS`, `DOSSIER_CAF_SITUATION_PRO`, `DOSSIER_CAF_FOYER`, `DOSSIER_LOGEMENT_TYPES`, `DOSSIER_LOGEMENT_SITUATIONS`, `DOSSIER_AIDE_TYPES`, `DOSSIER_AIDE_ORGANISMES`, `SSW` state, `swBuildPrompt`, `swGenerate`, panneau modif universel (`swModifyDoc`) — supporte `hybrid-select` et `tags` (avec variante `single: true` = radio-tags) |
+| `service.js` | Wizard client — logique complète, constantes `CV_TEMPLATES`, `MODIFY_SECTIONS`, `CV_POSTES_GROUPS`, `CV_DIPLOMES_GROUPS`, `CV_COMPETENCES_GROUPS`, `LETTRE_ENTREPRISES_GROUPS`, `LETTRE_SECTEUR_TAGS`, `COURRIER_DESTINATAIRES_GROUPS`, `COURRIER_OBJET_TYPES`, `DOSSIER_CAF_PRESTATIONS`, `DOSSIER_CAF_SITUATION_PRO`, `DOSSIER_CAF_FOYER`, `DOSSIER_LOGEMENT_TYPES`, `DOSSIER_LOGEMENT_SITUATIONS`, `DOSSIER_AIDE_TYPES`, `DOSSIER_AIDE_ORGANISMES`, `SEJOUR_NATIONALITES`, `SEJOUR_SITUATION_FAMILIALE`, `SEJOUR_ENFANTS_CHARGE`, `SEJOUR_MOTIFS`, `SEJOUR_DUREES_SOUHAITEES`, `SEJOUR_CHANGEMENT_SITUATION`, `SEJOUR_DUREE_PRESENCE`, `SEJOUR_MOTIFS_REGULARISATION`, `SEJOUR_SUJETS_INFO`, `SSW` state, `swBuildPrompt`, `swGenerate`, panneau modif universel (`swModifyDoc`) — supporte `hybrid-select` et `tags` (avec variante `single: true` = radio-tags) |
 | `service.html` | Wizard client — structure HTML 3 étapes + prévisualisation iframe + panneau modif |
 | `service.css` | Styles wizard + cartes templates + modif panel |
 | `cv-catalogue.html` | Page standalone catalogue des 6 templates CV (lien `?template=XXX` vers wizard) |
@@ -157,6 +157,15 @@ Les services avec review admin obligatoire (`sejour`, `naturalisation`) déclenc
 - `autre` : type (text libre), organisme (text libre)
 - Tous les sous-types : description (textarea obligatoire), documents (textarea facultatif)
 - Les champs spécifiques sont agrégés dans `{{dossier_contexte}}` (variable calculée dans `swBuildPrompt`) injectée dans le prompt dossier.
+
+**Champs wizard séjour par sous-type** (définis dans `SVC.sejour.questions(choice)`, groupes dans `SEJOUR_*`) :
+- Communs à tous : nationalite (hybrid-select — priorité Brésil/Haïti/Suriname/Guyana + Afrique subsaharienne), situation_familiale (tags radio), enfants_charge (tags radio)
+- `premiere` : motif (tags radio — Travail/Regroupement familial/Études/Humanitaire/Retraité/Réfugié OFPRA), duree_souhaitee (tags radio)
+- `renouvellement` : motif (tags radio identique), date_expiration (text), changement_situation (tags radio Oui/Non)
+- `regularisation` : duree_presence (tags radio — Moins d'1 an/1–3 ans/3–5 ans/Plus de 5 ans), motif_regularisation (tags radio)
+- `information` : sujet (tags radio — Droits/Procédure/Recours/Refus/Expulsion)
+- Communs (suite) : situation (textarea obligatoire), documents (textarea), visa_actuel (select), situation_pro (select), historique_refus (radio)
+- Les champs spécifiques sont agrégés dans `{{sejour_contexte}}` (variable calculée dans `swBuildPrompt`) injectée dans le prompt séjour.
 
 ## Templates CV
 6 templates disponibles dans `CV_TEMPLATES` (service.js) et exposés sur la page `cv-catalogue.html`.

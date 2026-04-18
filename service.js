@@ -176,6 +176,37 @@ const DOSSIER_AIDE_ORGANISMES = [
   { label: 'Organisme cible', options: ['CCAS (Centre Communal d\'Action Sociale)', 'MSA Guyane', 'CAF de Guyane', 'Département 973 — service social', 'Croix-Rouge Guyane'] }
 ];
 
+/* ── LISTES PRÉDÉFINIES (SÉJOUR) ───────────────────────────── */
+const SEJOUR_NATIONALITES = [
+  { label: 'Prioritaires Guyane',    options: ['Brésilienne', 'Haïtienne', 'Surinamaise', 'Guyanaise (Guyana)'] },
+  { label: 'Afrique subsaharienne',  options: ['Sénégalaise', 'Malienne', 'Camerounaise', 'Congolaise', 'Ivoirienne', 'Malgache', 'Guinéenne'] },
+  { label: 'Autre nationalité',      options: [] }
+];
+const SEJOUR_SITUATION_FAMILIALE = [
+  { label: 'Situation familiale', options: ['Célibataire', 'Marié(e)', 'Pacsé(e)', 'Séparé(e)', 'Divorcé(e)', 'Veuf(ve)', 'Parent isolé', 'Famille nombreuse'] }
+];
+const SEJOUR_ENFANTS_CHARGE = [
+  { label: 'Enfants à charge', options: ['Aucun', '1', '2', '3 et plus'] }
+];
+const SEJOUR_MOTIFS = [
+  { label: 'Motif du titre', options: ['Travail', 'Regroupement familial', 'Études', 'Humanitaire', 'Retraité(e)', 'Réfugié OFPRA'] }
+];
+const SEJOUR_DUREES_SOUHAITEES = [
+  { label: 'Durée souhaitée', options: ['1 an', '2 ans', '10 ans', 'Pluriannuelle (2 à 4 ans)'] }
+];
+const SEJOUR_CHANGEMENT_SITUATION = [
+  { label: 'Changement depuis le dernier titre', options: ['Oui', 'Non'] }
+];
+const SEJOUR_DUREE_PRESENCE = [
+  { label: 'Durée de présence', options: ['Moins d\'1 an', '1 – 3 ans', '3 – 5 ans', 'Plus de 5 ans'] }
+];
+const SEJOUR_MOTIFS_REGULARISATION = [
+  { label: 'Motif de régularisation', options: ['Vie privée et familiale', 'Travail', 'Maladie (raisons médicales)', 'Autre'] }
+];
+const SEJOUR_SUJETS_INFO = [
+  { label: 'Sujet de la demande', options: ['Droits et titres disponibles', 'Procédure à suivre', 'Voies de recours', 'Refus de titre', 'Risque d\'expulsion'] }
+];
+
 /* ── CONFIG PAR SERVICE ───────────────────────────────────── */
 const SVC = {
   cv: {
@@ -293,17 +324,30 @@ const SVC = {
       { id: 'regularisation', icon: '⚖️', label: 'Régularisation',        desc: 'Je souhaite régulariser ma situation' },
       { id: 'information',    icon: '❓', label: 'Demande d\'information', desc: 'Comprendre mes droits et démarches' }
     ],
-    questions: function() {
-      return [
-        { id: 'nationalite',      label: 'Nationalité *',                 type: 'text',     placeholder: 'Ex : Haïtienne, Brésilienne, Surinamaise…', required: true },
-        { id: 'situation',        label: 'Votre situation actuelle *',    type: 'textarea', placeholder: 'Depuis quand êtes-vous en Guyane/France ? Avec quel document ? Quel est votre projet de séjour ?', required: true },
-        { id: 'documents',        label: 'Documents dont vous disposez', type: 'textarea', placeholder: 'Passeport, visa, actes d\'état civil, attestation d\'hébergement, contrats de travail…', required: false },
-        { id: 'visa_actuel',      label: 'Visa ou titre actuel',          type: 'select',   options: ['Aucun', 'Visa touriste', 'Visa étudiant', 'Visa travail', 'Titre de séjour en cours', 'Autre'], required: false },
-        { id: 'date_expiration',  label: 'Date d\'expiration de votre titre/visa actuel', type: 'date', required: false },
-        { id: 'duree_presence',   label: 'Durée de présence en France/Guyane',            type: 'select', options: ['Moins de 1 an', '1-2 ans', '2-5 ans', '5-10 ans', 'Plus de 10 ans'], required: false },
-        { id: 'situation_pro',    label: 'Situation professionnelle',                      type: 'select', options: ['Sans emploi', 'Salarié', 'Indépendant', 'Étudiant', 'Retraité'], required: false },
-        { id: 'historique_refus', label: 'Avez-vous déjà eu un refus de titre de séjour ?', type: 'radio', options: ['oui', 'non'], required: false }
-      ];
+    questions: function(choice) {
+      const q = [];
+      q.push({ id: 'nationalite',         label: 'Nationalité *',         type: 'hybrid-select', placeholder: 'Ou saisir votre nationalité…', required: true,  groups: SEJOUR_NATIONALITES });
+      q.push({ id: 'situation_familiale', label: 'Situation familiale *', type: 'tags',          placeholder: '', required: true,  single: true, groups: SEJOUR_SITUATION_FAMILIALE });
+      q.push({ id: 'enfants_charge',      label: 'Enfants à charge *',    type: 'tags',          placeholder: '', required: true,  single: true, groups: SEJOUR_ENFANTS_CHARGE });
+      if (choice === 'premiere') {
+        q.push({ id: 'motif',           label: 'Motif du titre *',  type: 'tags', placeholder: '', required: true,  single: true, groups: SEJOUR_MOTIFS });
+        q.push({ id: 'duree_souhaitee', label: 'Durée souhaitée',   type: 'tags', placeholder: '', required: false, single: true, groups: SEJOUR_DUREES_SOUHAITEES });
+      } else if (choice === 'renouvellement') {
+        q.push({ id: 'motif',                label: 'Motif du titre *',           type: 'tags', placeholder: '', required: true,  single: true, groups: SEJOUR_MOTIFS });
+        q.push({ id: 'date_expiration',      label: 'Date d\'expiration du titre', type: 'text', placeholder: 'Ex : 15/08/2025…', required: false });
+        q.push({ id: 'changement_situation', label: 'Changement de situation',    type: 'tags', placeholder: '', required: false, single: true, groups: SEJOUR_CHANGEMENT_SITUATION });
+      } else if (choice === 'regularisation') {
+        q.push({ id: 'duree_presence',       label: 'Durée de présence en France/Guyane *', type: 'tags', placeholder: '', required: true,  single: true, groups: SEJOUR_DUREE_PRESENCE });
+        q.push({ id: 'motif_regularisation', label: 'Motif de régularisation *',             type: 'tags', placeholder: '', required: true,  single: true, groups: SEJOUR_MOTIFS_REGULARISATION });
+      } else if (choice === 'information') {
+        q.push({ id: 'sujet', label: 'Sujet de la demande *', type: 'tags', placeholder: '', required: true, single: true, groups: SEJOUR_SUJETS_INFO });
+      }
+      q.push({ id: 'situation',        label: 'Votre situation actuelle *',                     type: 'textarea', placeholder: 'Depuis quand êtes-vous en Guyane/France ? Avec quel document ? Quel est votre projet de séjour ?', required: true });
+      q.push({ id: 'documents',        label: 'Documents dont vous disposez',                   type: 'textarea', placeholder: 'Passeport, visa, actes d\'état civil, attestation d\'hébergement, contrats de travail…', required: false });
+      q.push({ id: 'visa_actuel',      label: 'Visa ou titre actuel',                           type: 'select',   options: ['Aucun', 'Visa touriste', 'Visa étudiant', 'Visa travail', 'Titre de séjour en cours', 'Autre'], required: false });
+      q.push({ id: 'situation_pro',    label: 'Situation professionnelle',                      type: 'select',   options: ['Sans emploi', 'Salarié', 'Indépendant', 'Étudiant', 'Retraité'], required: false });
+      q.push({ id: 'historique_refus', label: 'Avez-vous déjà eu un refus de titre de séjour ?', type: 'radio',   options: ['oui', 'non'], required: false });
+      return q;
     }
   },
 
@@ -1405,6 +1449,18 @@ function swBuildPrompt() {
   const _cvTplId    = (d.cv_template && CV_TEMPLATES[d.cv_template]) ? d.cv_template : 'classique';
   const _cvTplStyle = CV_TEMPLATES[_cvTplId].style;
 
+  /* Contexte séjour : agrège les champs spécifiques par sous-type */
+  const _sejourParts = [];
+  if (d.situation_familiale)  _sejourParts.push('Situation familiale : ' + d.situation_familiale);
+  if (d.enfants_charge)       _sejourParts.push('Enfants à charge : ' + d.enfants_charge);
+  if (d.motif)                _sejourParts.push('Motif : ' + d.motif);
+  if (d.duree_souhaitee)      _sejourParts.push('Durée souhaitée : ' + d.duree_souhaitee);
+  if (d.changement_situation) _sejourParts.push('Changement de situation : ' + d.changement_situation);
+  if (d.duree_presence)       _sejourParts.push('Durée de présence : ' + d.duree_presence);
+  if (d.motif_regularisation) _sejourParts.push('Motif régularisation : ' + d.motif_regularisation);
+  if (d.sujet)                _sejourParts.push('Sujet : ' + d.sujet);
+  const _sejourContexte = _sejourParts.join(' | ');
+
   /* Contexte dossier : agrège les champs spécifiques par sous-type */
   const _dossierParts = [];
   if (d.prestation)        _dossierParts.push('Prestation : ' + d.prestation);
@@ -1458,8 +1514,16 @@ function swBuildPrompt() {
     anciennete_liste:  d.anciennete_liste  || '',
     situation_actuelle:d.situation_actuelle|| '',
     type_aide:         d.type_aide         || '',
-    organisme_cible:   d.organisme_cible   || '',
-    organisme:         d.organisme         || ''
+    organisme_cible:     d.organisme_cible     || '',
+    organisme:           d.organisme           || '',
+    sejour_contexte:     _sejourContexte,
+    situation_familiale: d.situation_familiale || '',
+    enfants_charge:      d.enfants_charge      || '',
+    motif:               d.motif               || '',
+    duree_souhaitee:     d.duree_souhaitee     || '',
+    changement_situation:d.changement_situation|| '',
+    motif_regularisation:d.motif_regularisation|| '',
+    sujet:               d.sujet               || ''
   };
 
   const result = tpl.replace(/\{\{(\w+)\}\}/g, (_, k) =>
@@ -1529,7 +1593,8 @@ Structure : coordonnées expéditeur (gauche) / ville + date (droite) / coordonn
 Tu es aussi spécialiste des démarches de titre de séjour en Guyane et en France. Génère un document d'aide personnalisé en HTML (CSS inline, format A4).
 
 Client : {{nom}} | Email : {{email}} | Tél : {{tel}} | Nationalité : {{nationalite}}
-Type de demande : {{choix}} | Situation : {{situation}} | Documents disponibles : {{documents}}
+Type de demande : {{choix}} | {{sejour_contexte}}
+Situation : {{situation}} | Documents disponibles : {{documents}}
 
 Contenu :
 1. Résumé de la situation et du type de demande
