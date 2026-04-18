@@ -17,7 +17,8 @@ const SYS_SOFIA = "Tu es Sofia, spécialiste en optimisation chez Dok'péyi. Tu 
 
 const SYS_LEA = "Tu es Léa, responsable du Pôle Qualité & Présentation chez Dok'péyi. Tu transformes les documents en créations professionnelles premium. Tu améliores : la mise en page (marges, espacement, hiérarchie visuelle), la lisibilité (taille de police, contraste, alignements), la structure (titres clairs, sections bien délimitées), l'harmonie du style (cohérence typographique, palette de couleurs professionnelle), et l'impact visuel général. Tu ne modifies pas le contenu rédactionnel, tu améliores uniquement la présentation. Tu retournes UNIQUEMENT le HTML complet mis en forme, sans aucun commentaire.";
 
-const HAIKU = 'claude-haiku-4-5-20251001';
+const HAIKU  = 'claude-haiku-4-5-20251001';
+const SONNET = 'claude-sonnet-4-20250514';
 
 function _emmaModel(svc) {
   return (svc === 'sejour' || svc === 'naturalisation')
@@ -156,7 +157,7 @@ export default async function handler(req) {
       `Optimise le contenu de ce document HTML pour le service "${svc || 'générique'}". ` +
       `Améliore la fluidité, le vocabulaire métier et la finition rédactionnelle. ` +
       `Ne modifie pas la structure HTML ni le CSS inline. Retourne UNIQUEMENT le HTML complet.\n\n${doc}`;
-    const sofiaOut = _strip(await _callSync(apiKey, HAIKU, SYS_SOFIA, sPrompt));
+    const sofiaOut = _strip(await _callSync(apiKey, SONNET, SYS_SOFIA, sPrompt));
     if (sofiaOut) doc = sofiaOut;
 
     /* ── 4. LÉA — mise en page finale (streaming interne) ── */
@@ -174,7 +175,7 @@ export default async function handler(req) {
         `pour le service "${svc || 'générique'}". ` +
         `Ne modifie pas le contenu rédactionnel. Retourne UNIQUEMENT le HTML complet.\n\n${doc}`;
     }
-    const finalDoc = _strip(await _callStream(apiKey, HAIKU, SYS_LEA, leaContent));
+    const finalDoc = _strip(await _callStream(apiKey, SONNET, SYS_LEA, leaContent));
 
     return new Response(JSON.stringify({ cv: finalDoc || doc }), { status: 200, headers: jsonH });
 
