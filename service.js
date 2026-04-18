@@ -298,8 +298,73 @@ const IS_TEST_MODE = location.hostname === 'localhost'
 /* ── PAYPAL — email du compte PayPal Business ────────────── */
 const PAYPAL_EMAIL = 'contact@dok-peyi.fr';
 
-/* ── MODIFY CV — paramètres ──────────────────────────────── */
+/* ── MODIFY DOC — paramètres ─────────────────────────────── */
 const FREE_MODIFICATIONS = 2;
+
+/* Sections proposées au panneau de modification, par service.
+   Utilisé par _swModifyPanelInit pour peupler #sw-modify-section. */
+const MODIFY_SECTIONS = {
+  cv: [
+    'En-tête (Nom, titre, contact)',
+    'Profil / Accroche',
+    'Expérience professionnelle',
+    'Formation',
+    'Compétences',
+    'Langues',
+    'Centres d\u2019intérêt',
+    'Style global / Mise en page'
+  ],
+  lettre: [
+    'En-tête / Coordonnées',
+    'Accroche (1er paragraphe)',
+    'Pourquoi eux (2e paragraphe)',
+    'Pourquoi moi (3e paragraphe)',
+    'Projection / Conclusion',
+    'Formule de politesse',
+    'Style global / Mise en page'
+  ],
+  courrier: [
+    'Expéditeur / Destinataire',
+    'Objet',
+    'Corps (argumentation)',
+    'Références légales',
+    'Formule de politesse',
+    'Style global / Mise en page'
+  ],
+  dossier: [
+    'Introduction / Résumé',
+    'Checklist documents',
+    'Étapes de la démarche',
+    'Organismes et contacts',
+    'Conseils et délais',
+    'Style global / Mise en page'
+  ],
+  sejour: [
+    'Analyse de situation',
+    'Documents requis',
+    'Étapes de la procédure',
+    'Organismes et contacts',
+    'Avertissements légaux',
+    'Style global / Mise en page'
+  ],
+  impot: [
+    'Résumé et verdict',
+    'Décomposition de l\u2019avis',
+    'Points d\u2019attention',
+    'Prochaine étape',
+    'Contacts DGFiP',
+    'Style global / Mise en page'
+  ],
+  naturalisation: [
+    'Analyse d\u2019éligibilité',
+    'Critères vérifiés',
+    'Documents requis',
+    'Lettre de motivation',
+    'Organismes et contacts',
+    'Avertissements légaux',
+    'Style global / Mise en page'
+  ]
+};
 
 /* ── STATE ───────────────────────────────────────────────── */
 const SSW = {
@@ -855,16 +920,29 @@ function swTplSelect(id) {
   });
 }
 
-/* ── MODIFY CV ────────────────────────────────────────────── */
+/* ── MODIFY DOC ───────────────────────────────────────────── */
 
 /** Initialise / réinitialise le panneau de modification. */
 function _swModifyPanelInit() {
   var panel = document.getElementById('sw-modify-panel');
   if (!panel) return;
-  /* Le panneau n'est visible que pour les CV (scratch/pro) */
-  var showPanel = SSW.svc === 'cv' && SSW.choice !== 'improve';
+  /* Panneau visible pour tous les services avec sections configurées,
+     sauf sous-type 'improve' qui part déjà d'un document existant amélioré. */
+  var sections  = MODIFY_SECTIONS[SSW.svc] || null;
+  var showPanel = !!sections && SSW.choice !== 'improve';
   panel.style.display = showPanel ? 'block' : 'none';
   if (!showPanel) return;
+
+  /* Peupler dynamiquement le select avec les sections du service actif */
+  var select = document.getElementById('sw-modify-section');
+  if (select) {
+    select.innerHTML = '<option value="">— Choisir une section —</option>'
+      + sections.map(function(s) {
+          return '<option value="' + escSw(s) + '">' + escSw(s) + '</option>';
+        }).join('');
+    select.value = '';
+  }
+
   _swModifyUpdateCounter();
   document.getElementById('sw-modify-history').innerHTML = '<p class="sw-modify-history-empty">Version originale disponible</p>';
 }
@@ -887,13 +965,13 @@ function _swModifyUpdateCounter() {
     if (btn) btn.disabled = true;
     if (exhausted) {
       exhausted.style.display = 'block';
-      exhausted.innerHTML = '⚠️ Vous avez utilisé vos ' + FREE_MODIFICATIONS + ' modifications gratuites. Une option +2€ sera bientôt disponible pour continuer à affiner votre CV.';
+      exhausted.innerHTML = '⚠️ Vous avez utilisé vos ' + FREE_MODIFICATIONS + ' modifications gratuites. Une option +2€ sera bientôt disponible pour continuer à affiner votre document.';
     }
   }
 }
 
-/** Applique une modification ciblée sur le CV courant. */
-async function swModifyCV() {
+/** Applique une modification ciblée sur le document courant. */
+async function swModifyDoc() {
   if (SSW.modifyCount >= FREE_MODIFICATIONS) return;
 
   var section     = (document.getElementById('sw-modify-section')?.value     || '').trim();

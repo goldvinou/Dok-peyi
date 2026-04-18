@@ -65,7 +65,9 @@ service.html + service.js (wizard 3 étapes : service → infos → paiement)
     ↓
     ├─ POST /api/generate-cv      (génération document HTML via Claude streaming)
     ↓ iframe srcdoc (prévisualisation)
-    ├─ Panneau modif section      (FREE_MODIFICATIONS = 2, versions historisées)
+    ├─ Panneau modif section      (universel tous services hors 'improve',
+    │                              FREE_MODIFICATIONS = 2, sections par service
+    │                              via MODIFY_SECTIONS, versions historisées)
     ↓
     ├─ POST /api/create-checkout  (Stripe) OU paiement PayPal/Momo manuel
     ↓ redirection Stripe Checkout
@@ -119,7 +121,7 @@ workspace-* (projets, tâches, chat, IA, QC, agents, notes, dashboard)
 ### Autres fichiers clés
 | Fichier | Rôle |
 |---|---|
-| `service.js` | Wizard client — logique complète, constante `CV_TEMPLATES`, `SSW` state, `swBuildPrompt`, `swGenerate`, panneau modif |
+| `service.js` | Wizard client — logique complète, constantes `CV_TEMPLATES` et `MODIFY_SECTIONS`, `SSW` state, `swBuildPrompt`, `swGenerate`, panneau modif universel (`swModifyDoc`) |
 | `service.html` | Wizard client — structure HTML 3 étapes + prévisualisation iframe + panneau modif |
 | `service.css` | Styles wizard + cartes templates + modif panel |
 | `cv-catalogue.html` | Page standalone catalogue des 6 templates CV (lien `?template=XXX` vers wizard) |
