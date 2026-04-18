@@ -121,7 +121,7 @@ workspace-* (projets, tâches, chat, IA, QC, agents, notes, dashboard)
 ### Autres fichiers clés
 | Fichier | Rôle |
 |---|---|
-| `service.js` | Wizard client — logique complète, constantes `CV_TEMPLATES`, `MODIFY_SECTIONS`, `CV_POSTES_GROUPS`, `CV_DIPLOMES_GROUPS`, `CV_COMPETENCES_GROUPS`, `LETTRE_ENTREPRISES_GROUPS`, `LETTRE_SECTEUR_TAGS`, `COURRIER_DESTINATAIRES_GROUPS`, `COURRIER_OBJET_TYPES`, `SSW` state, `swBuildPrompt`, `swGenerate`, panneau modif universel (`swModifyDoc`) — supporte `hybrid-select` et `tags` (avec variante `single: true` = radio-tags) |
+| `service.js` | Wizard client — logique complète, constantes `CV_TEMPLATES`, `MODIFY_SECTIONS`, `CV_POSTES_GROUPS`, `CV_DIPLOMES_GROUPS`, `CV_COMPETENCES_GROUPS`, `LETTRE_ENTREPRISES_GROUPS`, `LETTRE_SECTEUR_TAGS`, `COURRIER_DESTINATAIRES_GROUPS`, `COURRIER_OBJET_TYPES`, `DOSSIER_CAF_PRESTATIONS`, `DOSSIER_CAF_SITUATION_PRO`, `DOSSIER_CAF_FOYER`, `DOSSIER_LOGEMENT_TYPES`, `DOSSIER_LOGEMENT_SITUATIONS`, `DOSSIER_AIDE_TYPES`, `DOSSIER_AIDE_ORGANISMES`, `SSW` state, `swBuildPrompt`, `swGenerate`, panneau modif universel (`swModifyDoc`) — supporte `hybrid-select` et `tags` (avec variante `single: true` = radio-tags) |
 | `service.html` | Wizard client — structure HTML 3 étapes + prévisualisation iframe + panneau modif |
 | `service.css` | Styles wizard + cartes templates + modif panel |
 | `cv-catalogue.html` | Page standalone catalogue des 6 templates CV (lien `?template=XXX` vers wizard) |
@@ -149,6 +149,14 @@ Note : les templates CV sont définis dans `service.js` (constante `CV_TEMPLATES
 | `naturalisation` | Naturalisation | 20€ | claude-haiku-4-5 | **Oui** | situation / dossier / lettre | ✅ Fonctionnel |
 
 Les services avec review admin obligatoire (`sejour`, `naturalisation`) déclenchent la transition `generated → needs_review` au lieu de `generated → pending_payment`.
+
+**Champs wizard dossier par sous-type** (définis dans `SVC.dossier.questions`, groupes dans `DOSSIER_*`) :
+- `caf` : prestation (tags radio — RSA/APL/AAH/PAJE/ALS/ASF), situation_pro (tags radio), foyer (tags radio), revenus (select)
+- `logement` : type_demande (tags radio — HLM/Mutation/Urgence/Hébergement urgence), departement (text), anciennete_liste (select), situation_actuelle (tags multi)
+- `aide` : type_aide (tags multi — alimentaire/énergie/eau/mobilité/obsèques/rentrée scolaire), organisme_cible (tags radio — CCAS/MSA/CAF/Département 973/Croix-Rouge)
+- `autre` : type (text libre), organisme (text libre)
+- Tous les sous-types : description (textarea obligatoire), documents (textarea facultatif)
+- Les champs spécifiques sont agrégés dans `{{dossier_contexte}}` (variable calculée dans `swBuildPrompt`) injectée dans le prompt dossier.
 
 ## Templates CV
 6 templates disponibles dans `CV_TEMPLATES` (service.js) et exposés sur la page `cv-catalogue.html`.

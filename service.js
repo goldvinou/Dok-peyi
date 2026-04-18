@@ -153,6 +153,29 @@ const COURRIER_OBJET_TYPES = [
   ]}
 ];
 
+/* ── LISTES PRÉDÉFINIES (DOSSIER) ──────────────────────────── */
+const DOSSIER_CAF_PRESTATIONS = [
+  { label: 'Type de prestation', options: ['RSA', 'APL', 'AAH', 'PAJE', 'ALS', 'ASF', 'Autre prestation CAF'] }
+];
+const DOSSIER_CAF_SITUATION_PRO = [
+  { label: 'Situation professionnelle', options: ['Sans emploi', 'Salarié(e)', 'Indépendant(e)', 'Étudiant(e)', 'En formation', 'Retraité(e)', 'Congé parental'] }
+];
+const DOSSIER_CAF_FOYER = [
+  { label: 'Composition du foyer', options: ['Seul(e) sans enfant', 'Seul(e) avec 1 enfant', 'Seul(e) avec 2 enfants', 'Seul(e) avec 3 enfants ou +', 'En couple sans enfant', 'En couple avec 1 enfant', 'En couple avec 2 enfants', 'En couple avec 3 enfants ou +'] }
+];
+const DOSSIER_LOGEMENT_TYPES = [
+  { label: 'Type de demande', options: ['HLM (logement social classique)', 'Mutation (changer de logement HLM)', 'Logement d\'urgence', 'Hébergement d\'urgence (115)'] }
+];
+const DOSSIER_LOGEMENT_SITUATIONS = [
+  { label: 'Situation actuelle', options: ['Sans domicile fixe', 'Hébergé(e) chez un tiers', 'Logement insalubre', 'Suroccupé (trop de personnes)', 'Logement inadapté au handicap', 'Expulsion imminente'] }
+];
+const DOSSIER_AIDE_TYPES = [
+  { label: 'Type d\'aide', options: ['Aide alimentaire', 'Aide énergie (électricité / gaz)', 'Aide eau potable', 'Aide mobilité (transport)', 'Aide obsèques', 'Aide rentrée scolaire'] }
+];
+const DOSSIER_AIDE_ORGANISMES = [
+  { label: 'Organisme cible', options: ['CCAS (Centre Communal d\'Action Sociale)', 'MSA Guyane', 'CAF de Guyane', 'Département 973 — service social', 'Croix-Rouge Guyane'] }
+];
+
 /* ── CONFIG PAR SERVICE ───────────────────────────────────── */
 const SVC = {
   cv: {
@@ -237,7 +260,23 @@ const SVC = {
     ],
     questions: function(choice) {
       const q = [];
-      if (choice === 'autre') q.push({ id: 'type', label: 'Type de dossier *', type: 'text', placeholder: 'Ex : Pôle Emploi, Retraite, Dossier scolaire…', required: true });
+      if (choice === 'caf') {
+        q.push({ id: 'prestation',    label: 'Type de prestation *',        type: 'tags',   placeholder: '', required: true,  single: true, groups: DOSSIER_CAF_PRESTATIONS });
+        q.push({ id: 'situation_pro', label: 'Situation professionnelle *', type: 'tags',   placeholder: '', required: true,  single: true, groups: DOSSIER_CAF_SITUATION_PRO });
+        q.push({ id: 'foyer',         label: 'Composition du foyer *',      type: 'tags',   placeholder: '', required: true,  single: true, groups: DOSSIER_CAF_FOYER });
+        q.push({ id: 'revenus',       label: 'Revenus annuels déclarés',    type: 'select', options: ['Je ne sais pas / Non déclaré', 'Moins de 5 000 €', '5 000 – 10 000 €', '10 000 – 15 000 €', '15 000 – 20 000 €', 'Plus de 20 000 €'], required: false });
+      } else if (choice === 'logement') {
+        q.push({ id: 'type_demande',       label: 'Type de demande *',              type: 'tags',   placeholder: '', required: true,  single: true, groups: DOSSIER_LOGEMENT_TYPES });
+        q.push({ id: 'departement',        label: 'Département de résidence *',     type: 'text',   placeholder: 'Ex : 973 (Guyane), 75 (Paris)…', required: true });
+        q.push({ id: 'anciennete_liste',   label: 'Ancienneté sur liste d\'attente', type: 'select', options: ['Nouvelle demande', 'Moins de 1 an', '1 – 2 ans', '2 – 5 ans', 'Plus de 5 ans'], required: false });
+        q.push({ id: 'situation_actuelle', label: 'Situation actuelle',              type: 'tags',   placeholder: '', required: false, groups: DOSSIER_LOGEMENT_SITUATIONS });
+      } else if (choice === 'aide') {
+        q.push({ id: 'type_aide',       label: 'Type d\'aide recherché *', type: 'tags', placeholder: '', required: true,  groups: DOSSIER_AIDE_TYPES });
+        q.push({ id: 'organisme_cible', label: 'Organisme cible *',        type: 'tags', placeholder: '', required: true,  single: true, groups: DOSSIER_AIDE_ORGANISMES });
+      } else if (choice === 'autre') {
+        q.push({ id: 'type',      label: 'Nature du dossier *',      type: 'text', placeholder: 'Ex : Pôle Emploi, Retraite, Dossier scolaire…', required: true });
+        q.push({ id: 'organisme', label: 'Organisme destinataire *', type: 'text', placeholder: 'Ex : Préfecture, MDPH, Mairie…',                required: true });
+      }
       q.push({ id: 'description', label: 'Votre situation et votre besoin *', type: 'textarea', placeholder: 'Expliquez ce que vous cherchez à obtenir, votre situation actuelle…', required: true });
       q.push({ id: 'documents',   label: 'Documents que vous avez déjà',      type: 'textarea', placeholder: 'Ex : Carte d\'identité, justificatif de domicile, bulletins de salaire…', required: false });
       return q;
@@ -1366,6 +1405,20 @@ function swBuildPrompt() {
   const _cvTplId    = (d.cv_template && CV_TEMPLATES[d.cv_template]) ? d.cv_template : 'classique';
   const _cvTplStyle = CV_TEMPLATES[_cvTplId].style;
 
+  /* Contexte dossier : agrège les champs spécifiques par sous-type */
+  const _dossierParts = [];
+  if (d.prestation)        _dossierParts.push('Prestation : ' + d.prestation);
+  if (d.situation_pro)     _dossierParts.push('Situation pro : ' + d.situation_pro);
+  if (d.foyer)             _dossierParts.push('Foyer : ' + d.foyer);
+  if (d.type_demande)      _dossierParts.push('Type demande : ' + d.type_demande);
+  if (d.departement)       _dossierParts.push('Département : ' + d.departement);
+  if (d.anciennete_liste)  _dossierParts.push('Ancienneté liste : ' + d.anciennete_liste);
+  if (d.situation_actuelle)_dossierParts.push('Situation actuelle : ' + d.situation_actuelle);
+  if (d.type_aide)         _dossierParts.push('Type aide : ' + d.type_aide);
+  if (d.organisme_cible)   _dossierParts.push('Organisme cible : ' + d.organisme_cible);
+  if (d.organisme)         _dossierParts.push('Organisme : ' + d.organisme);
+  const _dossierContexte = _dossierParts.join(' | ');
+
   const vars = {
     nom:              (p.prenom + ' ' + p.nom).trim(),
     email:            p.email           || '',
@@ -1396,7 +1449,17 @@ function swBuildPrompt() {
     duree_presence:   d.duree_presence  || '',
     situation_pro:    d.situation_pro   || '',
     historique_refus: d.historique_refus|| '',
-    cv_template_style: _cvTplStyle
+    cv_template_style: _cvTplStyle,
+    dossier_contexte:  _dossierContexte,
+    foyer:             d.foyer             || '',
+    prestation:        d.prestation        || '',
+    type_demande:      d.type_demande      || '',
+    departement:       d.departement       || '',
+    anciennete_liste:  d.anciennete_liste  || '',
+    situation_actuelle:d.situation_actuelle|| '',
+    type_aide:         d.type_aide         || '',
+    organisme_cible:   d.organisme_cible   || '',
+    organisme:         d.organisme         || ''
   };
 
   const result = tpl.replace(/\{\{(\w+)\}\}/g, (_, k) =>
@@ -1447,7 +1510,8 @@ Structure : coordonnées candidat (gauche) / date + destinataire (droite) / obje
 Génère un guide d'aide pour démarches administratives en HTML (CSS inline, format A4).
 
 Client : {{nom}} | Email : {{email}} | Tél : {{tel}}
-Type de dossier : {{type}} ({{choix}}) | Besoin : {{description}} | Documents disponibles : {{documents}}
+Type de dossier : {{type}} ({{choix}}) | {{dossier_contexte}}
+Besoin : {{description}} | Documents disponibles : {{documents}}
 
 Contenu : 1) résumé de la situation 2) checklist documents à fournir ☐ 3) étapes numérotées 4) conseils pratiques et délais 5) coordonnées organismes (CAF/CPAM/Pôle Emploi/Préfecture Guyane…).
 Design : en-tête #1e3a5f, accents #2563eb.${FOOTER}`,
