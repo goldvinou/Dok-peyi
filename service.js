@@ -767,38 +767,46 @@ function swBuildPrompt() {
   let prompts = {};
   try { prompts = JSON.parse(localStorage.getItem('dok_ai_prompts') || '{}'); } catch(e) {}
 
+  /* Résolution de clé : impot et naturalisation ont un prompt par sous-type */
   const key = SSW.svc === 'cv'
     ? (SSW.choice === 'improve' ? 'cv_improve' : 'cv_scratch')
+    : (SSW.svc === 'impot' || SSW.svc === 'naturalisation')
+    ? SSW.svc + '_' + SSW.choice
     : SSW.svc;
 
   const tpl = (prompts[key] && prompts[key].trim()) ? prompts[key] : (swDefaultPrompts()[key] || swFallbackPrompt());
 
   const d = SSW.details, p = SSW.personal;
   const vars = {
-    nom:          (p.prenom + ' ' + p.nom).trim(),
-    email:        p.email        || '',
-    tel:          p.phone        || '',
-    poste:        d.poste        || '',
-    experience:   d.experience   || '',
-    formation:    d.formation    || '',
-    competences:  d.competences  || '',
-    infos:        d.infos        || '',
-    note:         d.note         || '',
-    entreprise:   d.entreprise   || '',
-    motivation:   d.motivation   || '',
-    type:         d.type         || (SSW.choice !== 'autre' ? SSW.choice : '') || '',
-    description:  d.description  || '',
-    documents:    d.documents    || '',
-    destinataire: d.destinataire || '',
-    objet:        d.objet        || '',
-    nationalite:  d.nationalite  || '',
-    situation:    d.situation    || '',
-    choix:        SSW.choice     || '',
-    revenus:      d.revenus      || '',
-    duree:        d.duree        || '',
-    famille:      d.famille      || '',
-    travail:      d.travail      || '',
-    parcours:     d.parcours     || ''
+    nom:             (p.prenom + ' ' + p.nom).trim(),
+    email:           p.email           || '',
+    tel:             p.phone           || '',
+    poste:           d.poste           || '',
+    experience:      d.experience      || '',
+    formation:       d.formation       || '',
+    competences:     d.competences     || '',
+    infos:           d.infos           || '',
+    note:            d.note            || '',
+    entreprise:      d.entreprise      || '',
+    motivation:      d.motivation      || '',
+    type:            d.type            || (SSW.choice !== 'autre' ? SSW.choice : '') || '',
+    description:     d.description     || '',
+    documents:       d.documents       || '',
+    destinataire:    d.destinataire    || '',
+    objet:           d.objet           || '',
+    nationalite:     d.nationalite     || '',
+    situation:       d.situation       || '',
+    choix:           SSW.choice        || '',
+    revenus:         d.revenus         || '',
+    duree:           d.duree           || '',
+    famille:         d.famille         || '',
+    travail:         d.travail         || '',
+    parcours:        d.parcours        || '',
+    visa_actuel:     d.visa_actuel     || '',
+    date_expiration: d.date_expiration || '',
+    duree_presence:  d.duree_presence  || '',
+    situation_pro:   d.situation_pro   || '',
+    historique_refus:d.historique_refus|| ''
   };
 
   const result = tpl.replace(/\{\{(\w+)\}\}/g, (_, k) =>
@@ -880,38 +888,86 @@ Contenu :
 
 Design : en-tête fond rouge #b91c1c, accents #ef4444, corps blanc, @media print marges 15mm.${FOOTER}`,
 
-    impot: `${SYS}
-Tu es aussi expert en fiscalité française et en aides sociales (Guyane / France). Génère un document d'aide personnalisé en HTML (CSS inline, format A4).
+    impot_comprendre: `${SYS}
+Tu es aussi expert en fiscalité française et en aides sociales (Guyane / France).
+Expert fiscal France/Guyane. Analyse cet avis d'imposition et produis un document HTML A4 CSS-inline structuré ainsi :
+1. RÉSUMÉ (3 lignes max) : montant dû, échéance, situation fiscale
+2. DÉCOMPOSITION LIGNE PAR LIGNE : chaque ligne de l'avis expliquée en langage simple
+3. POINTS D'ATTENTION : surligné en orange si retard/pénalité/erreur probable
+4. PROCHAINE ÉTAPE : action concrète à faire avant quelle date
+5. CONTACT UTILE : DGFiP Guyane — 0809 401 401 / impots.gouv.fr
 
-Client : {{nom}} | Email : {{email}} | Tél : {{tel}}
-Type de demande : {{choix}} | Type d'avis / Objet : {{type}} {{objet}}
-Revenus : {{revenus}} | Situation familiale : {{situation}}
-Description / Question : {{description}} | Destinataire : {{destinataire}}
+Client : {{nom}} | Revenus : {{revenus}} | Situation : {{situation}} | Question : {{description}}
+Design : en-tête fond #0c4a6e, accents #0369a1, corps blanc, @media print marges 15mm.
+RÈGLE : jamais de placeholder. Si donnée absente, adapte sans la mentionner.${FOOTER}`,
 
-Contenu selon le choix :
-• "comprendre" → Explication pédagogique de l'avis, signification des montants, droits et recours possibles
-• "aide" → Aides et exonérations auxquelles le client peut prétendre, démarches pour les obtenir
-• "courrier" → Courrier officiel formel adressé aux services fiscaux (marges 25mm, structure réglementaire)
+    impot_aide: `${SYS}
+Tu es aussi expert en fiscalité française et en aides sociales (Guyane / France).
+Expert fiscal France/Guyane. Produis un guide HTML A4 CSS-inline :
+1. OBLIGATIONS : ce que ce client doit déclarer selon sa situation
+2. DÉDUCTIONS POSSIBLES : liste exhaustive applicable à son profil (charges familiales, frais réels, DOM-TOM abattement 30–40%)
+3. ERREURS FRÉQUENTES : 5 erreurs courantes pour ce profil
+4. CALENDRIER FISCAL : dates clés pour sa situation
+5. CONTACTS UTILES : DGFiP Guyane — 0809 401 401 / impots.gouv.fr
 
-Coordonnées utiles : DGFIP Guyane, Centre des impôts de Cayenne, 0809 401 401, impots.gouv.fr.
-Design : en-tête fond #0c4a6e, accents #0369a1, corps blanc, @media print marges 15mm.${FOOTER}`,
+Client : {{nom}} | Revenus : {{revenus}} | Situation familiale : {{situation}} | Question : {{description}}
+Design : en-tête fond #0c4a6e, accents #0369a1, corps blanc, @media print marges 15mm.
+RÈGLE : abattement DOM-TOM toujours mentionné si applicable.${FOOTER}`,
 
-    naturalisation: `${SYS}
-Tu es aussi spécialiste des procédures de naturalisation française (droit des étrangers, Guyane). Génère un document d'aide complet en HTML (CSS inline, format A4).
+    impot_courrier: `${SYS}
+Tu es aussi expert en fiscalité française. Rédige un courrier officiel HTML A4 CSS-inline adressé à la DGFiP.
+Structure : expéditeur (gauche) / Cayenne + date (droite) / destinataire / objet en gras / corps / formule officielle / signature
+Destinataire : {{destinataire}} (sinon : Monsieur le Directeur des Finances Publiques de Guyane — 13 rue Lallouette, 97300 Cayenne)
+Types de courrier selon l'objet :
+- Demande de délai : motif légitime + proposition de plan d'apurement + référence article L.257 A du LPF
+- Réclamation : faits chronologiques + préjudice + demande de révision + référence article R.197-1 du LPF
+- Demande d'information : objet précis + référence avis + coordonnées
 
-Client : {{nom}} | Email : {{email}} | Tél : {{tel}} | Nationalité : {{nationalite}}
-Durée en France : {{duree}} | Famille : {{famille}} | Travail : {{travail}}
-Type de demande : {{choix}} | Infos complémentaires : {{situation}} | Documents : {{documents}}
-Parcours : {{parcours}} | Motivation : {{motivation}}
+Client : {{nom}} | Email : {{email}} | Tél : {{tel}} | Objet : {{objet}} | Situation : {{description}}
+Design : structure épistolaire, marges 25mm.
+RÈGLE : toujours inclure la référence légale adaptée au type de courrier.${FOOTER}`,
 
-Contenu selon le choix :
-• "situation" → Analyse des critères légaux (5 ans résidence, intégration, moralité, B1 français) + évaluation personnalisée + recommandations claires
-• "dossier" → Checklist complète ☐ des documents requis + étapes chronologiques numérotées + délais habituels (12-24 mois)
-• "lettre" → Lettre d'intégration officielle format épistolaire (HTML A4, 1-2 pages, ton personnel mais formel)
+    naturalisation_situation: `${SYS}
+Tu es aussi spécialiste des procédures de naturalisation française (droit des étrangers, Guyane).
+Expert naturalisation France/Guyane. Analyse l'éligibilité de ce client et produis un guide HTML A4 CSS-inline :
+1. ÉLIGIBILITÉ : verdict clair (Éligible / Probablement éligible / Insuffisant) + justification selon critères légaux
+2. CRITÈRES VÉRIFIÉS : tableau — Durée résidence (≥5 ans requis) / Intégration / Ressources stables / Casier judiciaire / Langue française — statut ✅ ⚠️ ❌ pour chaque
+3. POINTS BLOQUANTS : si non éligible, exact motif légal + délai avant rééligibilité
+4. PROCHAINE ÉTAPE : action concrète et délai
+5. CONTACT : Préfecture de Guyane — 2 Cité Rebard, 97300 Cayenne — 05 94 39 45 00
 
-Organismes : Préfecture de Guyane (Cayenne), sous-préfecture Saint-Laurent-du-Maroni, France Services, OFII Guyane.
-Bandeau d'avertissement obligatoire : "Ce document est une aide informatique. Il ne remplace pas une consultation à la préfecture ou un conseil juridique."
-Design : en-tête fond bleu marine #1e3a5f, accents #2563eb, corps blanc, @media print marges 15mm.${FOOTER}`
+Client : {{nom}} | Nationalité : {{nationalite}} | Durée résidence : {{duree}} | Famille : {{famille}} | Travail : {{travail}} | Situation : {{situation}}
+Design : en-tête fond bleu marine #1e3a5f, accents #1d4ed8, corps blanc, @media print marges 15mm.
+AVERTISSEMENT LÉGAL OBLIGATOIRE en rouge : "Ce document est une aide à la préparation. Il ne remplace pas un conseil juridique. Consultez un avocat ou une association d'aide aux étrangers pour votre dossier officiel."${FOOTER}`,
+
+    naturalisation_dossier: `${SYS}
+Tu es aussi spécialiste des procédures de naturalisation française (droit des étrangers, Guyane).
+Expert naturalisation France/Guyane. Produis un guide de constitution de dossier HTML A4 CSS-inline :
+1. DOCUMENTS OBLIGATOIRES : liste exhaustive avec ☐ checkbox, validité, original ou copie, traduction requise oui/non
+2. DOCUMENTS COMPLÉMENTAIRES : pièces renforçant le dossier selon le profil client
+3. PREUVES D'INTÉGRATION : liste adaptée au profil (travail, enfants scolarisés, associations, impôts, logement stable)
+4. PIÈGES À ÉVITER : 5 erreurs qui font rejeter un dossier en Guyane
+5. DÉPÔT : Préfecture Guyane — sur rendez-vous uniquement — 05 94 39 45 00
+6. DÉLAIS : instruction 12-18 mois en Guyane, suivi dossier possible sur naturalisation.interieur.gouv.fr
+
+Client : {{nom}} | Nationalité : {{nationalite}} | Durée résidence : {{duree}} | Documents disponibles : {{documents}}
+Design : en-tête fond bleu marine #1e3a5f, accents #1d4ed8, corps blanc, @media print marges 15mm.
+AVERTISSEMENT LÉGAL OBLIGATOIRE.${FOOTER}`,
+
+    naturalisation_lettre: `${SYS}
+Tu es aussi spécialiste des procédures de naturalisation française (droit des étrangers, Guyane).
+Expert naturalisation. Rédige une lettre de motivation HTML A4 CSS-inline pour une demande de naturalisation.
+Structure : expéditeur / Cayenne + date / Monsieur le Préfet de Guyane, 2 Cité Rebard 97300 Cayenne / Objet : Demande de naturalisation française / corps / formule / signature
+Corps en 4 paragraphes :
+§1 PRÉSENTATION : identité, nationalité, durée de résidence en France/Guyane
+§2 INTÉGRATION : vie professionnelle, sociale, familiale — concret et chiffré
+§3 ATTACHEMENT : pourquoi la France, valeurs républicaines, contribution à la société
+§4 ENGAGEMENT : respect des lois, projet de vie en France
+Ton : respectueux, sincère, factuel — jamais suppliant
+
+Client : {{nom}} | Email : {{email}} | Tél : {{tel}} | Nationalité : {{nationalite}} | Durée résidence : {{duree}} | Famille : {{famille}} | Travail : {{travail}} | Motivation : {{motivation}} | Parcours : {{parcours}}
+Design : structure épistolaire formelle, marges 25mm.
+RÈGLE : personnaliser chaque paragraphe avec les données réelles du client. Zéro formule générique.${FOOTER}`
   };
 }
 

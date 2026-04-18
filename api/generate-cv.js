@@ -57,8 +57,8 @@ export default async function handler(req) {
 
   if (!prompt || typeof prompt !== 'string' || !prompt.trim())
     return new Response(JSON.stringify({ error: 'Prompt manquant' }), { status: 400, headers: jsonH });
-  if (prompt.length > 12000)
-    return new Response(JSON.stringify({ error: 'Prompt trop long (max 12 000 caractères)' }), { status: 400, headers: jsonH });
+  if (prompt.length > 32000)
+    return new Response(JSON.stringify({ error: 'Prompt trop long (max 32 000 caractères)' }), { status: 400, headers: jsonH });
   if (systemPromptOverride !== undefined && typeof systemPromptOverride !== 'string')
     return new Response(JSON.stringify({ error: 'systemPrompt doit être une chaîne' }), { status: 400, headers: jsonH });
   if (systemPromptOverride && systemPromptOverride.length > 4000)

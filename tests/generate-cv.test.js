@@ -100,8 +100,8 @@ describe('Body validation', () => {
     assert.equal(res.status, 400);
   });
 
-  test('prompt > 12000 chars → 400', async () => {
-    const res = await handler(makeReq({ prompt: 'x'.repeat(12001) }));
+  test('prompt > 32000 chars → 400', async () => {
+    const res = await handler(makeReq({ prompt: 'x'.repeat(32001) }));
     assert.equal(res.status, 400);
     const d = await res.json();
     assert.match(d.error, /trop long/i);
