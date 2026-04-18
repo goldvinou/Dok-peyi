@@ -37,6 +37,87 @@ const CV_COMPETENCES_GROUPS = [
   { label: 'Permis',           options: ['Permis B','Permis C (PL)','Permis CE','CACES R482','CACES R489','Permis bateau','Permis moto'] }
 ];
 
+/* ── TEMPLATES CV ─────────────────────────────────────────── */
+const CV_TEMPLATES = {
+  classique: {
+    id: 'classique', nom: 'Classique', prix: 0,
+    description: 'Épuré et professionnel',
+    style: `
+STYLE IMPOSÉ — respecte-le exactement :
+- Format A4, fond blanc, CSS inline uniquement
+- En-tête : nom 2.2rem Georgia gras noir, titre 0.85rem Arial #666 lettres-spacing:0.15em, contact en ligne séparés par ·
+- Layout : flexbox, sidebar gauche 28% fond #f5f5f5 padding:20px, corps droit 72% padding:25px
+- Sidebar : cercle 80px #2c3e50 avec initiales blanches (si pas de photo), compétences en liste puces carrées, langues si présentes
+- Titres de section : 0.7rem majuscules letter-spacing:0.12em + border-bottom 2px solid #2c3e50 + margin-bottom:10px
+- Expérience : poste en gras, entreprise en #2c3e50, dates en gris 0.85rem, bullets avec tiret — et padding-left:15px
+- Couleur accent unique : #2c3e50`
+  },
+  elite: {
+    id: 'elite', nom: 'Élite', prix: 4,
+    description: 'Sidebar sombre, impact fort',
+    style: `
+STYLE IMPOSÉ — respecte-le exactement :
+- Format A4, CSS inline uniquement
+- Layout : sidebar gauche 32% fond #1a1a2e texte blanc, corps droit 68% blanc
+- Sidebar : cercle 90px bordure 3px #e94560, nom 1.1rem bold blanc, titre 0.75rem #e94560, contact icônes unicode (✉ 📞), compétences avec barres de progression (div fond #333, fill #e94560, height:4px), section centres d'intérêt en bas
+- Corps : sections avec titre précédé d'un rond coloré #e94560 (●), timeline verticale : ligne 2px #f0f0f0, points ronds #e94560
+- Expérience : poste gras, entreprise italique #e94560, dates gris
+- Accent : #e94560 (rouge vif) sur fond sombre sidebar`
+  },
+  corporate: {
+    id: 'corporate', nom: 'Corporate', prix: 2,
+    description: 'Navy et sobre, idéal fonction publique',
+    style: `
+STYLE IMPOSÉ — respecte-le exactement :
+- Format A4, CSS inline uniquement
+- En-tête full-width fond #1b2a4a padding:25px : nom 2rem blanc lettres-spacing:-0.02em, titre 0.8rem #7eb3e8 lettres espacées, contact blanc 0.85rem
+- Cercle photo 75px en haut droite de l'en-tête bordure 3px #7eb3e8
+- Corps : 2 colonnes égales padding:20px gap:25px — Gauche : Contact détaillé · Compétences · Langues — Droite : Profil · Expérience · Formation
+- Titres de section : 0.75rem majuscules #1b2a4a + ligne 1px #7eb3e8
+- Accent : #1b2a4a (navy) + #7eb3e8 (bleu clair)`
+  },
+  impact: {
+    id: 'impact', nom: 'Impact', prix: 2,
+    description: 'Dynamique, idéal commerce et BTP',
+    style: `
+STYLE IMPOSÉ — respecte-le exactement :
+- Format A4, CSS inline uniquement
+- En-tête : fond #16213e position:relative, pseudo-effet triangle via div absolu #0f3460 skewY(-3deg), nom 2rem blanc bold, titre #4fc3f7
+- Layout : sidebar gauche 30% fond #0f3460 texte blanc, corps 70% blanc
+- Sidebar : cercle 85px bordure #4fc3f7, contact en liste, compétences points ronds (● rempli = niveau, ○ = vide, max 5)
+- Corps : sections titres en #e94560 0.75rem majuscules, timeline avec points ronds #4fc3f7 et ligne verticale
+- Hobbies : tags inline fond #f0f4ff texte #0f3460 border-radius:12px
+- Accents : #16213e + #0f3460 + #4fc3f7 + #e94560`
+  },
+  prestige: {
+    id: 'prestige', nom: 'Prestige', prix: 4,
+    description: 'Or et élégance, idéal santé et éducation',
+    style: `
+STYLE IMPOSÉ — respecte-le exactement :
+- Format A4, CSS inline uniquement
+- En-tête : fond blanc, formes décoratives triangles #c9a84c opacity:0.15 en coins, nom centré 2.2rem Georgia gras, titre #c9a84c lettres espacées
+- Cercle photo 95px bordure double : 3px solid #c9a84c + 2px solid blanc offset
+- Corps : 2 colonnes — gauche 35% fond #faf6ee, droite 65% blanc — Gauche : Contact · Compétences barres fond #e8d9b0 fill #c9a84c · Langues cercles % — Droite : Profil · Expérience timeline · Formation
+- Titres : Georgia italic #8b6914 + ligne ornementale #c9a84c
+- Accents : #c9a84c (or) + #8b6914 (brun) + #faf6ee (crème)`
+  },
+  executive: {
+    id: 'executive', nom: 'Executive', prix: 7,
+    description: 'Ultra-minimaliste premium, direction et cadres',
+    style: `
+STYLE IMPOSÉ — respecte-le exactement :
+- Format A4, CSS inline uniquement
+- En-tête : fond blanc, nom 3rem Georgia tracking:-0.03em noir #1a1a1a, ligne fine 1px #1a1a1a width:60px margin:8px 0, titre 0.8rem #888 lettres-spacing:0.3em majuscules, contact 0.8rem #666 en ligne
+- Photo optionnelle : 70px×70px filter:grayscale(100%) float:right margin-top:-10px
+- Corps : colonne unique max-width:550px margin:auto padding:30px
+- Sections : titre 0.65rem majuscules tracking:0.2em #888 + ligne 0.5px #ddd margin-bottom:20px — BEAUCOUP d'espace blanc
+- Expérience : poste 1rem gras #1a1a1a, entreprise + dates inline #888 0.85rem, bullets minimalistes padding-left:12px
+- Zéro couleur : uniquement #1a1a1a #666 #888 #ddd blanc`
+  }
+};
+/* Exposé globalement pour la page catalogue */
+window.CV_TEMPLATES = CV_TEMPLATES;
+
 /* ── CONFIG PAR SERVICE ───────────────────────────────────── */
 const SVC = {
   cv: {
@@ -938,36 +1019,42 @@ function swBuildPrompt() {
   const tpl = (prompts[key] && prompts[key].trim()) ? prompts[key] : (swDefaultPrompts()[key] || swFallbackPrompt());
 
   const d = SSW.details, p = SSW.personal;
+
+  /* Résolution du style de template CV (défaut : classique) */
+  const _cvTplId    = (d.cv_template && CV_TEMPLATES[d.cv_template]) ? d.cv_template : 'classique';
+  const _cvTplStyle = CV_TEMPLATES[_cvTplId].style;
+
   const vars = {
-    nom:             (p.prenom + ' ' + p.nom).trim(),
-    email:           p.email           || '',
-    tel:             p.phone           || '',
-    poste:           d.poste           || '',
-    experience:      d.experience      || '',
-    formation:       d.formation       || '',
-    competences:     d.competences     || '',
-    infos:           d.infos           || '',
-    note:            d.note            || '',
-    entreprise:      d.entreprise      || '',
-    motivation:      d.motivation      || '',
-    type:            d.type            || (SSW.choice !== 'autre' ? SSW.choice : '') || '',
-    description:     d.description     || '',
-    documents:       d.documents       || '',
-    destinataire:    d.destinataire    || '',
-    objet:           d.objet           || '',
-    nationalite:     d.nationalite     || '',
-    situation:       d.situation       || '',
-    choix:           SSW.choice        || '',
-    revenus:         d.revenus         || '',
-    duree:           d.duree           || '',
-    famille:         d.famille         || '',
-    travail:         d.travail         || '',
-    parcours:        d.parcours        || '',
-    visa_actuel:     d.visa_actuel     || '',
-    date_expiration: d.date_expiration || '',
-    duree_presence:  d.duree_presence  || '',
-    situation_pro:   d.situation_pro   || '',
-    historique_refus:d.historique_refus|| ''
+    nom:              (p.prenom + ' ' + p.nom).trim(),
+    email:            p.email           || '',
+    tel:              p.phone           || '',
+    poste:            d.poste           || '',
+    experience:       d.experience      || '',
+    formation:        d.formation       || '',
+    competences:      d.competences     || '',
+    infos:            d.infos           || '',
+    note:             d.note            || '',
+    entreprise:       d.entreprise      || '',
+    motivation:       d.motivation      || '',
+    type:             d.type            || (SSW.choice !== 'autre' ? SSW.choice : '') || '',
+    description:      d.description     || '',
+    documents:        d.documents       || '',
+    destinataire:     d.destinataire    || '',
+    objet:            d.objet           || '',
+    nationalite:      d.nationalite     || '',
+    situation:        d.situation       || '',
+    choix:            SSW.choice        || '',
+    revenus:          d.revenus         || '',
+    duree:            d.duree           || '',
+    famille:          d.famille         || '',
+    travail:          d.travail         || '',
+    parcours:         d.parcours        || '',
+    visa_actuel:      d.visa_actuel     || '',
+    date_expiration:  d.date_expiration || '',
+    duree_presence:   d.duree_presence  || '',
+    situation_pro:    d.situation_pro   || '',
+    historique_refus: d.historique_refus|| '',
+    cv_template_style: _cvTplStyle
   };
 
   const result = tpl.replace(/\{\{(\w+)\}\}/g, (_, k) =>
@@ -985,17 +1072,16 @@ function swDefaultPrompts() {
   const FOOTER = '\nRéponds UNIQUEMENT avec le code HTML complet (<!DOCTYPE html> … </html>). Zéro texte avant ou après.';
   const SYS    = 'Tu es un assistant administratif professionnel. Ta mission : créer un document clair, structuré et adapté. Règles : ne pas inventer d\'informations · corriger les fautes · être simple et compréhensible · produire un document prêt à l\'emploi.';
   return {
-    cv_scratch: `${SYS}
-Tu es aussi expert en design de CV. Crée un CV complet et professionnel en HTML autonome (CSS inline, sans JS, format A4 prêt à imprimer).
-
-Nom : {{nom}} | Email : {{email}} | Tél : {{tel}}
+    cv_scratch: `Tu es Emma, experte CV chez Dok'péyi.
+Génère un CV HTML complet CSS-inline format A4.
+{{cv_template_style}}
+Client : {{nom}} | Email : {{email}} | Tél : {{tel}}
 Poste recherché : {{poste}}
 Expériences : {{experience}}
 Formation : {{formation}}
 Compétences : {{competences}}
 Infos supplémentaires : {{infos}}
-
-Design : en-tête fond bleu marine #1e3a5f (nom en grand, poste, contacts). Corps blanc : Expériences → Formation → Compétences → Infos. Accents #2563eb pour les titres de section. @media print marges 15mm.${FOOTER}`,
+RÈGLES : N'invente aucune information non fournie. Corrige l'orthographe et la grammaire. Langage professionnel. @media print marges 15mm.${FOOTER}`,
 
     cv_improve: `${SYS}
 Modernise et améliore ce CV selon les souhaits du client.
