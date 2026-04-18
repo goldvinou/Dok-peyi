@@ -123,6 +123,11 @@ workspace-* (projets, tâches, chat, IA, QC, agents, notes, dashboard)
 | `service.html` | Wizard client — structure HTML 3 étapes + prévisualisation iframe + panneau modif |
 | `service.css` | Styles wizard + cartes templates + modif panel |
 | `cv-catalogue.html` | Page standalone catalogue des 6 templates CV (lien `?template=XXX` vers wizard) |
+| `mentions-legales.html` | Mentions légales (éditeur, hébergeur Vercel, propriété intellectuelle, contact) |
+| `cgv.html` | Conditions Générales de Vente (tarifs détaillés, délais, remboursement, disclaimer IA, CIMADE Guyane) |
+| `confidentialite.html` | Politique de confidentialité RGPD (données collectées, sous-traitants, droits, CNIL) |
+| `cookies.html` | Politique cookies (tableau des cookies strictement nécessaires, aucun tracking tiers) |
+| `legales.html` | Page legacy unifiée (mentions + CGU + CGV + confidentialité) — conservée pour compatibilité |
 | `admin/index.html` | Dashboard admin |
 | `admin/admin.js` | Logique dashboard admin |
 | `admin/workspace-*.js` | Modules du workspace admin (chat, IA, projets, tâches, QC, agents…) |
@@ -236,9 +241,17 @@ Pour les services utilisant `lib/pipeline.js` (via `/api/pipeline` action `gener
 - **Allan** : infrastructure, Vercel, Firebase, Stripe, PayPal, sécurité
 
 ## Pages légales
-Non créées — **obligatoires avant premier client réel** :
-- CGU (Conditions Générales d'Utilisation)
-- CGV (Conditions Générales de Vente)
-- Politique de confidentialité (RGPD)
-- Bannière cookies + page de gestion du consentement
-- Mentions légales déjà présentes dans `legales.html` (à compléter)
+4 pages dédiées créées à la racine + bannière cookies dans `index.html` :
+
+| Fichier | URL | Contenu |
+|---|---|---|
+| `mentions-legales.html` | `/mentions-legales` | Éditeur (constitution juridique en cours), responsable publication Marvin, hébergeur Vercel, propriété intellectuelle, contact |
+| `cgv.html` | `/cgv` | Tarifs des 7 services + suppléments templates CV + traduction, délais, remboursement, rétractation, disclaimer IA (CIMADE Guyane), droit français / Tribunal de Cayenne |
+| `confidentialite.html` | `/confidentialite` | RGPD : données collectées, sous-traitants (Anthropic/Vercel/Stripe/Firebase/Resend), durée conservation 12 mois, droits, CNIL |
+| `cookies.html` | `/cookies` | Cookies strictement nécessaires uniquement, tableau des cookies utilisés, aucun tracking tiers |
+
+Page legacy `legales.html` conservée (page unifiée accessible via `/legales`).
+
+**Bannière cookies** : bandeau fixe bas de page dans `index.html` avec bouton « J'accepte » (stockage localStorage `dok_cookies_ok`) et lien vers `/cookies`. Masquée automatiquement si déjà acceptée.
+
+**Footer d'`index.html`** : liens mis à jour vers les 4 pages dédiées (`/mentions-legales`, `/cgv`, `/confidentialite`, `/cookies`).

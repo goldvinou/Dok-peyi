@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Politique de confidentialité — Dok'péyi</title>
+  <meta name="description" content="Politique de confidentialité RGPD de Dok'péyi, service d'aide administrative en Guyane française.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://dok-peyi.vercel.app/confidentialite">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,sans-serif;background:#fff;color:#333;line-height:1.7}
+    .topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:16px 24px;position:sticky;top:0;z-index:10}
+    .topbar-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+    .logo{font-weight:800;font-size:1.2rem;color:#0f172a;text-decoration:none}
+    .logo span{color:#2563eb}
+    .back{color:#2563eb;text-decoration:none;font-size:.88rem;font-weight:600}
+    .back:hover{text-decoration:underline}
+    .wrap{max-width:800px;margin:0 auto;padding:40px 24px 80px}
+    h1{font-size:1.9rem;font-weight:800;color:#1e3a5f;margin-bottom:8px}
+    .subtitle{color:#64748b;font-size:.95rem;margin-bottom:32px}
+    h2{font-size:1.15rem;font-weight:700;color:#1e3a5f;margin:32px 0 12px;padding-left:12px;border-left:3px solid #2563eb}
+    h3{font-size:1rem;font-weight:600;color:#1e293b;margin:18px 0 8px}
+    p{margin-bottom:12px;font-size:.95rem;color:#333}
+    ul{padding-left:22px;margin-bottom:12px}
+    ul li{margin-bottom:6px;font-size:.95rem}
+    a{color:#2563eb}
+    table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.9rem}
+    th,td{padding:10px 12px;border:1px solid #e2e8f0;text-align:left;vertical-align:top}
+    th{background:#f1f5f9;font-weight:700;color:#1e3a5f}
+    .card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin:16px 0}
+    .card p{margin-bottom:6px;font-size:.92rem}
+    .rights{background:#f0fdf4;border-left:4px solid #22c55e;padding:14px 18px;border-radius:0 10px 10px 0;margin:16px 0}
+    .rights h3{color:#166534;margin-top:0}
+    .rights p,.rights li{color:#166534;font-size:.9rem}
+    .footer-legal{border-top:1px solid #e2e8f0;margin-top:48px;padding-top:24px;text-align:center}
+    .footer-legal p{font-size:.82rem;color:#64748b}
+    .footer-links{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+    .footer-links a{color:#64748b;font-size:.82rem;text-decoration:none}
+    .footer-links a:hover{color:#2563eb}
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <a href="/" class="logo">Dok'<span>péyi</span></a>
+    <a href="/" class="back">← Retour à l'accueil</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <h1>Politique de confidentialité</h1>
+  <p class="subtitle">Dernière mise à jour : avril 2026 — Conforme au Règlement (UE) 2016/679 (RGPD) et à la Loi Informatique et Libertés</p>
+
+  <h2>1. Responsable du traitement</h2>
+  <div class="card">
+    <p><strong>Dok'péyi</strong> — service d'aide administrative en ligne pour la Guyane française.</p>
+    <p>Email : <a href="mailto:contact@dok-peyi.fr">contact@dok-peyi.fr</a></p>
+  </div>
+  <p>Dok'péyi détermine les finalités et les moyens du traitement des données personnelles collectées sur le site.</p>
+
+  <h2>2. Données collectées</h2>
+  <p>Dans le cadre de la fourniture du service, Dok'péyi collecte les catégories de données suivantes :</p>
+
+  <h3>Données d'identification et de contact</h3>
+  <ul>
+    <li>Nom, prénom</li>
+    <li>Adresse email</li>
+    <li>Numéro de téléphone (WhatsApp)</li>
+  </ul>
+
+  <h3>Données liées à la demande</h3>
+  <ul>
+    <li>Situation administrative (durée de résidence, nationalité, visa, situation familiale, situation professionnelle, revenus…)</li>
+    <li>Informations professionnelles (poste, expériences, formations, compétences) pour les CV et lettres</li>
+    <li>Documents téléversés par l'utilisateur pour pré-remplissage (PDF ou image analysés par <code>/api/extract-doc</code>)</li>
+    <li>Documents générés (CV, lettres, courriers, dossiers, guides)</li>
+  </ul>
+
+  <h3>Données de paiement</h3>
+  <p>Les données bancaires (numéro de carte, cryptogramme…) <strong>ne transitent jamais par les serveurs de Dok'péyi</strong>. Elles sont traitées directement par notre prestataire de paiement (Stripe). Dok'péyi conserve uniquement l'identifiant de transaction et le montant payé pour des besoins comptables et de suivi.</p>
+
+  <h3>Données techniques</h3>
+  <ul>
+    <li>Adresse IP (utilisée pour le rate-limiting, non stockée durablement)</li>
+    <li>Type de navigateur et appareil</li>
+    <li>Horodatage des actions sur le site</li>
+  </ul>
+
+  <h2>3. Finalités et bases légales</h2>
+  <table>
+    <thead>
+      <tr><th>Finalité</th><th>Base légale</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Génération du document commandé (CV, lettre, dossier…)</td><td>Exécution du contrat (art. 6.1.b RGPD)</td></tr>
+      <tr><td>Facturation et suivi des commandes</td><td>Exécution du contrat + obligation légale</td></tr>
+      <tr><td>Relation client et support</td><td>Exécution du contrat</td></tr>
+      <tr><td>Sécurité du service (rate-limiting, lutte anti-fraude)</td><td>Intérêt légitime (art. 6.1.f RGPD)</td></tr>
+      <tr><td>Obligations comptables et fiscales</td><td>Obligation légale (art. 6.1.c RGPD)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. Durée de conservation</h2>
+  <ul>
+    <li><strong>Données de commande et documents générés :</strong> 12 mois après la dernière commande, puis suppression ou archivage anonymisé.</li>
+    <li><strong>Données de facturation :</strong> 10 ans (obligation comptable française).</li>
+    <li><strong>Données techniques (rate-limit, logs) :</strong> maximum 12 mois glissants.</li>
+    <li><strong>Préférences cookies :</strong> 30 jours (stockage local navigateur).</li>
+  </ul>
+
+  <h2>5. Destinataires et sous-traitants</h2>
+  <p>Dok'péyi recourt aux sous-traitants suivants pour fournir le service. Chacun est engagé par un contrat de sous-traitance (DPA) conforme à l'article 28 du RGPD lorsque applicable :</p>
+  <table>
+    <thead>
+      <tr><th>Sous-traitant</th><th>Rôle</th><th>Localisation</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Anthropic</strong> (Claude)</td><td>Génération de texte par IA</td><td>États-Unis (clauses contractuelles types)</td></tr>
+      <tr><td><strong>OpenAI</strong></td><td>Chat IA interne (fallback)</td><td>États-Unis (clauses contractuelles types)</td></tr>
+      <tr><td><strong>Vercel Inc.</strong></td><td>Hébergement du site et des Edge Functions</td><td>États-Unis (clauses contractuelles types)</td></tr>
+      <tr><td><strong>Stripe</strong></td><td>Traitement des paiements par carte</td><td>Irlande / États-Unis</td></tr>
+      <tr><td><strong>Google Firebase</strong></td><td>Base de données Realtime (commandes)</td><td>UE — europe-west1</td></tr>
+      <tr><td><strong>Resend</strong></td><td>Envoi des emails transactionnels</td><td>États-Unis (clauses contractuelles types)</td></tr>
+    </tbody>
+  </table>
+  <p>Les transferts de données hors UE vers les États-Unis sont encadrés par les <strong>Clauses Contractuelles Types</strong> de la Commission européenne et, le cas échéant, par le <strong>Data Privacy Framework</strong>.</p>
+  <p>Aucune donnée personnelle n'est vendue, louée ou cédée à des fins commerciales à un tiers.</p>
+
+  <h2>6. Vos droits</h2>
+  <div class="rights">
+    <h3>En tant que personne concernée, vous disposez des droits suivants :</h3>
+    <ul>
+      <li><strong>Droit d'accès</strong> — obtenir la confirmation que vos données sont traitées et une copie de celles-ci.</li>
+      <li><strong>Droit de rectification</strong> — faire corriger des données inexactes ou incomplètes.</li>
+      <li><strong>Droit à l'effacement</strong> — demander la suppression de vos données (« droit à l'oubli ») sous conditions.</li>
+      <li><strong>Droit à la limitation</strong> — demander la suspension du traitement dans certains cas.</li>
+      <li><strong>Droit d'opposition</strong> — vous opposer à un traitement fondé sur l'intérêt légitime.</li>
+      <li><strong>Droit à la portabilité</strong> — recevoir vos données dans un format structuré et lisible.</li>
+      <li><strong>Droit de retirer votre consentement</strong> à tout moment (pour les traitements fondés sur le consentement).</li>
+      <li><strong>Droit de définir des directives post-mortem</strong> relatives à vos données.</li>
+    </ul>
+  </div>
+  <p>Pour exercer ces droits, adressez votre demande par email à <a href="mailto:contact@dok-peyi.fr">contact@dok-peyi.fr</a> en précisant votre identité. Une réponse vous sera apportée dans un délai maximum d'<strong>un mois</strong>.</p>
+
+  <h2>7. Délégué à la protection des données (DPO)</h2>
+  <p>Dok'péyi n'est pas légalement tenu de désigner un DPO mais a désigné un point de contact privilégié pour toutes les questions relatives à la protection des données :</p>
+  <p>📧 <a href="mailto:contact@dok-peyi.fr">contact@dok-peyi.fr</a></p>
+
+  <h2>8. Sécurité des données</h2>
+  <p>Dok'péyi met en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données contre la destruction, la perte, l'altération ou la divulgation non autorisée :</p>
+  <ul>
+    <li>Chiffrement des données en transit (HTTPS / TLS)</li>
+    <li>Règles de sécurité Firebase (contrôle d'accès par rôle)</li>
+    <li>Headers HTTP de sécurité (CSP, HSTS, X-Frame-Options…)</li>
+    <li>Authentification des comptes administrateurs avec protection anti-force brute</li>
+    <li>Rate-limiting sur les API sensibles</li>
+    <li>Vérification de signature (HMAC-SHA256) sur les webhooks de paiement</li>
+  </ul>
+
+  <h2>9. Autorité de contrôle</h2>
+  <p>Conformément à l'article 77 du RGPD, vous disposez du droit d'introduire une réclamation auprès de l'autorité de contrôle française :</p>
+  <div class="card">
+    <p><strong>Commission Nationale de l'Informatique et des Libertés (CNIL)</strong></p>
+    <p>3 Place de Fontenoy — TSA 80715</p>
+    <p>75334 Paris Cedex 07, France</p>
+    <p>Téléphone : 01 53 73 22 22</p>
+    <p>Site : <a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a></p>
+  </div>
+
+  <h2>10. Modifications de la politique</h2>
+  <p>Dok'péyi peut être amené à modifier la présente politique de confidentialité. Toute modification substantielle sera notifiée sur le site ou par email. La version applicable est celle en vigueur à la date de votre dernière commande.</p>
+
+  <h2>11. Contact</h2>
+  <p>Pour toute question relative à la présente politique ou au traitement de vos données personnelles :</p>
+  <p>📧 <a href="mailto:contact@dok-peyi.fr">contact@dok-peyi.fr</a></p>
+
+  <div class="footer-legal">
+    <p>© 2026 Dok'péyi — Tous droits réservés</p>
+    <div class="footer-links">
+      <a href="/mentions-legales">Mentions légales</a>
+      <a href="/cgv">CGV</a>
+      <a href="/confidentialite">Confidentialité</a>
+      <a href="/cookies">Cookies</a>
+      <a href="/">Accueil</a>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
