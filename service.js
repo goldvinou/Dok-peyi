@@ -118,6 +118,41 @@ STYLE IMPOSÉ — respecte-le exactement :
 /* Exposé globalement pour la page catalogue */
 window.CV_TEMPLATES = CV_TEMPLATES;
 
+/* ── LISTES PRÉDÉFINIES (LETTRE) ──────────────────────────── */
+const LETTRE_ENTREPRISES_GROUPS = [
+  { label: 'Secteur public / Collectivités',  options: ['Mairie de Cayenne','Mairie de Kourou','Mairie de Saint-Laurent-du-Maroni','Mairie de Rémire-Montjoly','Mairie de Matoury','Collectivité Territoriale de Guyane (CTG)','Préfecture de Guyane','Rectorat de Guyane','CAF de Guyane','CPAM de Guyane','Pôle emploi Guyane','Mission Locale Régionale de Guyane'] },
+  { label: 'Grande distribution / Commerce',  options: ['Leclerc Cayenne','Leclerc Kourou','Carrefour Matoury','Géant Casino Cayenne','Super U','Intermarché','Bricomarché','Mr.Bricolage','Cora Cayenne'] },
+  { label: 'BTP / Industrie',                 options: ['CMA-CGM','Ariane Group','CNES Kourou','ENDEL','Vinci Construction','Eiffage','Bouygues','SIMKO','SPL Grand Projet','SGDE','EDF Guyane','GDF Suez'] },
+  { label: 'Santé / Social',                  options: ['Centre Hospitalier de Cayenne (CHC)','CH de l\'Ouest Guyanais (Saint-Laurent)','CH de Kourou','Clinique Véronique','Centre Médico-Psychologique','Conseil départemental','ARS Guyane','Croix-Rouge Française','La Cimade Guyane'] },
+  { label: 'Transport / Logistique',          options: ['Air France','Air Caraïbes','Corsair','Chronopost','DHL Guyane','La Poste Guyane','Agglo Cayenne (RDTG)','Compagnie des Transports Guyanais'] },
+  { label: 'Éducation / Formation',           options: ['Université de Guyane','Lycée Melkior-Garré','Lycée Gaston Monnerville','Collège Auguste Dédé','AFPA Guyane','GRETA','CFA BTP Guyane'] },
+  { label: 'Autre / Saisir manuellement',     options: [] }
+];
+
+const LETTRE_SECTEUR_TAGS = [
+  { label: 'Atouts à mettre en avant', options: [
+    'Expérience locale Guyane','Bilinguisme français/créole','Connaissance du public précaire','Permis B','Mobilité géographique','Disponibilité immédiate','Sens du service public','Travail en équipe pluriculturelle','Adaptabilité climat équatorial','Expérience avec publics allophones'
+  ]}
+];
+
+/* ── LISTES PRÉDÉFINIES (COURRIER) ────────────────────────── */
+const COURRIER_DESTINATAIRES_GROUPS = [
+  { label: 'Organismes sociaux',      options: ['CAF de Guyane','CPAM de Guyane','Pôle emploi Guyane','CARSAT','URSSAF Guyane','MSA Guyane','Mission Locale Régionale de Guyane'] },
+  { label: 'Préfectoral / État',      options: ['Préfecture de Guyane — Service des étrangers','Préfecture de Guyane — Bureau des naturalisations','Sous-préfecture de Saint-Laurent-du-Maroni','OFII Guyane','Consulat (à préciser)'] },
+  { label: 'Impôts / Trésor',         options: ['Centre des impôts de Cayenne','Centre des impôts de Kourou','Centre des impôts de Saint-Laurent','Trésor Public','Service des amendes'] },
+  { label: 'Justice',                 options: ['Tribunal judiciaire de Cayenne','Tribunal administratif de Cayenne','Conseil des prud\'hommes','Défenseur des droits','Maison de la justice et du droit'] },
+  { label: 'Logement',                options: ['SIMKO (bailleur social)','SIGUY','Action Logement Guyane','ADIL Guyane','Commission DALO'] },
+  { label: 'Santé',                   options: ['ARS Guyane','Centre Hospitalier de Cayenne','MDPH Guyane','Conseil départemental — service social'] },
+  { label: 'Éducation',               options: ['Rectorat de Guyane','DSDEN Guyane','Inspection académique'] },
+  { label: 'Collectivités',           options: ['Mairie de Cayenne','Mairie de Kourou','Mairie de Saint-Laurent-du-Maroni','Mairie de Rémire-Montjoly','Mairie de Matoury','Collectivité Territoriale de Guyane (CTG)'] }
+];
+
+const COURRIER_OBJET_TYPES = [
+  { label: 'Type de courrier', options: [
+    'Demande de documents','Demande de rendez-vous','Demande d\'information','Réclamation','Contestation','Demande de délai','Signalement','Demande d\'aide','Autre'
+  ]}
+];
+
 /* ── CONFIG PAR SERVICE ───────────────────────────────────── */
 const SVC = {
   cv: {
@@ -158,15 +193,17 @@ const SVC = {
         { id: 'note',  label: 'Ta lettre actuelle + ce que tu veux améliorer', type: 'textarea', placeholder: 'Colle ta lettre ici et décris les améliorations souhaitées…', required: true }
       ];
       if (choice === 'adapt') return [
-        { id: 'poste',      label: 'Nouveau poste visé *',  type: 'text',     placeholder: 'Ex : Aide-soignant(e), Caissier(e)…', required: true },
-        { id: 'entreprise', label: 'Entreprise cible *',    type: 'text',     placeholder: 'Nom de l\'entreprise ou organisme', required: true },
-        { id: 'note',       label: 'Ta lettre existante',   type: 'textarea', placeholder: 'Colle ta lettre actuelle ici…', required: true }
+        { id: 'poste',          label: 'Nouveau poste visé *',  type: 'hybrid-select', placeholder: 'Ou saisir un poste non listé…', required: true, groups: CV_POSTES_GROUPS },
+        { id: 'entreprise',     label: 'Entreprise cible *',    type: 'hybrid-select', placeholder: 'Ou saisir une entreprise non listée…', required: true, groups: LETTRE_ENTREPRISES_GROUPS },
+        { id: 'secteur_lettre', label: 'Mettez en avant',       type: 'tags',          placeholder: 'Ajouter d\'autres atouts (séparés par des virgules)…', required: false, groups: LETTRE_SECTEUR_TAGS },
+        { id: 'note',           label: 'Ta lettre existante',   type: 'textarea',      placeholder: 'Colle ta lettre actuelle ici…', required: true }
       ];
       return [
-        { id: 'poste',      label: 'Poste visé *',                           type: 'text',     placeholder: 'Ex : Vendeur(se), Infirmier(e), Technicien(ne)…', required: true },
-        { id: 'entreprise', label: 'Entreprise / Organisme *',               type: 'text',     placeholder: 'Ex : Leclerc Cayenne, CHC, Mairie de Kourou…', required: true },
-        { id: 'experience', label: 'Expérience en lien avec ce poste',       type: 'textarea', placeholder: 'Ce qui te qualifie pour ce poste…', required: false },
-        { id: 'motivation', label: 'Pourquoi ce poste t\'intéresse ?',       type: 'textarea', placeholder: 'Ce qui t\'attire dans ce poste ou cette entreprise…', required: false }
+        { id: 'poste',          label: 'Poste visé *',                     type: 'hybrid-select', placeholder: 'Ou saisir un poste non listé…', required: true, groups: CV_POSTES_GROUPS },
+        { id: 'entreprise',     label: 'Entreprise / Organisme *',         type: 'hybrid-select', placeholder: 'Ou saisir une entreprise non listée…', required: true, groups: LETTRE_ENTREPRISES_GROUPS },
+        { id: 'secteur_lettre', label: 'Mettez en avant',                  type: 'tags',          placeholder: 'Ajouter d\'autres atouts (séparés par des virgules)…', required: false, groups: LETTRE_SECTEUR_TAGS },
+        { id: 'experience',     label: 'Expérience en lien avec ce poste', type: 'textarea',      placeholder: 'Ce qui te qualifie pour ce poste…', required: false },
+        { id: 'motivation',     label: 'Pourquoi ce poste t\'intéresse ?', type: 'textarea',      placeholder: 'Ce qui t\'attire dans ce poste ou cette entreprise…', required: false }
       ];
     }
   },
@@ -181,9 +218,10 @@ const SVC = {
     ],
     questions: function() {
       return [
-        { id: 'destinataire', label: 'Destinataire *',        type: 'text',     placeholder: 'Ex : Mairie de Cayenne, CAF de Guyane, CPAM…', required: true },
-        { id: 'objet',        label: 'Objet du courrier *',   type: 'text',     placeholder: 'Résumé en une ligne', required: true },
-        { id: 'description',  label: 'Votre situation *',     type: 'textarea', placeholder: 'Décrivez votre situation et ce que vous demandez…', required: true }
+        { id: 'destinataire', label: 'Destinataire *',      type: 'hybrid-select', placeholder: 'Ou saisir un destinataire non listé…', required: true, groups: COURRIER_DESTINATAIRES_GROUPS },
+        { id: 'objet_type',   label: 'Type de courrier *',  type: 'tags',          placeholder: '', required: true, single: true, groups: COURRIER_OBJET_TYPES },
+        { id: 'objet',        label: 'Objet du courrier *', type: 'text',          placeholder: 'Résumé en une ligne', required: true },
+        { id: 'description',  label: 'Votre situation *',   type: 'textarea',      placeholder: 'Décrivez votre situation et ce que vous demandez…', required: true }
       ];
     }
   },
@@ -728,20 +766,22 @@ function swBuildForm() {
                         placeholder="${escSw(q.placeholder || '')}">
                </div>`;
     } else if (q.type === 'tags') {
+      const isSingle = !!q.single;
       const groups = (q.groups || []).map(g =>
         `<div class="sw-tags-cat">
-           <div class="sw-tags-cat-title">${escSw(g.label)}</div>
+           ${g.label ? `<div class="sw-tags-cat-title">${escSw(g.label)}</div>` : ''}
            <div class="sw-tags-cat-btns">
-             ${g.options.map(o => `<button type="button" class="sw-tag-btn" data-tag="${escSw(o)}">+ ${escSw(o)}</button>`).join('')}
+             ${g.options.map(o => `<button type="button" class="sw-tag-btn" data-tag="${escSw(o)}">${isSingle ? '' : '+ '}${escSw(o)}</button>`).join('')}
            </div>
          </div>`
       ).join('');
-      field = `<div class="sw-tags-wrap" id="sw-tags-wrap-${q.id}">
+      const freeField = isSingle ? '' : `<textarea class="sw-tags-free" id="sw-tags-free-${q.id}" rows="2"
+                           placeholder="${escSw(q.placeholder || '')}"
+                           oninput="swTagsSync('${q.id}')"></textarea>`;
+      field = `<div class="sw-tags-wrap${isSingle ? ' sw-tags-wrap--single' : ''}" id="sw-tags-wrap-${q.id}" data-single="${isSingle ? '1' : '0'}">
                  <div class="sw-tags-chips" id="sw-tags-chips-${q.id}" data-selected="[]"></div>
                  ${groups}
-                 <textarea class="sw-tags-free" id="sw-tags-free-${q.id}" rows="2"
-                           placeholder="${escSw(q.placeholder || '')}"
-                           oninput="swTagsSync('${q.id}')"></textarea>
+                 ${freeField}
                  <input type="hidden" id="sw-f-${q.id}" data-fid="${q.id}" ${req}>
                </div>`;
     } else if (q.type === 'template-picker') {
@@ -826,8 +866,20 @@ function swBuildForm() {
   document.querySelectorAll('#sw-fields .sw-tags-wrap').forEach(wrap => {
     const id = wrap.id.replace('sw-tags-wrap-', '');
     const stored = (SSW.details[id] || '').trim();
-    const free = wrap.querySelector('.sw-tags-free');
-    if (free && stored && !free.value) free.value = stored;
+    const isSingle = wrap.dataset.single === '1';
+    if (isSingle) {
+      if (stored) {
+        const chips = wrap.querySelector('.sw-tags-chips');
+        chips.dataset.selected = JSON.stringify([stored]);
+        _swRenderChips(id);
+        wrap.querySelectorAll('.sw-tag-btn').forEach(b => {
+          b.classList.toggle('sw-tag-btn--added', b.dataset.tag === stored);
+        });
+      }
+    } else {
+      const free = wrap.querySelector('.sw-tags-free');
+      if (free && stored && !free.value) free.value = stored;
+    }
     swTagsSync(id);
   });
 }
@@ -851,8 +903,20 @@ function swTagAdd(id, tag) {
   const wrap = document.getElementById('sw-tags-wrap-' + id);
   if (!wrap || !tag) return;
   const chips = wrap.querySelector('.sw-tags-chips');
+  const isSingle = wrap.dataset.single === '1';
   let selected;
   try { selected = JSON.parse(chips.dataset.selected || '[]'); } catch(_) { selected = []; }
+  if (isSingle) {
+    if (selected.length === 1 && selected[0] === tag) return;
+    selected = [tag];
+    chips.dataset.selected = JSON.stringify(selected);
+    _swRenderChips(id);
+    wrap.querySelectorAll('.sw-tag-btn').forEach(b => {
+      b.classList.toggle('sw-tag-btn--added', b.dataset.tag === tag);
+    });
+    swTagsSync(id);
+    return;
+  }
   if (selected.includes(tag)) return;
   selected.push(tag);
   chips.dataset.selected = JSON.stringify(selected);
@@ -903,8 +967,13 @@ function swTagsSync(id) {
   if (!wrap || !hidden) return;
   const chips = wrap.querySelector('.sw-tags-chips');
   const free  = wrap.querySelector('.sw-tags-free');
+  const isSingle = wrap.dataset.single === '1';
   let selected;
   try { selected = JSON.parse(chips.dataset.selected || '[]'); } catch(_) { selected = []; }
+  if (isSingle) {
+    hidden.value = selected[0] || '';
+    return;
+  }
   const joined  = selected.join(', ');
   const freeTxt = (free && free.value || '').trim();
   hidden.value = [joined, freeTxt].filter(Boolean).join(' · ');

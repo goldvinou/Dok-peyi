@@ -121,7 +121,7 @@ workspace-* (projets, tâches, chat, IA, QC, agents, notes, dashboard)
 ### Autres fichiers clés
 | Fichier | Rôle |
 |---|---|
-| `service.js` | Wizard client — logique complète, constantes `CV_TEMPLATES` et `MODIFY_SECTIONS`, `SSW` state, `swBuildPrompt`, `swGenerate`, panneau modif universel (`swModifyDoc`) |
+| `service.js` | Wizard client — logique complète, constantes `CV_TEMPLATES`, `MODIFY_SECTIONS`, `CV_POSTES_GROUPS`, `CV_DIPLOMES_GROUPS`, `CV_COMPETENCES_GROUPS`, `LETTRE_ENTREPRISES_GROUPS`, `LETTRE_SECTEUR_TAGS`, `COURRIER_DESTINATAIRES_GROUPS`, `COURRIER_OBJET_TYPES`, `SSW` state, `swBuildPrompt`, `swGenerate`, panneau modif universel (`swModifyDoc`) — supporte `hybrid-select` et `tags` (avec variante `single: true` = radio-tags) |
 | `service.html` | Wizard client — structure HTML 3 étapes + prévisualisation iframe + panneau modif |
 | `service.css` | Styles wizard + cartes templates + modif panel |
 | `cv-catalogue.html` | Page standalone catalogue des 6 templates CV (lien `?template=XXX` vers wizard) |
