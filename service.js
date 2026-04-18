@@ -4,6 +4,39 @@
    Courrier, Dossier, Titre de séjour.
    ============================================================ */
 
+/* ── LISTES PRÉDÉFINIES (CV) ──────────────────────────────── */
+const CV_POSTES_GROUPS = [
+  { label: 'BTP / Industrie',         options: ['Ouvrier BTP','Maçon','Coffreur','Électricien','Plombier','Carreleur','Peintre en bâtiment','Chef de chantier','Conducteur d\'engins','Métreur','Technicien de maintenance','Soudeur'] },
+  { label: 'Santé / Social',          options: ['Infirmier(e) diplômé(e) d\'État','Aide-soignant(e)','Auxiliaire de vie','Agent de service hospitalier','Éducateur spécialisé','Assistant(e) social(e)','Puéricultrice','Médecin généraliste'] },
+  { label: 'Éducation / Formation',   options: ['Professeur des écoles','Professeur certifié','AESH','Animateur périscolaire','Formateur professionnel','CPE'] },
+  { label: 'Administration / Juridique', options: ['Agent administratif','Secrétaire','Assistant(e) de direction','Gestionnaire RH','Comptable','Agent fonction publique','Juriste'] },
+  { label: 'Commerce / Vente',        options: ['Vendeur(se)','Conseiller(e) de vente','Responsable de rayon','Caissier(e)','Commercial(e)','Manager de rayon'] },
+  { label: 'Transport / Logistique',  options: ['Chauffeur PL','Chauffeur VL','Livreur','Magasinier','Cariste'] },
+  { label: 'Agriculture / Environnement', options: ['Ouvrier agricole','Technicien agricole','Agent forestier','Pêcheur','Technicien environnement'] },
+  { label: 'Numérique / Technique',   options: ['Développeur web','Technicien informatique','Administrateur réseau'] },
+  { label: 'Restauration / Hôtellerie', options: ['Cuisinier','Aide cuisinier','Serveur','Réceptionniste','Agent d\'entretien'] }
+];
+
+const CV_DIPLOMES_GROUPS = [
+  { label: 'Diplômes courants', options: [
+    'Aucun diplôme','CFG','CFGP','CAP','BEP',
+    'BAC Professionnel','BAC Général','BAC Technologique',
+    'BTS','DUT/BUT','DEUG','Licence','Licence Professionnelle','Master','Master Professionnel','Doctorat',
+    'BTS SP3S','DEAS','DEAP','DEEJE','Diplôme d\'État Infirmier','Diplôme d\'État Aide-soignant',
+    'Certificat de qualification professionnelle (CQP)','Titre professionnel AFPA','Habilitations électriques (B0/H0/BR/BC)'
+  ]}
+];
+
+const CV_COMPETENCES_GROUPS = [
+  { label: 'Transversales',    options: ['Travail en équipe','Autonomie','Rigueur','Ponctualité','Adaptabilité','Gestion du stress','Communication','Sens du service','Organisation','Prise d\'initiative','Polyvalence','Gestion des priorités'] },
+  { label: 'Techniques BTP',   options: ['Lecture de plans','PPSPS','Travail en hauteur sécurisé','Conduite d\'engins','Coffrages','Maçonnerie','Électricité','Plomberie','Soudure','Habilitation électrique'] },
+  { label: 'Techniques Santé', options: ['Soins infirmiers','Gestion de la douleur','Soins intensifs','Tutorat étudiants','Gestion de dossiers patients'] },
+  { label: 'Techniques Commerce', options: ['Techniques de vente','Gestion de caisse','Merchandising','Gestion des stocks','Relation client','Objectifs commerciaux'] },
+  { label: 'Techniques Admin', options: ['Maîtrise Word/Excel','Logiciels métier','Gestion documentaire','Comptabilité','Droit du travail','Marchés publics'] },
+  { label: 'Langues',          options: ['Français','Anglais','Espagnol','Portugais brésilien','Créole guyanais','Créole haïtien','Néerlandais','Arabe'] },
+  { label: 'Permis',           options: ['Permis B','Permis C (PL)','Permis CE','CACES R482','CACES R489','Permis bateau','Permis moto'] }
+];
+
 /* ── CONFIG PAR SERVICE ───────────────────────────────────── */
 const SVC = {
   cv: {
@@ -20,11 +53,11 @@ const SVC = {
           placeholder: 'Décrivez les changements souhaités (design, contenu, mise en page…)', required: true }
       ];
       return [
-        { id: 'poste',       label: 'Poste recherché *',            type: 'text',     placeholder: 'Ex : Employé(e) polyvalent(e), Aide-soignant(e)…', required: true },
-        { id: 'experience',  label: 'Expériences professionnelles', type: 'textarea', placeholder: 'Postes occupés, entreprises, durées… (laissez vide si débutant)', required: false },
-        { id: 'formation',   label: 'Formation / Diplômes',         type: 'textarea', placeholder: 'Niveau d\'études, diplômes, centres de formation…', required: false },
-        { id: 'competences', label: 'Compétences',                  type: 'textarea', placeholder: 'Logiciels, langues, permis, savoir-faire…', required: false },
-        { id: 'infos',       label: 'Informations supplémentaires', type: 'textarea', placeholder: 'Loisirs, disponibilité, mobilité géographique…', required: false }
+        { id: 'poste',       label: 'Poste recherché *',            type: 'hybrid-select', placeholder: 'Ou saisir un poste non listé…', required: true,  groups: CV_POSTES_GROUPS },
+        { id: 'experience',  label: 'Expériences professionnelles', type: 'textarea',      placeholder: 'Postes occupés, entreprises, durées… (laissez vide si débutant)', required: false },
+        { id: 'formation',   label: 'Formation / Diplômes',         type: 'hybrid-select', placeholder: 'Ou saisir un diplôme non listé…', required: false, groups: CV_DIPLOMES_GROUPS },
+        { id: 'competences', label: 'Compétences',                  type: 'tags',          placeholder: 'Ajouter vos propres compétences (séparées par des virgules)…', required: false, groups: CV_COMPETENCES_GROUPS },
+        { id: 'infos',       label: 'Informations supplémentaires', type: 'textarea',      placeholder: 'Loisirs, disponibilité, mobilité géographique…', required: false }
       ];
     }
   },
@@ -519,12 +552,52 @@ function swBuildForm() {
       ).join('');
       field = `<div class="sw-radio-group">${opts}</div>
                <input type="hidden" id="sw-f-${q.id}" data-fid="${q.id}" ${req}>`;
+    } else if (q.type === 'hybrid-select') {
+      const groups = (q.groups || []).map(g =>
+        `<optgroup label="${escSw(g.label)}">${g.options.map(o =>
+          `<option value="${escSw(o)}">${escSw(o)}</option>`
+        ).join('')}</optgroup>`
+      ).join('');
+      field = `<div class="sw-hybrid">
+                 <select class="sw-hybrid-select" onchange="swHybridPick('${q.id}', this.value); this.selectedIndex=0;">
+                   <option value="">— Choisir dans la liste —</option>
+                   ${groups}
+                   <option value="__autre__">Autre (préciser ci-dessous)</option>
+                 </select>
+                 <input type="text" class="sw-hybrid-input" id="sw-f-${q.id}" data-fid="${q.id}" ${req}
+                        placeholder="${escSw(q.placeholder || '')}">
+               </div>`;
+    } else if (q.type === 'tags') {
+      const groups = (q.groups || []).map(g =>
+        `<div class="sw-tags-cat">
+           <div class="sw-tags-cat-title">${escSw(g.label)}</div>
+           <div class="sw-tags-cat-btns">
+             ${g.options.map(o => `<button type="button" class="sw-tag-btn" data-tag="${escSw(o)}">+ ${escSw(o)}</button>`).join('')}
+           </div>
+         </div>`
+      ).join('');
+      field = `<div class="sw-tags-wrap" id="sw-tags-wrap-${q.id}">
+                 <div class="sw-tags-chips" id="sw-tags-chips-${q.id}" data-selected="[]"></div>
+                 ${groups}
+                 <textarea class="sw-tags-free" id="sw-tags-free-${q.id}" rows="2"
+                           placeholder="${escSw(q.placeholder || '')}"
+                           oninput="swTagsSync('${q.id}')"></textarea>
+                 <input type="hidden" id="sw-f-${q.id}" data-fid="${q.id}" ${req}>
+               </div>`;
     } else {
       field = `<input type="text" id="sw-f-${q.id}" data-fid="${q.id}" ${req}
                  placeholder="${escSw(q.placeholder || '')}">`;
     }
     return `<div class="sw-fg"><label for="sw-f-${q.id}">${escSw(q.label)}</label>${field}</div>`;
   }).join('');
+
+  /* Brancher les boutons de tag (event delegation évitée au profit d'un câblage direct) */
+  document.querySelectorAll('#sw-fields .sw-tag-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const wrap = btn.closest('.sw-tags-wrap');
+      if (wrap) swTagAdd(wrap.id.replace('sw-tags-wrap-', ''), btn.dataset.tag);
+    });
+  });
 
   /* Restaurer l'état visuel de l'import si retour depuis l'étape 3 */
   if (showImport && SSW.importFile) {
@@ -561,6 +634,94 @@ function swBuildForm() {
       }
     }
   });
+
+  /* Restaurer les champs tags : la valeur stockée est remise dans la zone libre
+     (on ne tente pas de re-cocher les tags pour éviter une parse ambiguë). */
+  document.querySelectorAll('#sw-fields .sw-tags-wrap').forEach(wrap => {
+    const id = wrap.id.replace('sw-tags-wrap-', '');
+    const stored = (SSW.details[id] || '').trim();
+    const free = wrap.querySelector('.sw-tags-free');
+    if (free && stored && !free.value) free.value = stored;
+    swTagsSync(id);
+  });
+}
+
+/* ── HYBRID-SELECT + TAGS HELPERS ─────────────────────────── */
+
+/** Sélection dans un <select> hybride : copie la valeur dans l'input texte associé. */
+function swHybridPick(id, val) {
+  const input = document.getElementById('sw-f-' + id);
+  if (!input) return;
+  if (val && val !== '__autre__') {
+    input.value = val;
+  } else if (val === '__autre__') {
+    input.value = '';
+    input.focus();
+  }
+}
+
+/** Ajoute un tag à la sélection d'un champ "tags". */
+function swTagAdd(id, tag) {
+  const wrap = document.getElementById('sw-tags-wrap-' + id);
+  if (!wrap || !tag) return;
+  const chips = wrap.querySelector('.sw-tags-chips');
+  let selected;
+  try { selected = JSON.parse(chips.dataset.selected || '[]'); } catch(_) { selected = []; }
+  if (selected.includes(tag)) return;
+  selected.push(tag);
+  chips.dataset.selected = JSON.stringify(selected);
+  _swRenderChips(id);
+  wrap.querySelectorAll('.sw-tag-btn').forEach(b => {
+    if (b.dataset.tag === tag) b.classList.add('sw-tag-btn--added');
+  });
+  swTagsSync(id);
+}
+
+/** Retire un tag de la sélection. */
+function swTagRemove(id, tag) {
+  const wrap = document.getElementById('sw-tags-wrap-' + id);
+  if (!wrap) return;
+  const chips = wrap.querySelector('.sw-tags-chips');
+  let selected;
+  try { selected = JSON.parse(chips.dataset.selected || '[]'); } catch(_) { selected = []; }
+  selected = selected.filter(t => t !== tag);
+  chips.dataset.selected = JSON.stringify(selected);
+  _swRenderChips(id);
+  wrap.querySelectorAll('.sw-tag-btn').forEach(b => {
+    if (b.dataset.tag === tag) b.classList.remove('sw-tag-btn--added');
+  });
+  swTagsSync(id);
+}
+
+/** Rerend les chips pour un champ tags à partir de dataset.selected. */
+function _swRenderChips(id) {
+  const chips = document.getElementById('sw-tags-chips-' + id);
+  if (!chips) return;
+  let selected;
+  try { selected = JSON.parse(chips.dataset.selected || '[]'); } catch(_) { selected = []; }
+  chips.innerHTML = selected.map(t =>
+    `<span class="sw-tag-chip" data-tag="${escSw(t)}">${escSw(t)}<button type="button" aria-label="Retirer">✕</button></span>`
+  ).join('');
+  chips.querySelectorAll('.sw-tag-chip button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chip = btn.closest('.sw-tag-chip');
+      if (chip) swTagRemove(id, chip.dataset.tag);
+    });
+  });
+}
+
+/** Synchronise le champ caché (data-fid) d'un champ tags avec les tags + le texte libre. */
+function swTagsSync(id) {
+  const wrap   = document.getElementById('sw-tags-wrap-' + id);
+  const hidden = document.getElementById('sw-f-' + id);
+  if (!wrap || !hidden) return;
+  const chips = wrap.querySelector('.sw-tags-chips');
+  const free  = wrap.querySelector('.sw-tags-free');
+  let selected;
+  try { selected = JSON.parse(chips.dataset.selected || '[]'); } catch(_) { selected = []; }
+  const joined  = selected.join(', ');
+  const freeTxt = (free && free.value || '').trim();
+  hidden.value = [joined, freeTxt].filter(Boolean).join(' · ');
 }
 
 /* ── PIPELINE HELPERS ─────────────────────────────────────── */
