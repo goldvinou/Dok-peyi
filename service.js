@@ -1317,7 +1317,7 @@ async function swCallAgent(systemPrompt, userPrompt) {
   }
 }
 
-/* ── GENERATE — pipeline 4 agents ────────────────────────── */
+/* ── GENERATE — pipeline multi-agents serveur ────────────────── */
 async function swGenerate() {
   var loading = document.getElementById('sw-loading');
   var preview = document.getElementById('sw-preview');
@@ -1338,42 +1338,25 @@ async function swGenerate() {
     swPipelineUpdate('submitted', 'accueil', 'lucas', 'Demande reçue et collectée');
     await new Promise(function(r) { setTimeout(r, 600); });
 
-    /* ── EMMA — génération du document ── */
+    /* ── ORCHESTRATE — pipeline Emma → Viktor → Sofia → Léa côté serveur ── */
     updateMsg('En préparation…');
     swPipelineUpdate('processing', null, null, null);
-    var emmaResult = await swCallAgent(swGetAgentPrompt('emma'), swBuildPrompt());
-    swPipelineUpdate('generated', 'generation', 'emma', 'Document rédigé');
 
-    /* ── SOFIA — optimisation du brouillon ── */
-    updateMsg('En cours de vérification…');
-    swPipelineUpdate('pret_paiement', 'optimisation', 'sofia', 'Optimisation en cours');
-    var sofiaPrompt = 'Optimise ce document HTML pour un impact maximal et une présentation impeccable. '
-      + 'Améliore la fluidité du texte, l\'impact des formulations, la mise en forme. '
-      + 'Retourne uniquement le HTML complet optimisé, sans aucun commentaire :\n\n' + emmaResult;
-    var sofiaResult = await swCallAgent(swGetAgentPrompt('sofia'), sofiaPrompt);
-    swPipelineUpdate('pret_paiement', 'optimisation', 'sofia', 'Optimisation terminée');
-
-    /* ── LÉA — Pôle Qualité & Présentation ── */
-    updateMsg('Mise en forme professionnelle…');   // client ne voit pas "IA"
-    swPipelineUpdate('pole_qualite', 'presentation', 'lea', 'Mise en forme professionnelle en cours');
-    var leaPrompt = 'Améliore la mise en page, la lisibilité, la structure et l\'harmonie visuelle de ce document HTML. '
-      + 'Ne modifie pas le contenu rédactionnel. Améliore uniquement la présentation (espacement, typographie, hiérarchie visuelle, couleurs professionnelles, impact visuel). '
-      + 'Retourne uniquement le HTML complet mis en forme, sans aucun commentaire :\n\n' + sofiaResult;
-    var leaResult = await swCallAgent(swGetAgentPrompt('lea'), leaPrompt);
-    /* Stocker avant/après pour la comparaison admin */
-    swPipelineUpdatePQ(sofiaResult, leaResult);
-    swPipelineUpdate('pole_qualite', 'presentation', 'lea', 'Mise en forme terminée');
-
-    /* ── VIKTOR — validation finale ── */
-    updateMsg('Prêt — finalisation…');
-    swPipelineUpdate('a_verifier', 'verification', 'viktor', 'Validation finale en cours');
-    var viktorPrompt = 'Voici un document HTML à valider. '
-      + 'Corrige les éventuelles erreurs restantes (orthographe, grammaire, cohérence) et assure-toi de la qualité finale. '
-      + 'Retourne uniquement le HTML complet validé, sans aucun commentaire :\n\n' + leaResult;
-    var viktorResult = await swCallAgent(swGetAgentPrompt('viktor'), viktorPrompt);
+    var controller = new AbortController();
+    var timeout    = setTimeout(function() { controller.abort(); }, 120000);
+    var res = await fetch('/api/orchestrate', {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify({ prompt: swBuildPrompt(), service: SSW.svc }),
+      signal:  controller.signal
+    });
+    clearTimeout(timeout);
+    var data = await res.json();
+    if (data.error) throw new Error(data.error);
+    var finalResult = (data.cv || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
     swPipelineUpdate('valide_manager', 'verification', 'viktor', 'Document validé et approuvé');
 
-    SSW.html         = viktorResult;
+    SSW.html         = finalResult;
     SSW.generatedAt  = new Date().toISOString();
     SSW.modifyCount  = 0;
     SSW.htmlVersions = [];
@@ -1391,7 +1374,7 @@ async function swGenerate() {
     }
     _swModifyPanelInit();
   } catch(e) {
-    var isTimeout  = e.message === 'timeout';
+    var isTimeout  = e.message === 'timeout' || e.name === 'AbortError';
     var isOffline  = !navigator.onLine || e.message.toLowerCase().includes('network') || e.message.toLowerCase().includes('fetch');
     var userMsg    = isTimeout  ? 'La génération a pris trop de temps. Nos serveurs sont occupés, réessayez dans quelques instants.'
                   : isOffline  ? 'Impossible de contacter nos serveurs. Vérifiez votre connexion internet, puis réessayez.'

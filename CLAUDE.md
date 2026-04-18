@@ -93,6 +93,7 @@ workspace-* (projets, tâches, chat, IA, QC, agents, notes, dashboard)
 ### Edge Functions (répertoire `api/`)
 | Fichier | Rôle |
 |---|---|
+| `api/orchestrate.js` | Pipeline multi-agents serveur — Emma → Viktor (éval, max 2 boucles) → Sofia → Léa, rate-limit 5/min. Emma : Opus (séjour/naturalisation) ou Sonnet (autres). Viktor/Sofia/Léa : Haiku. Retourne `{ cv: "…" }` |
 | `api/generate-cv.js` | Génération document principal — streaming SSE Anthropic, rate-limit 5/min, max prompt 32k car, max systemPrompt 4k car |
 | `api/ai-chat.js` | Chat IA interne équipe (Claude ou OpenAI selon `service`), historique 10 derniers messages |
 | `api/redac-chat.js` | Agent Rédac — assistant interne, anti-injection + actions destructives bloquées |
@@ -197,7 +198,7 @@ Pour les services utilisant `lib/pipeline.js` (via `/api/pipeline` action `gener
 - format `json` → `lib/templates.js` rend le HTML final ; format `html` → passage brut
 - actuellement en `json` : cv (scratch + pro) — tous les autres en `html`
 
-**Pipeline 4 agents nommés (Emma → Sofia → Léa → Viktor)** : uniquement Emma est présente à ce jour dans le prompt `cv_scratch` (`service.js:1270`). Sofia, Léa et Viktor sont des noms de rôles prévus pour la Phase 2 (orchestration multi-agents) — non implémentés en production.
+**Pipeline 4 agents nommés (Emma → Viktor → Sofia → Léa)** : implémenté côté serveur dans `api/orchestrate.js`. Le client (`swGenerate` dans `service.js`) appelle `/api/orchestrate` en un seul fetch (timeout 120s). `swCallAgent` (panneau de modification) continue d'appeler `/api/generate-cv`. Emma utilise Opus pour séjour/naturalisation, Sonnet pour les autres services. Viktor, Sofia, Léa utilisent Haiku.
 
 ## Branches Git
 - **Branche principale** : `claude/create-website-AhMOy`
@@ -253,7 +254,7 @@ Pour les services utilisant `lib/pipeline.js` (via `/api/pipeline` action `gener
 ## Roadmap
 - **Phase 0 — Sécurité** : en attente Allan (Vercel env vars + Firebase rules + HSTS preload + rotation secrets)
 - **Phase 1 — Prompts production** : ✅ terminé (prompts enrichis par service et sous-type, contexte Guyane, 7 services fonctionnels)
-- **Phase 2 — Pipeline multi-agents** : à venir (Emma → Sofia → Léa → Viktor orchestré serveur, mémoire partagée entre agents)
+- **Phase 2 — Pipeline multi-agents** : ✅ implémenté (`api/orchestrate.js`) — Emma → Viktor → Sofia → Léa orchestré serveur. Mémoire partagée entre agents : à venir (Phase 2b)
 - **Phase 3 — Premium et croissance** : à venir (templates CV premium additionnels, abonnement, parrainage, dashboard client)
 
 ## Équipe
