@@ -298,6 +298,9 @@ const IS_TEST_MODE = location.hostname === 'localhost'
 /* ── PAYPAL — email du compte PayPal Business ────────────── */
 const PAYPAL_EMAIL = 'contact@dok-peyi.fr';
 
+/* ── MODIFY CV — paramètres ──────────────────────────────── */
+const FREE_MODIFICATIONS = 2;
+
 /* ── STATE ───────────────────────────────────────────────── */
 const SSW = {
   svc:             null,
@@ -309,7 +312,9 @@ const SSW = {
   paid:            false,
   orderId:         null,
   importFile:      null,   // fichier importé { name, type, data }
-  importExtracted: null    // champs extraits par l'IA depuis le document
+  importExtracted: null,   // champs extraits par l'IA depuis le document
+  modifyCount:     0,      // nombre de modifications CV effectuées
+  htmlVersions:    []      // historique des versions HTML avant chaque modification
 };
 
 /* ── INIT ─────────────────────────────────────────────────── */
@@ -850,6 +855,148 @@ function swTplSelect(id) {
   });
 }
 
+/* ── MODIFY CV ────────────────────────────────────────────── */
+
+/** Initialise / réinitialise le panneau de modification. */
+function _swModifyPanelInit() {
+  var panel = document.getElementById('sw-modify-panel');
+  if (!panel) return;
+  /* Le panneau n'est visible que pour les CV (scratch/pro) */
+  var showPanel = SSW.svc === 'cv' && SSW.choice !== 'improve';
+  panel.style.display = showPanel ? 'block' : 'none';
+  if (!showPanel) return;
+  _swModifyUpdateCounter();
+  document.getElementById('sw-modify-history').innerHTML = '<p class="sw-modify-history-empty">Version originale disponible</p>';
+}
+
+/** Met à jour le badge compteur et l'état du bouton. */
+function _swModifyUpdateCounter() {
+  var remaining = FREE_MODIFICATIONS - SSW.modifyCount;
+  var counter   = document.getElementById('sw-modify-counter');
+  var btn       = document.getElementById('sw-modify-btn');
+  var exhausted = document.getElementById('sw-modify-exhausted');
+  if (!counter) return;
+  if (remaining > 0) {
+    counter.textContent  = remaining + ' modification' + (remaining > 1 ? 's' : '') + ' gratuite' + (remaining > 1 ? 's' : '') + ' restante' + (remaining > 1 ? 's' : '');
+    counter.className    = 'sw-modify-counter sw-modify-counter--ok';
+    if (btn) btn.disabled = false;
+    if (exhausted) exhausted.style.display = 'none';
+  } else {
+    counter.textContent  = 'Modifications gratuites épuisées';
+    counter.className    = 'sw-modify-counter sw-modify-counter--exhausted';
+    if (btn) btn.disabled = true;
+    if (exhausted) {
+      exhausted.style.display = 'block';
+      exhausted.innerHTML = '⚠️ Vous avez utilisé vos ' + FREE_MODIFICATIONS + ' modifications gratuites. Une option +2€ sera bientôt disponible pour continuer à affiner votre CV.';
+    }
+  }
+}
+
+/** Applique une modification ciblée sur le CV courant. */
+async function swModifyCV() {
+  if (SSW.modifyCount >= FREE_MODIFICATIONS) return;
+
+  var section     = (document.getElementById('sw-modify-section')?.value     || '').trim();
+  var instruction = (document.getElementById('sw-modify-instruction')?.value || '').trim();
+  var btn         = document.getElementById('sw-modify-btn');
+
+  if (!section) {
+    swShake(document.getElementById('sw-modify-section'));
+    return;
+  }
+  if (!instruction) {
+    swShake(document.getElementById('sw-modify-instruction'));
+    return;
+  }
+
+  /* Sauvegarder la version actuelle avant modification */
+  SSW.htmlVersions.push({ n: SSW.modifyCount + 1, section: section, html: SSW.html });
+
+  /* UI : loader */
+  if (btn) { btn.disabled = true; btn.textContent = 'Modification en cours…'; }
+
+  var prompt =
+    'Tu es un expert en CV professionnels.\n'
+    + 'Voici un CV HTML. Effectue UNIQUEMENT la modification demandée '
+    + 'sur la section indiquée. Ne modifie rien d\'autre.\n\n'
+    + 'SECTION À MODIFIER : ' + section + '\n'
+    + 'INSTRUCTION : ' + instruction + '\n\n'
+    + 'RÈGLES ABSOLUES :\n'
+    + '- Conserve exactement le même style CSS et la même structure HTML\n'
+    + '- Conserve toutes les autres sections intactes\n'
+    + '- Si l\'instruction est impossible ou incohérente, retourne le HTML '
+    + 'original sans modification\n'
+    + '- Réponds UNIQUEMENT avec le HTML complet modifié\n\n'
+    + 'CV ACTUEL :\n' + SSW.html;
+
+  try {
+    var modified = await swCallAgent(
+      'Tu es un expert en CV professionnels. Tu modifies uniquement la section demandée sans toucher au reste.',
+      prompt
+    );
+    SSW.html = modified;
+    var iframe = document.getElementById('sw-iframe');
+    if (iframe) { iframe.srcdoc = SSW.html; swScaleFrame(); }
+
+    SSW.modifyCount++;
+    _swModifyUpdateCounter();
+    _swModifyAddHistory(SSW.htmlVersions.length - 1, section);
+
+    /* Réactiver le bouton si modifications restantes */
+    if (btn) {
+      btn.textContent = 'Appliquer la modification';
+      btn.disabled    = SSW.modifyCount >= FREE_MODIFICATIONS;
+    }
+    /* Réinitialiser les champs */
+    var sel = document.getElementById('sw-modify-section');
+    var txt = document.getElementById('sw-modify-instruction');
+    if (sel) sel.value = '';
+    if (txt) txt.value = '';
+  } catch(err) {
+    /* Restaurer la version sauvegardée en cas d'erreur */
+    SSW.htmlVersions.pop();
+    if (btn) { btn.textContent = 'Appliquer la modification'; btn.disabled = false; }
+    var errDiv = document.getElementById('sw-modify-exhausted');
+    if (errDiv) {
+      errDiv.style.display = 'block';
+      errDiv.innerHTML = '⚠️ Erreur lors de la modification. Réessayez.';
+    }
+  }
+}
+
+/** Ajoute une entrée dans l'historique des versions. */
+function _swModifyAddHistory(versionIdx, section) {
+  var histDiv = document.getElementById('sw-modify-history');
+  if (!histDiv) return;
+  var n   = versionIdx + 1;
+  var existing = histDiv.querySelector('.sw-modify-history-empty');
+  if (existing) existing.remove();
+
+  var item = document.createElement('div');
+  item.className = 'sw-modify-history-item';
+  item.innerHTML =
+    '<span class="sw-modify-history-label">Version ' + n + ' — ' + escSw(section) + ' modifiée</span>'
+    + '<button type="button" class="sw-modify-restore-btn">Restaurer</button>';
+  item.querySelector('.sw-modify-restore-btn').addEventListener('click', function() {
+    swRestoreVersion(versionIdx);
+  });
+  histDiv.insertBefore(item, histDiv.firstChild);
+}
+
+/** Restaure une version précédente du CV. */
+function swRestoreVersion(versionIdx) {
+  var entry = SSW.htmlVersions[versionIdx];
+  if (!entry) return;
+  SSW.html = entry.html;
+  var iframe = document.getElementById('sw-iframe');
+  if (iframe) { iframe.srcdoc = SSW.html; swScaleFrame(); }
+  /* Marquer la version restaurée dans l'historique */
+  var items = document.querySelectorAll('#sw-modify-history .sw-modify-history-item');
+  if (items[SSW.htmlVersions.length - 1 - versionIdx]) {
+    items[SSW.htmlVersions.length - 1 - versionIdx].classList.add('sw-modify-history-item--restored');
+  }
+}
+
 /* ── PIPELINE HELPERS ─────────────────────────────────────── */
 
 /** Lit le system prompt d'un agent depuis localStorage (configurable par admin). */
@@ -996,8 +1143,10 @@ async function swGenerate() {
     var viktorResult = await swCallAgent(swGetAgentPrompt('viktor'), viktorPrompt);
     swPipelineUpdate('valide_manager', 'verification', 'viktor', 'Document validé et approuvé');
 
-    SSW.html        = viktorResult;
-    SSW.generatedAt = new Date().toISOString();
+    SSW.html         = viktorResult;
+    SSW.generatedAt  = new Date().toISOString();
+    SSW.modifyCount  = 0;
+    SSW.htmlVersions = [];
 
     /* ── Afficher le document final ── */
     if (loading) loading.style.display = 'none';
@@ -1010,6 +1159,7 @@ async function swGenerate() {
         swScaleFrame();
       }
     }
+    _swModifyPanelInit();
   } catch(e) {
     var isTimeout  = e.message === 'timeout';
     var isOffline  = !navigator.onLine || e.message.toLowerCase().includes('network') || e.message.toLowerCase().includes('fetch');

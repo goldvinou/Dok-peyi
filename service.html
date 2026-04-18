@@ -131,6 +131,48 @@
               <div class="sw-watermark-text">APERÇU<br>PAIEMENT REQUIS</div>
             </div>
           </div>
+          <!-- Panneau de modification par section -->
+          <div id="sw-modify-panel">
+            <h3>Modifier une section</h3>
+            <p id="sw-modify-counter"></p>
+
+            <div class="sw-modify-row">
+              <div class="sw-fg">
+                <label for="sw-modify-section">Section à modifier</label>
+                <select id="sw-modify-section">
+                  <option value="">— Choisir une section —</option>
+                  <option value="En-tête (Nom, titre, contact)">En-tête (Nom, titre, contact)</option>
+                  <option value="Profil / Accroche">Profil / Accroche</option>
+                  <option value="Expérience professionnelle">Expérience professionnelle</option>
+                  <option value="Formation">Formation</option>
+                  <option value="Compétences">Compétences</option>
+                  <option value="Langues">Langues</option>
+                  <option value="Centres d'intérêt">Centres d'intérêt</option>
+                  <option value="Style global / Mise en page">Style global / Mise en page</option>
+                </select>
+              </div>
+
+              <div class="sw-fg">
+                <label for="sw-modify-instruction">Instruction de modification</label>
+                <textarea id="sw-modify-instruction" rows="3"
+                  placeholder="Décrivez votre modification…
+Exemples :
+– Rendre le titre plus percutant
+– Ajouter « disponible immédiatement » dans le profil
+– Reformuler l'expérience chez Eiffage en mettant en avant le travail en équipe
+– Changer la couleur d'accent en vert foncé"></textarea>
+              </div>
+            </div>
+
+            <div id="sw-modify-exhausted" style="display:none"></div>
+
+            <button id="sw-modify-btn" class="sw-btn-next" onclick="swModifyCV()">
+              Appliquer la modification
+            </button>
+
+            <div id="sw-modify-history"></div>
+          </div>
+
           <div class="sw-actions">
             <button class="sw-btn-ghost" onclick="swGoStep(2)" aria-label="Modifier les informations">← Modifier</button>
             <button class="sw-btn-next"  onclick="swGoStep4()">💳 Payer et obtenir mon document →</button>
