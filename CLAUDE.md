@@ -1,9 +1,24 @@
 # Dok'péyi — Documentation technique
 
-## Instructions Claude Code
-- Lire ce fichier en début de chaque session
-- Mettre à jour les sections concernées avant chaque commit
-- Ne jamais modifier le code sans avoir lu ce fichier
+## Instructions Claude Code — OBLIGATOIRE
+Ces règles s'appliquent à CHAQUE session sans exception.
+
+### En début de session
+1. Lire ce fichier CLAUDE.md en entier
+2. Vérifier que le contenu correspond à l'état réel du code
+3. Si écart détecté → corriger CLAUDE.md avant toute action
+
+### En fin de session (avant chaque commit)
+1. Mettre à jour CLAUDE.md pour refléter les changements effectués :
+   - Nouveaux fichiers créés → ajouter dans Architecture
+   - Nouveaux services → ajouter dans Services disponibles
+   - Variables d'env ajoutées → ajouter dans Variables
+   - Roadmap avancée → mettre à jour le statut
+2. Le commit de CLAUDE.md doit accompagner chaque commit de code
+3. Ne jamais committer du code sans mettre à jour CLAUDE.md
+
+### Règle absolue
+Si CLAUDE.md n'est pas à jour → ne pas committer.
 
 ## Stack technique
 - Frontend : HTML/CSS/JS vanilla, zéro framework
