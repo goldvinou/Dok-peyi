@@ -70,9 +70,8 @@
       <ul class="nav-links">
         <li><a href="#comment" data-i18n="nav_comment">Comment ça marche</a></li>
         <li><a href="#services" data-i18n="nav_services">Services</a></li>
-        <li><a href="#tarifs" data-i18n="nav_tarifs">Tarifs</a></li>
         <li><a href="/a-propos">À propos</a></li>
-        <li><a href="#demande" class="nav-cta" data-i18n="nav_cta">Faire ma demande</a></li>
+        <li><a href="#services" class="nav-cta" data-i18n="nav_cta">Faire ma demande</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -81,9 +80,8 @@
     <div class="mobile-menu" id="mobileMenu">
       <a href="#comment" class="mobile-link" data-i18n="nav_comment">Comment ça marche</a>
       <a href="#services" class="mobile-link" data-i18n="nav_services">Services</a>
-      <a href="#tarifs" class="mobile-link" data-i18n="nav_tarifs">Tarifs</a>
       <a href="/a-propos" class="mobile-link">À propos</a>
-      <a href="#demande" class="mobile-link mobile-cta" data-i18n="nav_cta">Faire ma demande</a>
+      <a href="#services" class="mobile-link mobile-cta" data-i18n="nav_cta">Faire ma demande</a>
     </div>
   </nav>
 
@@ -99,7 +97,7 @@
         </h1>
         <p class="hero-sub" data-i18n="hero_sub">CV, lettres, dossiers administratifs… fais ta demande en quelques minutes.</p>
         <div class="hero-btns">
-          <a href="#demande" class="btn btn-primary btn-pulse" data-i18n="hero_btn1">Faire ma demande</a>
+          <a href="#services" class="btn btn-primary btn-pulse" data-i18n="hero_btn1">Faire ma demande</a>
           <a href="#comment" class="btn btn-ghost" data-i18n="hero_btn2">Comment ça marche ?</a>
         </div>
         <div class="hero-stats">
@@ -170,62 +168,86 @@
   </section>
 
   <!-- ===== SERVICES ===== -->
-  <section class="section" id="services">
+  <section class="section" id="services" style="background:#0a0f1e;padding:80px 0">
+    <style>
+      .svc-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}
+      .svc-dark-card{position:relative;background:#111827;border:1px solid #1e293b;border-radius:16px;padding:32px 24px 24px;display:flex;flex-direction:column;gap:12px;grid-column:span 2;transition:border-color .25s,transform .25s,box-shadow .25s}
+      .svc-dark-card.svc-wide{grid-column:span 3}
+      .svc-dark-card:hover{border-color:#2563eb;transform:translateY(-4px);box-shadow:0 20px 40px rgba(37,99,235,0.15)}
+      .svc-price-badge{position:absolute;top:16px;right:16px;background:#2563eb;color:#fff;font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:99px}
+      .svc-popular-badge{position:absolute;top:16px;left:16px;background:#f59e0b;color:#fff;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:99px}
+      .svc-dark-card .svc-icon{font-size:2rem;line-height:1;margin-top:4px}
+      .svc-dark-card h3{color:#f1f5f9;font-size:1.05rem;font-weight:700;margin:0}
+      .svc-dark-card p{color:#94a3b8;font-size:.87rem;line-height:1.55;margin:0;flex:1}
+      .svc-btn{display:inline-block;border:1px solid #2563eb;color:#2563eb;background:transparent;border-radius:10px;padding:10px 20px;font-size:.85rem;font-weight:600;text-decoration:none;text-align:center;transition:background .2s,color .2s;margin-top:4px}
+      .svc-btn:hover{background:#2563eb;color:#fff}
+      @media(max-width:1024px){
+        .svc-grid{grid-template-columns:repeat(2,1fr)}
+        .svc-dark-card,.svc-dark-card.svc-wide{grid-column:span 1}
+      }
+      @media(max-width:640px){
+        .svc-grid{grid-template-columns:1fr}
+        .svc-dark-card,.svc-dark-card.svc-wide{grid-column:span 1}
+      }
+    </style>
     <div class="container">
       <div class="section-head reveal">
-        <h2 data-i18n="svc_title">Nos services</h2>
-        <p data-i18n="svc_sub">Tout ce dont tu as besoin pour tes démarches</p>
+        <h2 style="color:#f1f5f9">Nos services</h2>
+        <p style="color:#94a3b8">Tout ce dont tu as besoin pour tes démarches administratives en Guyane</p>
       </div>
-      <div class="grid-4">
-        <div class="card service-card reveal">
-          <div class="card-icon">📄</div>
-          <h3 data-i18n="svc1_name">Création de CV</h3>
-          <p data-i18n="svc1_desc">Un CV professionnel, clair et efficace pour décrocher un emploi</p>
-          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>8€</strong></div>
-          <a href="/service?s=cv" class="btn btn-outline" data-i18n="btn_start">Commencer</a>
+      <div class="svc-grid">
+        <!-- Ligne 1 : 3 cartes (span 2) -->
+        <div class="svc-dark-card reveal">
+          <span class="svc-popular-badge">Populaire</span>
+          <span class="svc-price-badge">à partir de 8€</span>
+          <div class="svc-icon">📄</div>
+          <h3>CV Professionnel</h3>
+          <p>Un CV percutant, moderne et adapté à ton secteur — créé, amélioré ou professionnalisé selon ton profil.</p>
+          <a href="/service?s=cv" class="svc-btn">Commencer</a>
         </div>
-        <div class="card service-card featured reveal">
-          <div class="card-badge">Populaire</div>
-          <div class="card-icon">✉️</div>
-          <h3 data-i18n="svc2_name">Lettre de motivation</h3>
-          <p data-i18n="svc2_desc">Une lettre personnalisée et convaincante pour ta candidature</p>
-          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>5€</strong></div>
-          <a href="/service?s=lettre" class="btn btn-primary" data-i18n="btn_start">Commencer</a>
+        <div class="svc-dark-card reveal">
+          <span class="svc-price-badge">à partir de 5€</span>
+          <div class="svc-icon">✉️</div>
+          <h3>Lettre de motivation</h3>
+          <p>Une lettre personnalisée et convaincante — créée, améliorée ou adaptée à ton offre d'emploi.</p>
+          <a href="/service?s=lettre" class="svc-btn">Commencer</a>
         </div>
-        <div class="card service-card reveal">
-          <div class="card-icon">📁</div>
-          <h3 data-i18n="svc3_name">Aide aux dossiers</h3>
-          <p data-i18n="svc3_desc">Accompagnement pour monter ton dossier CAF, logement, emploi…</p>
-          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>12€</strong></div>
-          <a href="/service?s=dossier" class="btn btn-outline" data-i18n="btn_start">Commencer</a>
+        <div class="svc-dark-card reveal">
+          <span class="svc-price-badge">à partir de 7€</span>
+          <div class="svc-icon">📮</div>
+          <h3>Courrier officiel</h3>
+          <p>Rédaction pour mairies, préfectures et administrations — demande, réclamation ou contestation.</p>
+          <a href="/service?s=courrier" class="svc-btn">Commencer</a>
         </div>
-        <div class="card service-card reveal">
-          <div class="card-icon">📮</div>
-          <h3 data-i18n="svc4_name">Courriers officiels</h3>
-          <p data-i18n="svc4_desc">Rédaction pour mairies, préfectures, administrations et autres</p>
-          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>7€</strong></div>
-          <a href="/service?s=courrier" class="btn btn-outline" data-i18n="btn_start">Commencer</a>
+        <!-- Ligne 2 : 2 cartes larges (span 3) -->
+        <div class="svc-dark-card svc-wide reveal">
+          <span class="svc-price-badge">à partir de 12€</span>
+          <div class="svc-icon">📁</div>
+          <h3>Dossier administratif</h3>
+          <p>Accompagnement complet pour monter ton dossier CAF, logement social ou aide sociale — checklist, étapes et pièces justificatives prêtes.</p>
+          <a href="/service?s=dossier" class="svc-btn">Commencer</a>
         </div>
-        <div class="card service-card reveal">
-          <div class="card-icon">🛂</div>
+        <div class="svc-dark-card svc-wide reveal">
+          <span class="svc-price-badge">à partir de 15€</span>
+          <div class="svc-icon">🛂</div>
           <h3>Titre de séjour</h3>
-          <p>Accompagnement pour vos démarches de titre de séjour en Guyane</p>
-          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>15€</strong></div>
-          <a href="/service?s=sejour" class="btn btn-outline">Commencer</a>
+          <p>Première demande, renouvellement ou régularisation — dossier guidé, relu manuellement par notre équipe avant envoi.</p>
+          <a href="/service?s=sejour" class="svc-btn">Commencer</a>
         </div>
-        <div class="card service-card reveal">
-          <div class="card-icon">🧾</div>
+        <!-- Ligne 3 : 2 cartes larges (span 3) -->
+        <div class="svc-dark-card svc-wide reveal">
+          <span class="svc-price-badge">à partir de 10€</span>
+          <div class="svc-icon">🧾</div>
           <h3>Avis d'impôt</h3>
-          <p>Comprendre votre avis, trouver des aides ou écrire aux services fiscaux</p>
-          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>10€</strong></div>
-          <a href="/service?s=impot" class="btn btn-outline">Commencer</a>
+          <p>Comprends ton avis, trouve des aides et rédige un courrier aux services fiscaux — accompagnement clair et sans jargon.</p>
+          <a href="/service?s=impot" class="svc-btn">Commencer</a>
         </div>
-        <div class="card service-card reveal">
-          <div class="card-icon">🇫🇷</div>
+        <div class="svc-dark-card svc-wide reveal">
+          <span class="svc-price-badge">à partir de 20€</span>
+          <div class="svc-icon">🇫🇷</div>
           <h3>Naturalisation</h3>
-          <p>Vérification d'éligibilité, préparation du dossier et lettre d'intégration</p>
-          <div class="card-price"><span data-i18n="from">à partir de</span> <strong>20€</strong></div>
-          <a href="/service?s=naturalisation" class="btn btn-outline">Commencer</a>
+          <p>Vérification d'éligibilité, préparation du dossier complet et lettre d'intégration — suivi personnalisé par l'équipe.</p>
+          <a href="/service?s=naturalisation" class="svc-btn">Commencer</a>
         </div>
       </div>
     </div>
@@ -259,130 +281,6 @@
     </div>
   </section>
 
-  <!-- ===== TARIFS ===== -->
-  <section class="section section-light" id="tarifs">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2 data-i18n="pricing_title">Tarifs clairs et transparents</h2>
-        <p data-i18n="pricing_sub">Tu sais exactement ce que tu paies avant de commencer</p>
-      </div>
-      <div class="grid-4">
-        <div class="card pricing-card reveal">
-          <div class="pricing-icon">✉️</div>
-          <h3 data-i18n="svc2_name">Lettre de motivation</h3>
-          <div class="price">5€</div>
-          <ul class="pricing-features">
-            <li>✓ Personnalisée selon ton profil</li>
-            <li>✓ Format PDF livré</li>
-            <li>✓ Livraison immédiate</li>
-          </ul>
-          <a href="/service?s=lettre" class="btn btn-outline" data-i18n="btn_choose">Choisir</a>
-        </div>
-        <div class="card pricing-card reveal">
-          <div class="pricing-icon">📮</div>
-          <h3 data-i18n="svc4_name">Courrier officiel</h3>
-          <div class="price">7€</div>
-          <ul class="pricing-features">
-            <li>✓ Ton officiel adapté</li>
-            <li>✓ Prêt à envoyer</li>
-            <li>✓ Livraison immédiate</li>
-          </ul>
-          <a href="/service?s=courrier" class="btn btn-outline" data-i18n="btn_choose">Choisir</a>
-        </div>
-        <div class="card pricing-card featured reveal">
-          <div class="card-badge">Recommandé</div>
-          <div class="pricing-icon">📄</div>
-          <h3 data-i18n="svc1_name">CV Professionnel</h3>
-          <div class="price">8€</div>
-          <ul class="pricing-features">
-            <li>✓ Design moderne</li>
-            <li>✓ Format PDF livré</li>
-            <li>✓ Révision incluse</li>
-          </ul>
-          <a href="/service?s=cv" class="btn btn-primary" data-i18n="btn_choose">Choisir</a>
-        </div>
-        <div class="card pricing-card reveal">
-          <div class="pricing-icon">📁</div>
-          <h3 data-i18n="svc3_name">Dossier administratif</h3>
-          <div class="price">12€</div>
-          <ul class="pricing-features">
-            <li>✓ Checklist personnalisée</li>
-            <li>✓ Étapes guidées</li>
-            <li>✓ Livraison immédiate</li>
-          </ul>
-          <a href="/service?s=dossier" class="btn btn-outline" data-service="dossier" data-i18n="btn_choose">Choisir</a>
-        </div>
-        <div class="card pricing-card reveal">
-          <div class="pricing-icon">🛂</div>
-          <h3>Titre de séjour</h3>
-          <div class="price">15€</div>
-          <ul class="pricing-features">
-            <li>✓ Démarches guidées</li>
-            <li>✓ Vérification manuelle</li>
-            <li>✓ Réponse sous 24–48h</li>
-          </ul>
-          <a href="/service?s=sejour" class="btn btn-outline">Choisir</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== FAIRE MA DEMANDE ===== -->
-  <section class="section" id="demande">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2 data-i18n="form_title">Fais ta demande</h2>
-        <p data-i18n="form_sub">Choisis ton service et commence en quelques minutes</p>
-      </div>
-      <div class="grid-3" style="max-width:760px;margin:0 auto">
-        <a href="/service?s=cv" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
-          <span style="font-size:2.2rem">📄</span>
-          <strong>CV Professionnel</strong>
-          <span style="font-size:.85rem;color:#64748b;text-align:center">Créer, améliorer ou professionnaliser</span>
-          <span style="background:#eff6ff;color:#2563eb;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">8€</span>
-        </a>
-        <a href="/service?s=lettre" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
-          <span style="font-size:2.2rem">✉️</span>
-          <strong>Lettre de motivation</strong>
-          <span style="font-size:.85rem;color:#64748b;text-align:center">Créer, améliorer ou adapter</span>
-          <span style="background:#ecfdf5;color:#10b981;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">5€</span>
-        </a>
-        <a href="/service?s=courrier" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
-          <span style="font-size:2.2rem">📮</span>
-          <strong>Courrier officiel</strong>
-          <span style="font-size:.85rem;color:#64748b;text-align:center">Demande, réclamation ou contestation</span>
-          <span style="background:#f5f3ff;color:#7c3aed;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">7€</span>
-        </a>
-        <a href="/service?s=dossier" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
-          <span style="font-size:2.2rem">📁</span>
-          <strong>Dossier administratif</strong>
-          <span style="font-size:.85rem;color:#64748b;text-align:center">CAF, logement, aide sociale…</span>
-          <span style="background:#fffbeb;color:#f59e0b;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">12€</span>
-        </a>
-        <a href="/service?s=sejour" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
-          <span style="font-size:2.2rem">🛂</span>
-          <strong>Titre de séjour</strong>
-          <span style="font-size:.85rem;color:#64748b;text-align:center">Première demande, renouvellement…</span>
-          <span style="background:#fef2f2;color:#ef4444;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">15€</span>
-        </a>
-        <a href="/service?s=impot" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
-          <span style="font-size:2.2rem">🧾</span>
-          <strong>Avis d'impôt</strong>
-          <span style="font-size:.85rem;color:#64748b;text-align:center">Déclaration, attestation, courrier fiscal…</span>
-          <span style="background:#e0f2fe;color:#0369a1;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">10€</span>
-        </a>
-        <a href="/service?s=naturalisation" class="card service-quick reveal" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;color:inherit;transition:transform .2s,box-shadow .2s">
-          <span style="font-size:2.2rem">🇫🇷</span>
-          <strong>Naturalisation</strong>
-          <span style="font-size:.85rem;color:#64748b;text-align:center">Demande de nationalité française…</span>
-          <span style="background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:.83rem;padding:4px 12px;border-radius:99px">20€</span>
-        </a>
-      </div>
-      <p style="text-align:center;font-size:.78rem;color:#94a3b8;margin-top:24px;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.6">
-        Dok'péyi est un service d'aide à la rédaction. Ce service ne remplace pas une administration ou un professionnel du droit. Les documents générés par IA doivent être vérifiés avant utilisation.
-      </p>
-    </div>
-  </section>
 
   <!-- ===== TÉMOIGNAGES ===== -->
   <section class="section section-light">
@@ -422,9 +320,8 @@
           <h4 data-i18n="footer_nav">Navigation</h4>
           <a href="#comment" data-i18n="nav_comment">Comment ça marche</a>
           <a href="#services" data-i18n="nav_services">Services</a>
-          <a href="#tarifs" data-i18n="nav_tarifs">Tarifs</a>
           <a href="/a-propos">À propos</a>
-          <a href="#demande" data-i18n="nav_cta">Faire ma demande</a>
+          <a href="#services" data-i18n="nav_cta">Faire ma demande</a>
         </div>
         <div class="footer-contact">
           <h4 data-i18n="footer_contact">Contact</h4>

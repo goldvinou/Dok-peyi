@@ -275,4 +275,6 @@ Page legacy `legales.html` conservée (page unifiée accessible via `/legales`).
 
 **Bannière cookies** : bandeau fixe bas de page dans `index.html` avec bouton « J'accepte » (stockage localStorage `dok_cookies_ok`) et lien vers `/cookies`. Masquée automatiquement si déjà acceptée.
 
-**Footer d'`index.html`** : liens mis à jour vers les 4 pages dédiées (`/mentions-legales`, `/cgv`, `/confidentialite`, `/cookies`).
+**Footer d'`index.html`** : liens mis à jour vers les 4 pages dédiées (`/mentions-legales`, `/cgv`, `/confidentialite`, `/cookies`). Liens `#tarifs` et `#demande` supprimés — remplacés par `#services`.
+
+**Section `#services` (`index.html`)** : refonte premium dark — grille CSS `repeat(6,1fr)`, 7 cartes (`.svc-dark-card`) fond `#111827`, hover bleu `#2563eb`. Ligne 1 : 3 cartes `span 2` (CV, Lettre, Courrier). Lignes 2–3 : 2 cartes larges `span 3` (Dossier+Séjour / Impôt+Naturalisation). Sections `#tarifs` et `#demande` supprimées. Bouton héro et liens footer pointent vers `#services`.
