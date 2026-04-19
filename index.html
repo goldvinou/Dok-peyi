@@ -351,7 +351,7 @@
   <script defer src="lang.js"></script>
   <script>
     (function(){
-      var targets = document.querySelectorAll('.card,.step,.advantage,.testimonial');
+      var targets = document.querySelectorAll('.card,.step,.advantage,.testimonial,.svc-dark-card');
       targets.forEach(function(el){ el.classList.add('reveal'); });
       var obs = new IntersectionObserver(function(entries){
         entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
