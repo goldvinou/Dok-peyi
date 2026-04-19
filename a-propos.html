@@ -23,6 +23,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/tokens.css">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/lang.css">
   <style>
     /* ── HERO SOMBRE ── */
     .ap-hero {
@@ -239,47 +240,45 @@
     <div class="container nav-inner">
       <a href="/" class="nav-logo">Dok'<span>péyi</span></a>
       <ul class="nav-links">
-        <li><a href="/#comment">Comment ça marche</a></li>
-        <li><a href="/#services">Services</a></li>
-        <li><a href="/#tarifs">Tarifs</a></li>
+        <li><a href="/#comment" data-i18n="nav_comment">Comment ça marche</a></li>
+        <li><a href="/#services" data-i18n="nav_services">Services</a></li>
         <li><a href="/a-propos" class="nav-active">À propos</a></li>
-        <li><a href="/#demande" class="nav-cta">Faire ma demande</a></li>
+        <li><a href="/#services" class="nav-cta" data-i18n="nav_cta">Faire ma demande</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
     </div>
     <div class="mobile-menu" id="mobileMenu">
-      <a href="/#comment" class="mobile-link">Comment ça marche</a>
-      <a href="/#services" class="mobile-link">Services</a>
-      <a href="/#tarifs" class="mobile-link">Tarifs</a>
+      <a href="/#comment" class="mobile-link" data-i18n="nav_comment">Comment ça marche</a>
+      <a href="/#services" class="mobile-link" data-i18n="nav_services">Services</a>
       <a href="/a-propos" class="mobile-link">À propos</a>
-      <a href="/#demande" class="mobile-link mobile-cta">Faire ma demande</a>
+      <a href="/#services" class="mobile-link mobile-cta" data-i18n="nav_cta">Faire ma demande</a>
     </div>
   </nav>
 
   <!-- ===== HERO ===== -->
   <section class="ap-hero">
     <div class="container">
-      <span class="ap-hero-eyebrow">Dok'péyi — Guyane française</span>
+      <span class="ap-hero-eyebrow" data-i18n="ap_eyebrow">Dok'péyi — Guyane française</span>
       <h1>L'aide<br>administrative<br><em>réinventée.</em></h1>
-      <p class="ap-hero-sub">Des documents professionnels en quelques minutes. Conçu pour la Guyane. Accessible à tous, sans exception.</p>
+      <p class="ap-hero-sub" data-i18n="ap_hero_sub">Des documents professionnels en quelques minutes. Conçu pour la Guyane. Accessible à tous, sans exception.</p>
       <div class="ap-stats">
         <div class="ap-stat">
           <strong>7</strong>
-          <span>Services disponibles</span>
+          <span data-i18n="ap_stat1_l">Services disponibles</span>
         </div>
         <div class="ap-stat">
           <strong>24h</strong>
-          <span>Délai de livraison</span>
+          <span data-i18n="ap_stat2_l">Délai de livraison</span>
         </div>
         <div class="ap-stat">
           <strong>100%</strong>
-          <span>Livré par email</span>
+          <span data-i18n="ap_stat3_l">Livré par email</span>
         </div>
         <div class="ap-stat">
           <strong>RGPD</strong>
-          <span>Données protégées</span>
+          <span data-i18n="ap_stat4_l">Données protégées</span>
         </div>
       </div>
     </div>
@@ -289,8 +288,8 @@
   <section class="section" id="mission">
     <div class="container">
       <div class="section-head reveal">
-        <h2>Notre mission</h2>
-        <p>Rendre l'administration accessible, sans exception</p>
+        <h2 data-i18n="ap_mission_title">Notre mission</h2>
+        <p data-i18n="ap_mission_sub">Rendre l'administration accessible, sans exception</p>
       </div>
       <div class="ap-two-col">
         <div>
@@ -324,15 +323,15 @@
   <section class="section section-light" id="services">
     <div class="container">
       <div class="section-head reveal">
-        <h2>Ce que nous faisons</h2>
-        <p>Sept services, un seul objectif : simplifier vos démarches</p>
+        <h2 data-i18n="ap_svc_title">Ce que nous faisons</h2>
+        <p data-i18n="ap_svc_sub">Sept services, un seul objectif : simplifier vos démarches</p>
       </div>
       <div class="svc-table reveal">
         <div class="svc-row">
           <div class="svc-row-left">
             <span class="svc-icon">📄</span>
             <div>
-              <div class="svc-name">CV Professionnel</div>
+              <div class="svc-name" data-i18n="svc1_name">CV Professionnel</div>
               <div class="svc-desc">Création ou amélioration — 6 templates inclus, prêt à candidater immédiatement</div>
             </div>
           </div>
@@ -342,7 +341,7 @@
           <div class="svc-row-left">
             <span class="svc-icon">✉️</span>
             <div>
-              <div class="svc-name">Lettre de motivation</div>
+              <div class="svc-name" data-i18n="svc2_name">Lettre de motivation</div>
               <div class="svc-desc">Personnalisée selon le poste et l'entreprise, ton professionnel et accrocheur</div>
             </div>
           </div>
@@ -352,7 +351,7 @@
           <div class="svc-row-left">
             <span class="svc-icon">📮</span>
             <div>
-              <div class="svc-name">Courrier officiel</div>
+              <div class="svc-name" data-i18n="svc4_name">Courrier officiel</div>
               <div class="svc-desc">Demande, réclamation ou contestation auprès de tout organisme administratif</div>
             </div>
           </div>
@@ -362,7 +361,7 @@
           <div class="svc-row-left">
             <span class="svc-icon">📁</span>
             <div>
-              <div class="svc-name">Dossier administratif</div>
+              <div class="svc-name" data-i18n="svc3_name">Dossier administratif</div>
               <div class="svc-desc">CAF, logement social, aide sociale — guide complet, checklist et étapes</div>
             </div>
           </div>
@@ -372,7 +371,7 @@
           <div class="svc-row-left">
             <span class="svc-icon">🛂</span>
             <div>
-              <div class="svc-name">Titre de séjour</div>
+              <div class="svc-name" data-i18n="svc5_name">Titre de séjour</div>
               <div class="svc-desc">Première demande, renouvellement, régularisation — relecture humaine incluse</div>
             </div>
           </div>
@@ -382,7 +381,7 @@
           <div class="svc-row-left">
             <span class="svc-icon">🧾</span>
             <div>
-              <div class="svc-name">Avis d'impôt</div>
+              <div class="svc-name" data-i18n="svc6_name">Avis d'impôt</div>
               <div class="svc-desc">Comprendre, contester ou écrire à la DGFiP — décryptage complet</div>
             </div>
           </div>
@@ -392,7 +391,7 @@
           <div class="svc-row-left">
             <span class="svc-icon">🏛️</span>
             <div>
-              <div class="svc-name">Naturalisation</div>
+              <div class="svc-name" data-i18n="svc7_name">Naturalisation</div>
               <div class="svc-desc">Éligibilité, constitution de dossier, lettre — relecture humaine incluse</div>
             </div>
           </div>
@@ -400,7 +399,7 @@
         </div>
       </div>
       <div style="text-align:center;margin-top:44px">
-        <a href="/#demande" class="btn btn-primary">Commencer ma demande</a>
+        <a href="/#services" class="btn btn-primary" data-i18n="ap_btn_start">Commencer ma demande</a>
       </div>
     </div>
   </section>
@@ -410,8 +409,8 @@
     <div class="container">
       <div class="ap-local-grid">
         <div>
-          <p class="ap-eyebrow">Ancrage local</p>
-          <h2 class="ap-section-title">Guyane<br>d'abord.</h2>
+          <p class="ap-eyebrow" data-i18n="ap_guyane_eyebrow">Ancrage local</p>
+          <h2 class="ap-section-title" data-i18n="ap_guyane_title">Guyane d'abord.</h2>
           <p class="ap-lead">
             Notre service est conçu <em>pour</em> la Guyane, pas adapté depuis ailleurs.
             Nous connaissons les organismes compétents, les interlocuteurs réels, les délais
@@ -433,7 +432,7 @@
           </div>
         </div>
         <div>
-          <p class="ap-orga-eyebrow">Organismes référencés</p>
+          <p class="ap-orga-eyebrow" data-i18n="ap_orga_eyebrow">Organismes référencés</p>
           <div class="orga-list">
             <div class="orga-item">CAF de Guyane<small>Allocations — département 973</small></div>
             <div class="orga-item">Préfecture de Guyane<small>Titres de séjour, naturalisation</small></div>
@@ -453,44 +452,44 @@
   <section class="section section-light" id="engagement">
     <div class="container">
       <div class="section-head reveal">
-        <h2>Notre engagement</h2>
-        <p>Des principes non négociables</p>
+        <h2 data-i18n="ap_engage_title">Notre engagement</h2>
+        <p data-i18n="ap_engage_sub">Des principes non négociables</p>
       </div>
       <div class="engage-grid">
         <div class="engage-card reveal">
           <div class="engage-icon">⚡</div>
-          <div class="engage-title">Livraison rapide</div>
+          <div class="engage-title" data-i18n="ap_eng1_t">Livraison rapide</div>
           <p class="engage-text">Votre document est généré en temps réel et livré par email dans les heures qui suivent. Délai garanti sous 24h, souvent bien moins.</p>
         </div>
         <div class="engage-card reveal">
           <div class="engage-icon">🔒</div>
-          <div class="engage-title">Confidentialité RGPD</div>
+          <div class="engage-title" data-i18n="ap_eng2_t">Confidentialité RGPD</div>
           <p class="engage-text">Vos données personnelles ne sont jamais revendues. Stockage sécurisé, durée de conservation limitée à 12 mois, conformité RGPD totale.</p>
         </div>
         <div class="engage-card reveal">
           <div class="engage-icon">🤖</div>
-          <div class="engage-title">IA + expertise humaine</div>
+          <div class="engage-title" data-i18n="ap_eng3_t">IA + expertise humaine</div>
           <p class="engage-text">Nos documents sont générés par intelligence artificielle et relus par notre équipe pour les dossiers sensibles — titre de séjour, naturalisation.</p>
         </div>
         <div class="engage-card reveal">
           <div class="engage-icon">📋</div>
-          <div class="engage-title">Prêts à l'emploi</div>
+          <div class="engage-title" data-i18n="ap_eng4_t">Prêts à l'emploi</div>
           <p class="engage-text">Chaque document est formaté A4, CSS inline, imprimable directement. Aucune retouche nécessaire avant dépôt ou envoi à l'organisme.</p>
         </div>
         <div class="engage-card reveal">
           <div class="engage-icon">🎯</div>
-          <div class="engage-title">Spécificité Guyane</div>
+          <div class="engage-title" data-i18n="ap_eng5_t">Spécificité Guyane</div>
           <p class="engage-text">Nos contenus intègrent les organismes, délais et procédures spécifiques au département 973 — pas un service généraliste reconditionné.</p>
         </div>
         <div class="engage-card reveal">
           <div class="engage-icon">⚖️</div>
-          <div class="engage-title">Transparence totale</div>
+          <div class="engage-title" data-i18n="ap_eng6_t">Transparence totale</div>
           <p class="engage-text">CGV, mentions légales et politique de confidentialité accessibles en permanence. Aucun frais caché, aucun abonnement imposé.</p>
         </div>
       </div>
       <div style="text-align:center;margin-top:56px">
-        <a href="/#demande" class="btn btn-primary" style="margin-right:12px">Faire ma demande</a>
-        <a href="/cgv" class="btn btn-outline">Lire les CGV</a>
+        <a href="/#services" class="btn btn-primary" style="margin-right:12px" data-i18n="hero_btn1">Faire ma demande</a>
+        <a href="/cgv" class="btn btn-outline" data-i18n="ap_btn_cgv">Lire les CGV</a>
       </div>
     </div>
   </section>
@@ -501,25 +500,24 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <div class="nav-logo footer-logo">Dok'<span>péyi</span></div>
-          <p>Ton aide administrative simple et accessible, où que tu sois.</p>
+          <p data-i18n="footer_tagline">Ton aide administrative simple et accessible, où que tu sois.</p>
         </div>
         <div class="footer-nav">
-          <h4>Navigation</h4>
-          <a href="/#comment">Comment ça marche</a>
-          <a href="/#services">Services</a>
-          <a href="/#tarifs">Tarifs</a>
+          <h4 data-i18n="footer_nav">Navigation</h4>
+          <a href="/#comment" data-i18n="nav_comment">Comment ça marche</a>
+          <a href="/#services" data-i18n="nav_services">Services</a>
           <a href="/a-propos" style="color:var(--white);font-weight:600">À propos</a>
-          <a href="/#demande">Faire ma demande</a>
+          <a href="/#services" data-i18n="nav_cta">Faire ma demande</a>
         </div>
         <div class="footer-contact">
-          <h4>Contact</h4>
+          <h4 data-i18n="footer_contact">Contact</h4>
           <p>📧 contact@dokpeyi.com</p>
           <p>📱 WhatsApp disponible</p>
           <p>🕐 Lun–Sam · 8h–20h</p>
         </div>
       </div>
       <div class="footer-legal">
-        <p>Dok'péyi est un service d'aide à la rédaction et à la préparation de documents. Les informations doivent être vérifiées avant utilisation.</p>
+        <p data-i18n="footer_legal">Dok'péyi est un service d'aide à la rédaction et à la préparation de documents. Les informations doivent être vérifiées avant utilisation.</p>
         <p style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap">
           <span>© 2026 Dok'péyi — Tous droits réservés</span>
           <a href="/mentions-legales" style="color:#94a3b8;text-decoration:none;font-size:.82rem">Mentions légales</a>
@@ -556,5 +554,6 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
+  <script src="/lang.js" defer></script>
 </body>
 </html>
