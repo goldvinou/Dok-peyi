@@ -131,6 +131,7 @@ workspace-* (projets, tâches, chat, IA, QC, agents, notes, dashboard)
 | `cgv.html` | Conditions Générales de Vente (tarifs détaillés, délais, remboursement, disclaimer IA, CIMADE Guyane) |
 | `confidentialite.html` | Politique de confidentialité RGPD (données collectées, sous-traitants, droits, CNIL) |
 | `cookies.html` | Politique cookies (tableau des cookies strictement nécessaires, aucun tracking tiers) |
+| `404.html` | Page d'erreur 404 branded — `noindex`, boutons retour accueil / `#services`, liens directs vers les 5 services principaux |
 | `legales.html` | Page legacy unifiée (mentions + CGU + CGV + confidentialité) — conservée pour compatibilité |
 | `admin/index.html` | Dashboard admin |
 | `admin/admin.js` | Logique dashboard admin |
