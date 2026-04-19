@@ -198,7 +198,7 @@ Pour les services utilisant `lib/pipeline.js` (via `/api/pipeline` action `gener
 - format `json` → `lib/templates.js` rend le HTML final ; format `html` → passage brut
 - actuellement en `json` : cv (scratch + pro) — tous les autres en `html`
 
-**Pipeline 4 agents nommés (Emma → Viktor → Sofia → Léa)** : implémenté côté serveur dans `api/orchestrate.js`. Le client (`swGenerate` dans `service.js`) appelle `/api/orchestrate` en un seul fetch (timeout 120s). `swCallAgent` (panneau de modification) continue d'appeler `/api/generate-cv`. Emma utilise Opus pour séjour/naturalisation, Sonnet pour les autres services. Viktor, Sofia, Léa utilisent Haiku.
+**Pipeline 4 agents nommés (Emma → Viktor → Sofia → Léa)** : implémenté côté serveur dans `api/orchestrate.js`. Le client (`swGenerate` dans `service.js`) appelle `/api/orchestrate` en un seul fetch (timeout 120s). `swCallAgent` (panneau de modification) continue d'appeler `/api/generate-cv`. Emma utilise Opus (`claude-opus-4-6`) pour séjour/naturalisation, Sonnet (`claude-sonnet-4-20250514`) pour les autres services. Viktor utilise Haiku (`claude-haiku-4-5-20251001`). Sofia et Léa utilisent Sonnet (`claude-sonnet-4-20250514`).
 
 ## Branches Git
 - **Branche principale** : `claude/create-website-AhMOy`
