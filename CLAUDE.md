@@ -135,7 +135,7 @@ workspace-* (projets, tâches, chat, IA, QC, agents, notes, dashboard)
 | `admin/index.html` | Dashboard admin |
 | `admin/admin.js` | Logique dashboard admin |
 | `admin/workspace-*.js` | Modules du workspace admin (chat, IA, projets, tâches, QC, agents…) |
-| `lang.js` + `lang.css` | Système multilingue — 7 langues (fr/pt/ht/nl/ar/en/gcr). Clés `ap_*` ajoutées pour `a-propos.html` (hero, sections, engagement). Le bouton langue est injecté automatiquement dans `.nav-links` et `.mobile-menu` via `injectNavBtn()`. |
+| `lang.js` + `lang.css` | Système multilingue — 7 langues (fr/pt/ht/nl/ar/en/gcr). Couverture i18n complète de `a-propos.html` : `data-i18n` sur tous les textes (hero h1 via `<span>`/`<em>`, paragraphes mission/guyane/engagement, descriptions services, lang-tags). Support `data-i18n-html` ajouté dans `applyTranslation` pour éléments contenant des balises HTML (`<strong>`, `<em>`). Le bouton langue est injecté automatiquement dans `.nav-links` et `.mobile-menu` via `injectNavBtn()`. |
 
 Note : les templates CV sont définis dans `service.js` (constante `CV_TEMPLATES`, exposée via `window.CV_TEMPLATES`). Il n'existe pas de fichier `lib/cv-templates.js` séparé.
 
