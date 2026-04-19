@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Créer mon CV — Dok'péyi</title>
+  <meta name="description" content="Créez votre CV professionnel en quelques minutes avec aperçu en temps réel. Dok'péyi, aide administrative en Guyane.">
+  <meta property="og:title"       content="Créer mon CV — Dok'péyi">
+  <meta property="og:description" content="CV professionnel avec aperçu temps réel. 3 templates, export PDF, 8€.">
+  <meta property="og:image"       content="https://dok-peyi.vercel.app/og-image.svg">
+  <meta property="og:type"        content="website">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tokens.css">
+  <link rel="stylesheet" href="/cv-builder.css">
+</head>
+<body>
+
+  <nav class="cb-nav">
+    <a href="/" class="cb-nav-logo">Dok'<span>péyi</span></a>
+    <a href="/" class="cb-nav-back">← Retour à l'accueil</a>
+  </nav>
+
+  <main>
+    <div class="cb-layout">
+
+      <!-- ══ LEFT : FORMULAIRE ══════════════════════════════ -->
+      <aside class="cb-left">
+
+        <!-- Sélecteur de template -->
+        <div class="cb-tpl-bar" id="cb-tpl-bar">
+          <button class="cb-tpl-btn active" onclick="cbTpl('moderne',this)">Moderne</button>
+          <button class="cb-tpl-btn"        onclick="cbTpl('classique',this)">Classique</button>
+          <button class="cb-tpl-btn"        onclick="cbTpl('creatif',this)">Créatif</button>
+        </div>
+
+        <!-- Onglets sections -->
+        <div class="cb-tabs">
+          <button class="cb-tab active" onclick="cbTab('infos',this)">👤 Infos</button>
+          <button class="cb-tab"        onclick="cbTab('exp',this)">💼 Expériences</button>
+          <button class="cb-tab"        onclick="cbTab('form',this)">🎓 Formation</button>
+          <button class="cb-tab"        onclick="cbTab('skills',this)">⭐ Compétences</button>
+          <button class="cb-tab"        onclick="cbTab('resume',this)">📝 Résumé</button>
+        </div>
+
+        <!-- ── Infos personnelles ── -->
+        <div class="cb-section active" id="cb-infos">
+          <div class="cb-section-title">Informations personnelles</div>
+          <div class="cb-row">
+            <div class="cb-fg">
+              <label class="cb-label">Prénom *</label>
+              <input class="cb-input" id="cb-prenom"
+                     oninput="cbField('prenom',this.value)"
+                     placeholder="Marie" autocomplete="given-name">
+            </div>
+            <div class="cb-fg">
+              <label class="cb-label">Nom *</label>
+              <input class="cb-input" id="cb-nom"
+                     oninput="cbField('nom',this.value)"
+                     placeholder="Dupont" autocomplete="family-name">
+            </div>
+          </div>
+          <div class="cb-fg">
+            <label class="cb-label">Titre / Poste recherché *</label>
+            <input class="cb-input" id="cb-titre"
+                   oninput="cbField('titre',this.value)"
+                   placeholder="Ex : Assistante commerciale, Aide-soignant…">
+          </div>
+          <div class="cb-row">
+            <div class="cb-fg">
+              <label class="cb-label">Email</label>
+              <input class="cb-input" id="cb-email" type="email"
+                     oninput="cbField('email',this.value)"
+                     placeholder="marie@email.com" autocomplete="email">
+            </div>
+            <div class="cb-fg">
+              <label class="cb-label">Téléphone</label>
+              <input class="cb-input" id="cb-phone" type="tel"
+                     oninput="cbField('phone',this.value)"
+                     placeholder="0694 123 456" autocomplete="tel">
+            </div>
+          </div>
+          <div class="cb-fg">
+            <label class="cb-label">Adresse / Ville</label>
+            <input class="cb-input" id="cb-adresse"
+                   oninput="cbField('adresse',this.value)"
+                   placeholder="Cayenne, Guyane française">
+          </div>
+        </div>
+
+        <!-- ── Expériences ── -->
+        <div class="cb-section" id="cb-exp">
+          <div class="cb-section-title">Expériences professionnelles</div>
+          <div id="cb-exp-list"></div>
+          <button class="cb-add" onclick="cbAdd('experiences')">+ Ajouter une expérience</button>
+        </div>
+
+        <!-- ── Formation ── -->
+        <div class="cb-section" id="cb-form">
+          <div class="cb-section-title">Formation &amp; Diplômes</div>
+          <div id="cb-form-list"></div>
+          <button class="cb-add" onclick="cbAdd('formations')">+ Ajouter une formation</button>
+        </div>
+
+        <!-- ── Compétences & Langues ── -->
+        <div class="cb-section" id="cb-skills">
+          <div class="cb-section-title">Compétences</div>
+          <div id="cb-skills-list"></div>
+          <button class="cb-add" onclick="cbAdd('competences')">+ Ajouter une compétence</button>
+          <div style="margin-top:6px">
+            <div class="cb-section-title" style="font-size:.88rem;color:var(--gray-600)">Langues</div>
+          </div>
+          <div id="cb-lang-list"></div>
+          <button class="cb-add" onclick="cbAdd('langues')">+ Ajouter une langue</button>
+        </div>
+
+        <!-- ── Résumé / Accroche ── -->
+        <div class="cb-section" id="cb-resume">
+          <div class="cb-section-title">Résumé / Accroche</div>
+          <p style="font-size:.8rem;color:var(--gray-500);line-height:1.5">
+            Quelques lignes de présentation en haut du CV. Optionnel mais recommandé.
+          </p>
+          <div class="cb-fg">
+            <textarea class="cb-textarea" id="cb-resume-txt" rows="5"
+              oninput="cbField('resume',this.value)"
+              placeholder="Ex : Aide-soignante diplômée avec 5 ans d'expérience en Guyane, motivée et disponible immédiatement…"></textarea>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- ══ RIGHT : APERÇU ════════════════════════════════ -->
+      <div class="cb-right">
+
+        <div class="cb-preview-header">
+          <span class="cb-preview-label">📄 Aperçu en temps réel</span>
+          <span style="font-size:.77rem;color:var(--gray-400)">Payez pour télécharger sans filigrane</span>
+        </div>
+
+        <div class="cb-preview-wrap">
+          <div class="cb-a4" id="cb-a4"></div>
+          <div class="cb-watermark" id="cb-watermark"></div>
+        </div>
+
+        <!-- Paiement -->
+        <div class="cb-actions">
+          <div class="cb-pay-tabs" id="cb-pay-tabs">
+            <button class="cb-pay-tab active" onclick="cbPayTab(this,'card')">💳 Carte bancaire</button>
+            <button class="cb-pay-tab"        onclick="cbPayTab(this,'paypal')">PayPal</button>
+          </div>
+          <button class="cb-print-btn" id="cb-print-btn" onclick="cbPrint()">
+            🖨️ Télécharger en PDF
+          </button>
+          <button class="cb-pay-btn" id="cb-pay-btn" onclick="cbPay()">
+            <span id="cb-pay-lbl">🔒 Payer 8€ et obtenir mon CV sans filigrane</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script defer src="/cv-builder.js"></script>
+</body>
+</html>

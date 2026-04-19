@@ -42,7 +42,7 @@
       ]
     },
     {
-      "source": "/(tokens|styles|service|lang)\\.css",
+      "source": "/(tokens|styles|service|cv-builder|lang)\\.css",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
